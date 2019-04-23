@@ -1,0 +1,35 @@
+{
+  "name": "node-red-contrib-prib-functions",
+  "version": "0.0.1",
+  "description": "Node-RED added node functions.",
+  "dependencies": {},
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \\\"Error: no test specified\\\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/peterprib/node-red-contrib-prib-functions.git"
+  },
+  "keywords": [
+    "node-red",
+    "functions",
+    "testing",
+    "load",
+    "append",
+    "injector",
+    "test"
+  ],
+  "node-red": {
+    "nodes": {
+      "append": "append/append.js",
+      "load-injector": "testing/load-injector.js"
+    }
+  },
+  "author": "Peter Prib",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/peterprib/node-red-contrib-prib-functions/issues"
+  },
+  "homepage": "https://github.com/peterprib/node-red-contrib-prib-functions#readme"
+}

@@ -1,0 +1,123 @@
+
+<script type="text/javascript">
+    /*globals RED */
+    RED.nodes.registerType('Load Injector', {
+        category: 'testing',
+        color: '#fdeea2',
+        defaults: {
+            name: {value: "",required:false},
+            thinktimemin: {value:1000, required:true},   // 1seconds 
+            thinktimemax: {value:10000, required:true}, // 10 seconds
+            runtime: {value:60, required:true}, // 60 seconds
+            payload: {value:"", validate: RED.validators.typedInput("payloadType")},
+            payloadType: {value:"date"}
+        },
+	    inputs:1,
+        inputLabels: "",
+        outputs:1,
+        outputLabels: ["admin"],
+        icon: "inject.png",
+        label: function() {
+            return this.name||this._("Load Injector");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+            if (this.payloadType === null) {
+                if (this.payload === "") {
+                    this.payloadType = "date";
+                } else {
+                    this.payloadType = "str";
+                }
+            } else if (this.payloadType === 'string' || this.payloadType === 'none') {
+                this.payloadType = "str";
+            }
+            $("#node-input-payloadType").val(this.payloadType);
+            $("#node-input-payload").typedInput({
+                default: 'str',
+                typeField: $("#node-input-payloadType"),
+                types:['flow','global','str','num','bool','json','bin','date','env']
+            });
+        },
+        oneditsave: function() {
+        },
+        oneditresize: function() {
+        },
+        resizeRule : function(file,newWidth) {
+        },
+        button: {
+            enabled: function() {
+                return !this.changed;
+            },
+            onclick: function() {
+                if (this.changed) {
+                    return RED.notify(RED._("load injector undeployed changes"),"warning");
+                }
+                var label = this._def.label.call(this);
+                if (label.length > 30) {
+                    label = label.substring(0,50)+"...";
+                }
+                label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                var node = this;
+                
+                $.get( "/loadinjector/"+this.id )
+                .done(function( json ) {
+                	RED.notify(node._("load injector signal success",{label:label}),{type:"success",id:"Load Injector"});
+                }).fail(function( jqxhr, textStatus, error ) {
+                   if (jqXHR.status === 404) {
+                       RED.notify(node._("load injector signal not deployed"),"error");
+                  } else if (jqXHR.status === 500) {
+                       RED.notify(node._("load injector signal inject failed with error "+textStatus||""),"error");
+                   } else if (jqXHR.status === 0) {
+                       RED.notify(node._("load injector signal no response"),"error");
+                   } else {
+                       RED.notify(node._("load injector signal unexpected status:"+jqXHR.status+" message:"+textStatus),"error");
+                   }
+            	 });
+            }
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="Load Injector">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-thinktimemin"><i class="fa fa-tag"></i>Minimum Think Time (millisecs)</label>
+        <input type="number" id="node-input-thinktimemin" placeholder="Name" min=1 max=1000000 step=100>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-thinktimemax"><i class="fa fa-tag"></i>Maximum Think Time (millisecs)</label>
+        <input type="number" id="node-input-thinktimemax" placeholder="Name" min=1 max=1000000 step=100>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-runtime"><i class="fa fa-tag"></i>Runtime (secs)</label>
+        <input type="number" id="node-input-runtime" placeholder="Name" min=1 max=1000000 step=10>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-payload"><i class="fa fa-envelope"></i> Payload Type</label>
+        <input type="text" id="node-input-payload" style="width:70%">
+        <input type="hidden" id="node-input-payloadType">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</span></label>
+        <input type="text" id="node-input-topic">
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="append">
+    <p>Injects messages for a period of time based on varied time time.  
+	Simulate random arrival of messages and can be set to reflect think time of a user by setting min and maximum boundaries.
+	</p>
+</script>
+
