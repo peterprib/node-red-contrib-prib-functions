@@ -23,7 +23,8 @@
   "node-red": {
     "nodes": {
       "append": "append/append.js",
-      "load-injector": "testing/load-injector.js"
+      "load-injector": "testing/load-injector.js",
+      "monitorflow": "monitor/monitorflow.js"
     }
   },
   "author": "Peter Prib",

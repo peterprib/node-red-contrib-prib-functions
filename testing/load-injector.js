@@ -1,9 +1,11 @@
+const ts=(new Date().toString()).split(' ');
+console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] load-injector Copyright 2019 Jaroslav Peter Prib");
 function thinkTimeTime() {
 	return this.thinktimemin+Math.floor(Math.random()*this.thinkRange);
 }
 function nextMessageInjection() {
-	this.receive();
 	if (this.runtimeTimer) {
+		this.receive();
 		var node=this;
 		this.nextMessageInjectTimer=setTimeout(function(node){nextMessageInjection.apply(node);},thinkTimeTime.apply(node),node);
 	}

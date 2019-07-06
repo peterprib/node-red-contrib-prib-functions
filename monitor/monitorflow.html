@@ -1,0 +1,76 @@
+
+<script type="text/javascript">
+    /*globals RED */
+    RED.nodes.registerType('Monitor Flow', {
+        category: 'Monitor',
+        color: '#fdeea2',
+        defaults: {
+            name: {value: "",required:false}
+        },
+	    inputs:1,
+        inputLabels: "in",
+        outputs:1,
+        outputLabels: ["out"],
+        icon: "icons8-heart-monitor-40.png",
+        label: function() {
+            return this.name||this._("Monitor Flow");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+        },
+        oneditsave: function() {
+        },
+        oneditresize: function() {
+        },
+        resizeRule : function(file,newWidth) {
+        },
+        button: {
+            enabled: function() {
+                return !this.changed;
+            },
+            onclick: function() {
+                if (this.changed) {
+                    return RED.notify(RED._("monitor flow undeployed changes"),"warning");
+                }
+                var label = this._def.label.call(this);
+                if (label.length > 30) {
+                    label = label.substring(0,50)+"...";
+                }
+                label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                var node = this;
+                
+                $.get( "/monitorflow/"+this.id )
+                .done(function( json ) {
+                	RED.notify(node._("monitor flow signal success",{label:label}),{type:"success",id:"Load Injector"});
+                }).fail(function( jqXHR, textStatus, error ) {
+                   if (jqXHR.status === 404) {
+                       RED.notify(node._("monitor flow signal not deployed"),"error");
+                  } else if (jqXHR.status === 500) {
+                       RED.notify(node._("monitor flow signal inject failed with error "+textStatus||""),"error");
+                   } else if (jqXHR.status === 0) {
+                       RED.notify(node._("monitor flow signal no response"),"error");
+                   } else {
+                       RED.notify(node._("monitor flow signal unexpected status:"+jqXHR.status+" message:"+textStatus),"error");
+                   }
+            	 });
+            }
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="Monitor Flow">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="Monitor Flow">
+    <p>Displays counts of flows in diagram
+	</p>
+</script>
+

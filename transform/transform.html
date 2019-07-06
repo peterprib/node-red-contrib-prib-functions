@@ -1,0 +1,82 @@
+
+<script type="text/javascript">
+    /*globals RED */
+    RED.nodes.registerType('transform', {
+        category: 'function',
+        color: '#fdeea2',
+        defaults: {
+            name: {value: "tranform"},
+            action: {value:"next",required:true},
+            csvDelimiter: {value:",",required:true}
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "icons8-one-way-transition-80",
+        align: 'left',
+        paletteLabel: "transform",
+        inputLabels: "Message In",
+        outputLabels: ["Message Out"],
+        label: function () {
+            return this.name || "Tranform";
+        },
+        oneditprepare: function() {
+            $("#node-input-action").change(function() {
+                if (['csv2Array','csv2Array'].includes( $(this).val() )) {
+                    $(".form-row-in-http-csvDelimiter").show();
+                } else {
+                    $(".form-row-http-in-csvDelimiter").hide();
+                }
+            }).change();
+        },
+        oneditsave: function() {
+        },
+        oneditresize: function() {
+        },
+        resizeRule : function(file,newWidth) {
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="tranform">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+  
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-list-ul"></i> Method</label>
+        <select id="node-input-action" placeholder="action">
+            <option value="csv2Array">CSV to Array</option>
+            <option value="csvWithHeader2Array">CSV with header to Array</option> 
+            <option value="csv2JSON">CSV to JSON</option>
+            <option value="iso8385Encode">JSON to iso 8583</option>
+            <option value="iso8385Decode">iso 8583 to JSON</option>
+			<option value="JSON2string">JSON to string</option> 
+			<option value="string2JSON">string to JSON</option> 
+        </select>
+    </div>
+
+    <div class="form-row form-row-http-in-csvDelimiter hide">
+        <label for="node-input-csvDelimiter"><i class="icon-bookmark"></i> Delimiter</label>
+        <input type="text" id="node-input-csvDelimiter" placeholder="csvDelimiter" size="1" minlength="1">
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="tranform">
+    <p>Appends data to payload from text, file content of require or file</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>msg <span class="property-type">payload</span></dt>
+        <dd>incoming message with payload</dd>
+        <dt>msg <span class="property-type">topic</span></dt>
+        <dd></dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>msg <span class="property-type">payload</span></dt>
+        <dd>a message payload which has be transformed</dd>
+    </dl>
+</script>
+
