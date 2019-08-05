@@ -30,7 +30,7 @@ function checkLoop() {
     this.count5Minute+=this.counts[0];
     this.countMinute-=this.counts.length>timemin?this.counts[timemin]:0;
     this.countMinute+=this.counts[0];
-    this.status({fill:"green",shape:"ring",text:"Last second: "+this.counts[0]+" 10s: "+this.count10sec+" 1m: "+this.countMinute+" 5m: "+this.count5Minute});
+    this.status({fill:"green",shape:"ring",text:"Rate s/10s/1m/5m "+this.counts[0]+"/"+this.count10sec+"/"+this.countMinute+"/"+this.count5Minute});
 }
 module.exports = function (RED) {
     function monitorFlowNode(n) {
