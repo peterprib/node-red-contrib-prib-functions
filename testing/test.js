@@ -19,11 +19,11 @@ module.exports = function(RED) {
         		} else if(msg.???!==node.results) {
         			setError(msg,node,"Test failed");
         		} else {
-        	    	node.status({fill:"green",shape:"ring",text:"Success");
+        	    	node.status({fill:"green",shape:"ring",text:"Success"});
         		}
         		return;
         	}
-        	node.status({fill:"yellow",shape:"ring",text:"waiting on response");
+        	node.status({fill:"yellow",shape:"ring",text:"waiting on response"});
         	msg._test={
         		id:node.id,
         		result:RED.util.evaluateNodeProperty(this.result,this.resultType,this,msg);
