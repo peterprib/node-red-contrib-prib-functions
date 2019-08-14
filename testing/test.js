@@ -16,7 +16,7 @@ module.exports = function(RED) {
         	if(msg._test) {
         		if(msg._test.id!==node.id) {
         			setError(msg,node,"Sent by another test "+msg._test.id);
-        		} else if(msg.???!==node.results) {
+        		} else if(msg.payload!==msg._test.result) {
         			setError(msg,node,"Test failed");
         		} else {
         	    	node.status({fill:"green",shape:"ring",text:"Success"});
@@ -26,10 +26,19 @@ module.exports = function(RED) {
         	node.status({fill:"yellow",shape:"ring",text:"waiting on response"});
         	msg._test={
         		id:node.id,
-        		result:RED.util.evaluateNodeProperty(this.result,this.resultType,this,msg);
+        		result:RED.util.evaluateNodeProperty(this.result,this.resultType,this,msg)
         	};
             msg.topic = this.topic;
-            if(!["flow","global"].includes(this.payloadType)) {
+            if(["flow","global"].includes(this.payloadType)) {
+                RED.util.evaluateNodeProperty(this.payload,this.payloadType,this,msg, function(err,res) {
+                    if (err) {
+                        node.error(err,msg);
+                    } else {
+                        msg.payload = res;
+                        node.send(msg);
+                    }
+                });
+            } else {
                 try {
                     if ( (this.payloadType == null && this.payload === "") || this.payloadType === "date") {
                         msg.payload = Date.now();
@@ -45,16 +54,6 @@ module.exports = function(RED) {
                 } catch(err) {
                     this.error(err,msg);
                 }
-            } else {
-                RED.util.evaluateNodeProperty(this.payload,this.payloadType,this,msg, function(err,res) {
-                    if (err) {
-                        node.error(err,msg);
-                    } else {
-                        msg.payload = res;
-                        node.send(msg);
-                    }
-
-                });
             }
         });
     }
