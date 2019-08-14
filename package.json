@@ -18,11 +18,14 @@
     "load",
     "append",
     "injector",
+    "data",
+    "analysis",
     "test"
   ],
   "node-red": {
     "nodes": {
       "append": "append/append.js",
+      "dataAnalysis": "dataAnalysis/dataAnalysis.js",
       "load-injector": "testing/load-injector.js",
       "monitorflow": "monitor/monitorflow.js"
     }
