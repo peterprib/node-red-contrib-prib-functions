@@ -1,0 +1,149 @@
+
+<script type="text/x-red" data-template-name="test">
+    <div class="form-row">
+        <label for="node-input-payload"><i class="fa fa-envelope"></i> <span data-i18n="common.label.payload"></span></label>
+        <input type="text" id="node-input-payload" style="width:70%">
+        <input type="hidden" id="node-input-payloadType">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-result"><i class="fa fa-envelope"></i> <span data-i18n="common.label.result"></span></label>
+        <input type="text" id="node-input-result" style="width:70%">
+        <input type="hidden" id="node-input-result">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-topic"><i class="fa fa-tasks"></i> <span data-i18n="common.label.topic"></span></label>
+        <input type="text" id="node-input-topic">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"></span></label>
+        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+    </div>
+
+    <div class="form-tips" data-i18n="[html]test.tip"></div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('test',{
+        category: 'testing',
+        color:"#a6bbcf",
+        defaults: {
+            name: {value:""},
+            topic: {value:""},
+            payload: {value:"", validate: RED.validators.typedInput("payloadType")},
+            payloadType: {value:"date"},
+            result: {value:"", validate: RED.validators.typedInput("resultType")},
+            resultType: {value:"date"}
+        },
+        icon: "test.png",
+        inputs:1,
+        outputs:2,
+        outputLabels: function(index) {
+            var lab = this.payloadType;
+            if (lab === "json") {
+                try {
+                    lab = typeof JSON.parse(this.payload);
+                    if (lab === "object") {
+                        if (Array.isArray(JSON.parse(this.payload))) { lab = "Array"; }
+                    }
+                } catch(e) {
+                    return [this._("test.label.invalid"),"Error"]; 
+                }
+            }
+            var name = "test.label."+lab;
+            var label = this._(name);
+            return [name==label?lab:label,"Error"];
+        },
+        label: function() {
+            if (this.name) return this.name;
+            if (["string","str","num","bool","json"].includes(this.payloadType)) {
+                if ((this.topic !== "") && ((this.topic.length + this.payload.length) <= 32)) {
+                    return this.topic + ":" + this.payload;
+                } else {
+                    return this.payload.length > 0 && this.payload.length < 24
+                    	? this.payload
+                    	: this._("test.test");
+                }
+            } else if (this.payloadType === 'date') {
+            	return (this.topic !== "") && (this.topic.length <= 16)
+            		? this.topic + ":" + this._("test.timestamp")
+            		: this._("test.timestamp");
+            } else if (["flow","global"].includes(this.payloadType)) {
+                return this.payloadType+"."+RED.utils.parseContextKey(this.payload).key;
+            } else {
+                return this._("test.test");
+            }
+        },
+        labelStyle: function() {
+            return this.name?"node_label_italic":"";
+        },
+        oneditprepare: function() {
+        	function setType(type) {
+                if(type == null) {
+                	return type == "" ?"date":"str";
+                } else if(['string','none'].includes(this.payloadType)) {
+                    return "str";
+                }
+        		return type;
+        	}
+        	this.payloadType=setType(this.payloadType);
+        	this.resultType=setType(resultType);
+
+        	function setInput(t) {
+                $("#node-input-"+t+"Type").val(this[t+"Type"]);
+                $("#node-input-"+t).typedInput({
+                    default: 'str',
+                    typeField: $("#node-input-"+t+"Type"),
+                    types:['flow','global','str','num','bool','json','bin','date','env']
+                });
+
+                $("#node-input-"+t).typedInput('type',this[t+"Type"]);
+        	}        	
+        	setInput("payload");
+        	setInput("result");
+        },
+        oneditsave: function() {
+        },
+        button: {
+            enabled: function() {
+                return !this.changed
+            },
+            onclick: function() {
+                if (this.changed) {
+                    return RED.notify(RED._("notification.warning", {message:RED._("notification.warnings.undeployedChanges")}),"warning");
+                }
+                var payload = this.payload;
+                if (['flow','global'].includes(this.payloadType)) {
+                    payload = this.payloadType+"."+RED.utils.parseContextKey(payload).key;
+                }
+                var label = this._def.label.call(this);
+                if (label.length > 30) {
+                    label = label.substring(0,50)+"...";
+                }
+                label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                var node = this;
+                $.ajax({
+                    url: "test/"+this.id,
+                    type:"POST",
+                    success: function(resp) {
+                        RED.notify(node._("test.success",{label:label}),{type:"success",id:"test"});
+                    },
+                    error: function(jqXHR,textStatus,errorThrown) {
+                        if (jqXHR.status == 404) {
+                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.not-deployed")}),"error");
+                        } else if (jqXHR.status == 500) {
+                            RED.notify(node._("common.notification.error",{message:node._("test.errors.failed")}),"error");
+                        } else if (jqXHR.status == 0) {
+                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.no-response")}),"error");
+                        } else {
+                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.unexpected",{status:jqXHR.status,message:textStatus})}),"error");
+                        }
+                    }
+                });
+            }
+        }
+    });
+
+</script>

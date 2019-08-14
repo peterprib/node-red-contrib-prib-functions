@@ -1,6 +1,6 @@
 {
   "name": "node-red-contrib-prib-functions",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "Node-RED added node functions.",
   "dependencies": {},
   "devDependencies": {},
@@ -27,6 +27,7 @@
       "append": "append/append.js",
       "dataAnalysis": "dataAnalysis/dataAnalysis.js",
       "load-injector": "testing/load-injector.js",
+      "test": "testing/test.js",
       "monitorflow": "monitor/monitorflow.js"
     }
   },

@@ -1,0 +1,91 @@
+
+<script type="text/javascript">
+    /*globals RED */
+    RED.nodes.registerType('Data Analysis', {
+        category: 'function',
+        color: '#fdeea2',
+        defaults: {
+            name: {value:"",required:false},
+		    action: {value:"avg",required:true},
+		    term: {value:"10",required:false}
+        },
+	    inputs:1,
+        inputLabels: "in",
+        outputs:1,
+        outputLabels: ["result"],
+        icon: "function.png",
+        label: function() {
+            return this.name||this._("Data Analysis");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+        	 $("#node-input-action").change(function() {
+        		 if (["movingAvgSimple","movingAvgWeighted","movingAvgExponential"].includes( $(this).val() )) {
+        			 $(".form-row-http-in-term").show(); 
+        		 } else {
+        			 $(".form-row-http-in-term").hide();
+        		 }
+        		 if (["movingAvgExponential"].includes( $(this).val() )) {
+        			 $('#node-input-term').attr({min:0,max:1,step:0.1});
+        			 $('#node-input-term').val(0.5);
+        		 } else {
+        			 $('#node-input-term').attr({min:1,max:100,step:1});
+        			 $('#node-input-term').val(3);
+        		 }        		 
+        	 });
+        },
+        oneditsave: function() {
+        	if (!$("#node-input-name").val()) {
+        		$("#node-input-name").val($("#node-input-action").val());
+        	}
+        },
+        oneditresize: function() {
+        },
+    });
+</script>
+
+<script type="text/x-red" data-template-name="Data Analysis">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-list-ul"></i> Method</label>
+        <select id="node-input-action" placeholder="action">
+            <option value="avg">Average</option>
+            <option value="deltas">Deltas</option>
+            <option value="deltaNormalised">Deltas Normalised</option>
+            <option value="max">Maximum</option>
+            <option value="median">Median</option>
+            <option value="min">Minimun</option>
+            <option value="movingAvgSimple">Moving Average Simple (SMA)</option>
+            <option value="movingAvgCumulative">Moving Average Cumulative (CMA)</option>
+            <option value="movingAvgWeighted">Moving Average Weighted (WMA)</option>
+            <option value="movingAvgExponential">Moving Average Exponential (EMA/EWMA)</option>
+            <option value="normalize">Normalise</option>
+            <option value="range">Range</option>
+            <option value="standardize">Standardization (Z-score Normalization)</option>
+            <option value="stdDev">Standard Deviation</option>
+            <option value="skew">Skewness</option>
+            <option value="sum">Sum</option>
+            <option value="variance">Variance</option>
+        </select>
+    </div>
+
+    <div class="form-row form-row-http-in-term hide">
+        <label for="node-input-term"><i class="icon-bookmark"></i> Term</label>
+        <input type="number" id="node-input-term" placeholder="term" min=2 max=100 step=1>
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="Data Analysis">
+    <p>
+Various functions on array expected in msg.payload.  Output msg.result.
+	</p>
+</script>
+
