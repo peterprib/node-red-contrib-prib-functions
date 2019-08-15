@@ -18,8 +18,13 @@
     "load",
     "append",
     "injector",
+    "load injector",
     "data",
     "analysis",
+    "data analysis",
+    "monitor",
+    "statistics",
+    "compare",
     "test"
   ],
   "node-red": {

@@ -3,20 +3,37 @@ console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] test Copyright
 function setError(msg,node,err) {
 	msg._test.error=err;
 	node.error(err);
-	node.status({fill:"red",shape:"ring",text:"error");
+	node.status({fill:"red",shape:"ring",text:"error"});
 	node.send([null,msg]);
 }
+
+function equalObjects(obj1,obj2) {
+	if( obj1 === obj2 ) return true;
+	if( typeof obj1 != typeof obj2 ) return false;
+	if( !(obj1 instanceof Object) ) return false; 
+	if( Object.keys(obj1).length !== Object.keys(obj2).length ) return false;
+	try{
+		for(let key in obj1) {
+			if( !equalObjects(obj1[key],obj2[key]) ) return false;
+		}
+	} catch(e) {
+		return false;
+	}
+    return true;
+}
+
 module.exports = function(RED) {
     "use strict";
     function testNode(n) {
         RED.nodes.createNode(this,n);
         let node=Object.assign(this,n);
-    	node.status({fill:"green",shape:"ring",text:"ready");
+    	node.status({fill:"green",shape:"ring",text:"ready"});
         this.on("input",function(msg) {
         	if(msg._test) {
         		if(msg._test.id!==node.id) {
         			setError(msg,node,"Sent by another test "+msg._test.id);
-        		} else if(msg.payload!==msg._test.result) {
+//        		} else if(msg.payload!==msg._test.result) {
+        		} else if(!equalObjects(msg.payload,msg._test.result)) {
         			setError(msg,node,"Test failed");
         		} else {
         	    	node.status({fill:"green",shape:"ring",text:"Success"});
@@ -60,9 +77,9 @@ module.exports = function(RED) {
 
     RED.nodes.registerType("test",testNode);
     
-    RED.httpAdmin.post("/test/:id", RED.auth.needsPermission("inject.write"), function(req,res) {
+    RED.httpAdmin.post("/test/:id", RED.auth.needsPermission("test.write"), function(req,res) {
         let node = RED.nodes.getNode(req.params.id);
-        if (node != null) {
+        if (node) {
             try {
                 node.receive();
                 res.sendStatus(200);

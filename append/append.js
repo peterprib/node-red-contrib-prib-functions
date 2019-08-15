@@ -25,8 +25,8 @@ module.exports = function (RED) {
             	var filename= require.resolve(file.value);
             	node.log("loading: "+filename);
             	node.data+=fs.readFileSync(filename);
-       	} catch(err) {
-				node.error("require "+file.value+err);
+        	} catch(err) {
+				node.error("require "+file.value+" "+err);
 				errCnt++;
         	}
         }
