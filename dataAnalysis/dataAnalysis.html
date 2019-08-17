@@ -7,7 +7,8 @@
         defaults: {
             name: {value:"",required:false},
 		    action: {value:"avg",required:true},
-		    term: {value:"10",required:false}
+		    term: {value:"10",required:false},
+		    dataProperty: {value:"msg.payload",required:false}
         },
 	    inputs:1,
         inputLabels: "in",
@@ -15,31 +16,38 @@
         outputLabels: ["result"],
         icon: "function.png",
         label: function() {
-            return this.name||this._("Data Analysis");
+            return this.name||(this.action+" " +this.dataProperty)||this._("Data Analysis");
         },
         labelStyle: function() {
             return "node_label_italic";
         },
         oneditprepare: function() {
-        	 $("#node-input-action").change(function() {
+        	var node=this;
+        	$("#node-input-dataProperty").change(function() {
+            	if( [null,""].includes(node.dataProperty) ) {
+   	   			 	$("#node-input-dataProperty").val("msg.payload");
+        		}
+           	});
+			$("#node-input-action").change();
+	       	$("#node-input-action").change(function() {
         		 if (["movingAvgSimple","movingAvgWeighted","movingAvgExponential"].includes( $(this).val() )) {
         			 $(".form-row-http-in-term").show(); 
         		 } else {
         			 $(".form-row-http-in-term").hide();
         		 }
         		 if (["movingAvgExponential"].includes( $(this).val() )) {
-        			 $('#node-input-term').attr({min:0,max:1,step:0.1});
-        			 $('#node-input-term').val(0.5);
+        			 $("#node-input-term").attr({min:0,max:1,step:0.1});
+        			 $("#node-input-term").val(0.5);
         		 } else {
-        			 $('#node-input-term').attr({min:1,max:100,step:1});
-        			 $('#node-input-term').val(3);
+        			 $("#node-input-term").attr({min:1,max:100,step:1});
+        			 $("#node-input-term").val(3);
         		 }        		 
         	 });
         },
         oneditsave: function() {
-        	if (!$("#node-input-name").val()) {
-        		$("#node-input-name").val($("#node-input-action").val());
-        	}
+//        	if (!$("#node-input-name").val()) {
+//        		$("#node-input-name").val($("#node-input-action").val());
+//        	}
         },
         oneditresize: function() {
         },
@@ -51,6 +59,11 @@
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row form-row-http-in-dataProperty show">
+        <label for="node-input-dataProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Data Property </label>
+        <input type="text" id="node-input-dataProperty" placeholder="msg.payload">
     </div>
 
     <div class="form-row">
@@ -85,7 +98,7 @@
 
 <script type="text/x-red" data-help-name="Data Analysis">
     <p>
-Various functions on array expected in msg.payload.  Output msg.result.
+Various functions on array expected in msg.payload or selected location.  Output msg.result.
 	</p>
 </script>
 

@@ -52,6 +52,10 @@ example:
 
 ![Test example](documentation/TestTest.JPG "Test example")
 
+after run
+
+![Test example run](documentation/TestTestRun.JPG "Test example run")
+
 ------------------------------------------------------------
 
 ## append
@@ -108,6 +112,12 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+
+0.5.0
+* test node add select property tested for result
+* dataAnalysis add property analysed 
+* add experimental transform
 
 0.4.0 Add test, monitor flow, data analysis
 

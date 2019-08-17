@@ -1,36 +1,8 @@
 [
     {
-        "id": "28ca4c20.a5ab74",
-        "type": "tab",
-        "label": "Test",
-        "disabled": false,
-        "info": ""
-    },
-    {
         "id": "dc02dc92.d7af9",
         "type": "tab",
         "label": "Data Analysis",
-        "disabled": false,
-        "info": ""
-    },
-    {
-        "id": "c36e06d8.8e8608",
-        "type": "tab",
-        "label": "Load Injector",
-        "disabled": false,
-        "info": ""
-    },
-    {
-        "id": "e44c66df.27c998",
-        "type": "tab",
-        "label": "Append",
-        "disabled": false,
-        "info": ""
-    },
-    {
-        "id": "1b1a01b.85535fe",
-        "type": "tab",
-        "label": "Monitor",
         "disabled": false,
         "info": ""
     },
@@ -45,7 +17,7 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 630,
+        "x": 610,
         "y": 40,
         "wires": []
     },
@@ -75,7 +47,7 @@
         "z": "dc02dc92.d7af9",
         "name": "avg",
         "action": "avg",
-        "x": 410,
+        "x": 390,
         "y": 100,
         "wires": [
             [
@@ -150,7 +122,7 @@
         "z": "dc02dc92.d7af9",
         "name": "max",
         "action": "max",
-        "x": 410,
+        "x": 390,
         "y": 40,
         "wires": [
             [
@@ -170,7 +142,7 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 630,
+        "x": 610,
         "y": 100,
         "wires": []
     },
@@ -180,7 +152,7 @@
         "z": "dc02dc92.d7af9",
         "name": "min",
         "action": "min",
-        "x": 410,
+        "x": 390,
         "y": 160,
         "wires": [
             [
@@ -245,7 +217,7 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 630,
+        "x": 610,
         "y": 160,
         "wires": []
     },
@@ -663,6 +635,7 @@
         "name": "standardization",
         "action": "standardize",
         "term": "3",
+        "dataProperty": "",
         "x": 420,
         "y": 740,
         "wires": [
@@ -672,376 +645,39 @@
         ]
     },
     {
-        "id": "518f05cf.2472ec",
+        "id": "2b7661c3.80f6ce",
+        "type": "Data Analysis",
+        "z": "dc02dc92.d7af9",
+        "name": "",
+        "action": "min",
+        "term": "3",
+        "dataProperty": "msg.payload.data",
+        "x": 420,
+        "y": 800,
+        "wires": [
+            [
+                "29c0ea98.add2f6"
+            ]
+        ]
+    },
+    {
+        "id": "29c0ea98.add2f6",
         "type": "test",
-        "z": "28ca4c20.a5ab74",
+        "z": "dc02dc92.d7af9",
         "name": "",
         "topic": "",
-        "payload": "testdata",
-        "payloadType": "str",
-        "result": "testdata",
-        "resultType": "str",
-        "x": 340,
-        "y": 20,
-        "wires": [
-            [
-                "5d179b7b.ee43e4",
-                "1495216.b3aa5df"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "5d179b7b.ee43e4",
-        "type": "debug",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 590,
-        "y": 20,
-        "wires": []
-    },
-    {
-        "id": "1495216.b3aa5df",
-        "type": "delay",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 320,
-        "y": 100,
-        "wires": [
-            [
-                "518f05cf.2472ec"
-            ]
-        ]
-    },
-    {
-        "id": "d7ff99eb.0e4958",
-        "type": "delay",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 320,
-        "y": 220,
-        "wires": [
-            [
-                "b581a1ac.f7689"
-            ]
-        ]
-    },
-    {
-        "id": "b581a1ac.f7689",
-        "type": "test",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "topic": "",
-        "payload": "testa",
-        "payloadType": "str",
-        "result": "testb",
-        "resultType": "str",
-        "x": 330,
-        "y": 140,
-        "wires": [
-            [
-                "d7ff99eb.0e4958"
-            ],
-            [
-                "5d179b7b.ee43e4"
-            ]
-        ]
-    },
-    {
-        "id": "d1bd00c2.e9e28",
-        "type": "inject",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 120,
-        "y": 20,
-        "wires": [
-            [
-                "518f05cf.2472ec",
-                "b581a1ac.f7689",
-                "ef951fd.7aab4e",
-                "d1885806.f63d18",
-                "cd4ab264.5724b"
-            ]
-        ]
-    },
-    {
-        "id": "ef951fd.7aab4e",
-        "type": "test",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "topic": "",
-        "payload": "{\"a\":1,\"b\":\"two\"}",
+        "payload": "{\"data\":[1,2,3]}",
         "payloadType": "json",
-        "result": "{\"a\":1,\"b\":\"two\"}",
-        "resultType": "json",
-        "x": 340,
-        "y": 260,
-        "wires": [
-            [
-                "caeb1444.0bed98"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "caeb1444.0bed98",
-        "type": "delay",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 340,
-        "y": 340,
-        "wires": [
-            [
-                "ef951fd.7aab4e"
-            ]
-        ]
-    },
-    {
-        "id": "d1885806.f63d18",
-        "type": "test",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "topic": "",
-        "payload": "{\"a\":1,\"b\":\"two\"}",
-        "payloadType": "str",
-        "result": "{\"a\":1,\"b\":\"three\"}",
-        "resultType": "str",
-        "x": 350,
-        "y": 380,
-        "wires": [
-            [
-                "9e01ab7b.7bd648"
-            ],
-            [
-                "5d179b7b.ee43e4"
-            ]
-        ]
-    },
-    {
-        "id": "9e01ab7b.7bd648",
-        "type": "delay",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 340,
-        "y": 460,
-        "wires": [
-            [
-                "d1885806.f63d18"
-            ]
-        ]
-    },
-    {
-        "id": "3d5db885.6ac558",
-        "type": "delay",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "pauseType": "delay",
-        "timeout": "5",
-        "timeoutUnits": "seconds",
-        "rate": "1",
-        "nbRateUnits": "1",
-        "rateUnits": "second",
-        "randomFirst": "1",
-        "randomLast": "5",
-        "randomUnits": "seconds",
-        "drop": false,
-        "x": 340,
-        "y": 580,
-        "wires": [
-            [
-                "cd4ab264.5724b"
-            ]
-        ]
-    },
-    {
-        "id": "cd4ab264.5724b",
-        "type": "test",
-        "z": "28ca4c20.a5ab74",
-        "name": "",
-        "topic": "",
-        "payload": "{\"a\":1,\"b\":[1,2,3,4]}",
-        "payloadType": "str",
-        "result": "{\"a\":1,\"b\":[1,2,3,4]}",
-        "resultType": "str",
-        "x": 350,
-        "y": 500,
-        "wires": [
-            [
-                "3d5db885.6ac558"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "5a260f08.74326",
-        "type": "Load Injector",
-        "z": "c36e06d8.8e8608",
-        "name": "",
-        "thinktimemin": "100",
-        "thinktimemax": "5000",
-        "runtime": "30",
-        "payload": "",
-        "payloadType": "date",
-        "x": 530,
-        "y": 140,
-        "wires": [
-            [
-                "868b9519.20a318"
-            ]
-        ]
-    },
-    {
-        "id": "868b9519.20a318",
-        "type": "function",
-        "z": "c36e06d8.8e8608",
-        "name": "Message count",
-        "func": "var count = context.get('count')||0;\ncontext.set('count',++count);\nnode.status({fill:\"green\",shape:\"ring\",text:\"count: \"+count});\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "x": 760,
-        "y": 140,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "e809e514.8a1968",
-        "type": "append",
-        "z": "e44c66df.27c998",
-        "name": "append",
-        "files": [
-            {
-                "value": "./testData.txt",
-                "type": "require"
-            },
-            {
-                "value": "********",
-                "type": "text"
-            }
-        ],
-        "x": 300,
-        "y": 140,
-        "wires": [
-            [
-                "5a70aa7.febd454"
-            ]
-        ]
-    },
-    {
-        "id": "8e5dc14b.24323",
-        "type": "inject",
-        "z": "e44c66df.27c998",
-        "name": "",
-        "topic": "",
-        "payload": "",
-        "payloadType": "str",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 110,
-        "y": 140,
-        "wires": [
-            [
-                "e809e514.8a1968"
-            ]
-        ]
-    },
-    {
-        "id": "5a70aa7.febd454",
-        "type": "debug",
-        "z": "e44c66df.27c998",
-        "name": "",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "x": 520,
-        "y": 140,
-        "wires": []
-    },
-    {
-        "id": "406d019c.becac",
-        "type": "Monitor Flow",
-        "z": "1b1a01b.85535fe",
-        "name": "",
-        "x": 370,
-        "y": 60,
-        "wires": [
-            []
-        ]
-    },
-    {
-        "id": "4a43c10c.d1709",
-        "type": "Load Injector",
-        "z": "1b1a01b.85535fe",
-        "name": "",
-        "thinktimemin": 1000,
-        "thinktimemax": 10000,
-        "runtime": 60,
-        "payload": "",
-        "payloadType": "date",
+        "result": "1",
+        "resultType": "num",
+        "resultProperty": "msg.result",
         "x": 150,
-        "y": 60,
+        "y": 800,
         "wires": [
             [
-                "406d019c.becac"
-            ]
+                "2b7661c3.80f6ce"
+            ],
+            []
         ]
     }
 ]

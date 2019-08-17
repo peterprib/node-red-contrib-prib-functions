@@ -5,9 +5,10 @@
         category: 'function',
         color: '#fdeea2',
         defaults: {
-            name: {value: "tranform"},
-            action: {value:"next",required:true},
-            csvDelimiter: {value:",",required:true}
+            name: {value: ""},
+            actionSource: {value:"csv",required:true},
+            actionTarget: {value:"JSON",required:true},
+            delimiter: {value:",",required:true}
         },
         inputs: 1,
         outputs: 1,
@@ -17,14 +18,21 @@
         inputLabels: "Message In",
         outputLabels: ["Message Out"],
         label: function () {
-            return this.name || "Tranform";
+            return this.name ||this.actionSource+"=>"+this.actionTarget|| "Transform";
         },
         oneditprepare: function() {
-            $("#node-input-action").change(function() {
-                if (['csv2Array','csv2Array'].includes( $(this).val() )) {
-                    $(".form-row-in-http-csvDelimiter").show();
+            $("#node-input-actionSource").change(function() {
+                if($(this).val()=="csv") {
+                    $(".form-row-in-http-delimiter").show();
                 } else {
-                    $(".form-row-http-in-csvDelimiter").hide();
+                    $(".form-row-http-in-delimiter").hide();
+                }
+            }).change();
+            $("#node-input-actionTarget").change(function() {
+                if($(this).val()=="csv") {
+                    $(".form-row-in-http-delimiter").show();
+                } else {
+                    $(".form-row-http-in-delimiter").hide();
                 }
             }).change();
         },
@@ -37,35 +45,50 @@
     });
 </script>
 
-<script type="text/x-red" data-template-name="tranform">
+<script type="text/x-red" data-template-name="transform">
 
     <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <label for="node-input-beta" style="color:red"><i class="fa fa-tag"></i> EXPERIMENTIAL </label>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
   
     <div class="form-row">
-        <label for="node-input-action"><i class="fa fa-list-ul"></i> Method</label>
-        <select id="node-input-action" placeholder="action">
-            <option value="csv2Array">CSV to Array</option>
-            <option value="csvWithHeader2Array">CSV with header to Array</option> 
-            <option value="csv2JSON">CSV to JSON</option>
-            <option value="iso8385Encode">JSON to iso 8583</option>
-            <option value="iso8385Decode">iso 8583 to JSON</option>
-			<option value="JSON2string">JSON to string</option> 
-			<option value="string2JSON">string to JSON</option> 
+        <label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
+        <select id="node-input-actionSource" placeholder="actionSource">
+            <option value="Array">Array</option>
+            <option value="CSVWithHeader">CSV with header</option>
+            <option value="CSV">CSV</option>
+            <option value="ISO8385">ISO 8583</option>
+ 			<option value="JSON">JSON</option> 
+			<option value="String">String</option> 
         </select>
     </div>
 
-    <div class="form-row form-row-http-in-csvDelimiter hide">
-        <label for="node-input-csvDelimiter"><i class="icon-bookmark"></i> Delimiter</label>
-        <input type="text" id="node-input-csvDelimiter" placeholder="csvDelimiter" size="1" minlength="1">
+    <div class="form-row">
+        <label for="node-input-actionTarget"><i class="fa fa-list-ul"></i> Target Type </label>
+        <select id="node-input-actionTarget" placeholder="actionTarget">
+            <option value="Array">Array</option>
+            <option value="CSVWithHeader">CSV with header</option>
+            <option value="CSV">CSV</option>
+            <option value="ISO8385">ISO 8583</option>
+ 			<option value="JSON">JSON</option> 
+			<option value="String">String</option> 
+        </select>
+    </div>
+
+    <div class="form-row form-row-http-in-delimiter hide">
+        <label for="node-input-delimiter"><i class="icon-bookmark"></i> Delimiter</label>
+        <input type="text" id="node-input-delimiter" placeholder="delimiter" size="1" minlength="1">
     </div>
 
 </script>
 
-<script type="text/x-red" data-help-name="tranform">
-    <p>Appends data to payload from text, file content of require or file</p>
+<script type="text/x-red" data-help-name="transform">
+    <p>translates msg payload from one form to another</p>
     <h3>Inputs</h3>
     <dl class="message-properties">
         <dt>msg <span class="property-type">payload</span></dt>

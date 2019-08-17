@@ -1,90 +1,103 @@
 const ts=(new Date().toString()).split(' ');
 console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] transform Copyright 2019 Jaroslav Peter Prib");
-const ISO8583;
-const ISO8583message;
+
+let ISO8583,ISO8583message;
 const regexLines=/(?!\B"[^"]*)\n(?![^"]*"\B)/g;
 const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
-const removeQuotes=(d)=>d.length>1&&d.startsWith('"')&&d.endsWith('"')?c.substring(1,c.length-1):d;
+function removeQuotes(d){
+	return d.length>1 && d.startsWith('"') && d.endsWith('"') ? d.slice(1,-1) : d;
+}
 const functions={
-	csv2Array: (data)=>{
+	CSVToArray: (data)=>{
 		let lines = data.split(regexLines);
 		lines.forEach((value, idx) => {
-			lines[idx]=value.split(regexCSV).map(c=>isQuoted(c)?c.substring(1,c.length-1):c);
+			lines[idx]=value.split(regexCSV).map((c)=>removeQuotes(c));
 		});
 		return lines;
 	},
-	csvWithHeader2Array: (data)=>{
-		var r=functions.csv2Array(data)
-		r.shift();
-		return r;
-	},
-	csv2JSON: (data)=>{
+	CSVWithHeaderToArray: (data)=>functions.CSV2Array(data).shift(),
+	CSVWithHeaderToJSON: (data)=>{
 		let lines = data.split(regexLines);
 		var headers=lines.pop().split(regexCSV);
 		lines.forEach((value, idx) => {
 			var o={};
 			value.split(regexCSV).forEach((c,i)=>{
-				o[header[i]]=(c.length>1&&c.startsWith('"')&&c.endsWith('"'))?c.substring(1,c.length-1):c);
-			}
+				o[header[i]]=removeQuotes(c);
+			});
 			lines[idx]=o;
 		});
 		return lines;
 	},
-	iso8385Decode: (data)=>{
-		return ISO8583message.unpackSync(data, data.length);
-	},
-	iso8385DecodeJSON: (data)=>{
-		var j={},d=functions.iso8385Decode(data);
+	ISO8385ToArray: (data)=>ISO8583message.unpackSync(data, data.length),
+	ISO8385ToJSON: (data)=>{
+		let j={},d=ISO8583message.unpackSync(data, data.length);
 		d.forEach((r)=>{
-			j[iso8583BitMapId(r[0]).name]=r[1];
-		}
+			j[ISO8583BitMapId(r[0]).name]=r[1];
+		});
 		return r;
 	},
-	iso8385Encode: (data)=>{
-		return ISO8583message.packSync(data);
-	},
-	iso8385EncodeJSON: (data)=>{
+	ArrayToISO8385: (data)=>ISO8583message.packSync(data),
+	JSONToISO8385: (data)=>{
 		var d=[];
-		Object.getOwnPropertyNames(data).forEach((v)=>d.push([iso8583BitMapName[v].id,data[v]]));
+		Object.getOwnPropertyNames(data).forEach((v)=>d.push([ISO8583BitMapName[v].id,data[v]]));
 		d.sort((a, b) => a[0] - b[0]);
 		return ISO8583message.packSync(d);
 	},
-	JSON2string: (data)=>{
-		return JSON.stringify(data);
+	JSONToArray: (data)=>{
+		if(data instanceof Object){
+			let a=[];
+			for(let p in data) {
+				a.push([p,functions.JSONToArray(data[p])]);
+			}
+			return a;
+		}
+		return data;
 	},
-	string2JSON: (data)=>{
-		return JSON.parse(data);
-	},
+	ArrayToCSV: (data)=>data.map(x=>JSON.stringify(x)).join("\n"),
+	JSONToString: (data)=>JSON.stringify(data),
+	StringToJSON: (data)=>JSON.parse(data)
 };
-let initialise={
-	csv2Array: ()=>{},
-	csvWithHeader2Array: ()=>{},
-	csv2JSON: ()=>{},
-	iso8385Decode: ()=>{
-		if(ISO8583) return;
-		ISO8583 = require('iso-8583');
-		ISO8583message = new ISO8583.Message();
-
-	},
-	iso8385Encode: ()=>{initialise.iso8385Decode();},
-	JSON2string: ()=>{},
-	string2JSON: ()=>{}
-}
 module.exports = function (RED) {
-    function transformNode(config) {
+    function transformNode(n) {
         RED.nodes.createNode(this,n);
     	var node=Object.assign(this,n);
-    	var transform=functions[node.action];
-    	
+    	if(node.actionSource=="ISO8583" || node.actionTarget=="ISO8583") {
+    		if(!ISO8583) {
+        		try{
+            		ISO8583 = require('iso-8583');
+            		ISO8583message = ISO8583.Message();
+            		node.log("loaded iso-8583");
+        		} catch (e) {
+        			node.error("need to run 'npm install iso-8583'");
+        			this.status({fill:"red",shape:"ring",text:"iso-8583 not installed"});
+        			return;
+        		}
+    		}
+    	}
+    	try {
+        	node.transform=functions[node.actionSource+"To"+node.actionTarget];
+        	if(!node.transform) throw Error("transform routine not found");
+    	} catch (e) {
+			node.error(node.actionSource+" to "+node.actionTarget + " not implemented, "+e);
+			this.status({fill:"red",shape:"ring",text:node.actionSource+"\nto "+node.actionTarget + " not implemented"});
+			return;
+    	}
+		this.status({fill:"green",shape:"ring",text:"Ready"});
         node.on("input", function(msg) {
-        	msg.payload=csv2Array.apply(node,[node.payload]);
+        	try{
+            	msg.payload=node.transform.apply(node,[msg.payload]);
+        	} catch (e) {
+    			node.error(node.actionSource+" to "+node.actionTarget + " " +e);
+    			this.status({fill:"red",shape:"ring",text:"Error(s)"});
+    			return;
+        	}
 			node.send(msg);
         });                
     }
     RED.nodes.registerType("transform",transformNode);
 };
 
-const iso8583BitMap=[
+const ISO8583BitMap=[
 	[1,'MessageFunction','Identifies the type of process related to the message'],
 	[2,'ProtocolVersion','Version of the protocol specifications.'],
 	[3,'ExchangeIdentification','Unique identification of an exchange occurrence'],
@@ -252,7 +265,7 @@ const iso8583BitMap=[
 	[165,'CardVerificationData','A number that is only printed on the card which is not included in any other technology e.g. magnetic stripe or ICC.'],
 	[166,'CardholderBillingAddressCompressed','Numeric and postcode elements only of the cardholder/delivery address '],
 	[167,'CardholderBillingPostalCode','Code allocated by postal authority '],
-	[168,'AccountBasedDigitalSignature','A digital signature created by the private part of the private /public key pair supplied by a card issuer to a cardholder and linked to the cardholder's account on which the card is issued.'],
+	[168,'AccountBasedDigitalSignature','A digital signature created by the private part of the private /public key pair supplied by a card issuer to a cardholder and linked to the cardholder\'s account on which the card is issued.'],
 	[169,'AccountIdentification1','A series of digits and/or characters used to identify a customer account or relationship, e.g. for the "from" account.'],
 	[170,'AccountIdentification2','A series of digits and/or characters used to identify a customer account or relationship, e.g. for the "to" account.'],
 	[171,'AccountTypeCode2','Code which identifies the type of account to be updated. Used in conjunction with the Transaction type code as part of the Processing code.'],
@@ -287,10 +300,10 @@ const iso8583BitMap=[
 	[200,'SecurityRelatedControlInformation','Security related control information for encryption and authentication algorithms']
 ];
 
-let iso8583BitMapId={};
-let iso8583BitMapName={};
-iso8583BitMap.forEach((r)=>{
-	iso8583BitMapId[r[0]={name:r[1],description:r[2]};
-	iso8583BitMapName[r[1]={id:r[0],description:r[2]};
+let ISO8583BitMapId={},
+	ISO8583BitMapName={};
+ISO8583BitMap.forEach((r)=>{
+	ISO8583BitMapId[r[0]]={name:r[1],description:r[2]};
+	ISO8583BitMapName[r[1]]={id:r[0],description:r[2]};
 })
 

@@ -80,17 +80,19 @@ module.exports = function (RED) {
         	} else {
         		throw Error("action not found");
         	}
+            node.getData= eval("((msg,node)=>"+(node.dataProperty||"msg.payload")+")");
+            node.status({fill:"green",shape:"ring",text:"Ready"});
         } catch(e) {
     		node.error(e);
-        	node.status({fill:"red",shape:"ring",text:"invalid setup "+e.toString()});
-        }
+        	node.status({fill:"red",shape:"ring",text:"Invalid setup "+e.toString()});
+        } 
         node.on("input", function(msg) {
         	try{
-               	msg.result=node.actionfunction.apply(node,[msg.payload,node.term]);   		
+               	msg.result=node.actionfunction.apply(node,[node.getData(msg,node),node.term]);   		
         	} catch(e) {
         		if(node.maxErrorDisplay) {
         			--node.maxErrorDisplay;
-        			node.error(Array.isArray(msg.payload)? node.action+" error: "+e.toString() : "payload not array");
+        			node.error(Array.isArray(node.getData(msg,node))? node.action+" error: "+e.toString() : "payload not array");
         			node.status({fill:"red",shape:"ring",text:"error(s)"});
         		}
         	}

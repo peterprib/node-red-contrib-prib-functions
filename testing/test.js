@@ -27,13 +27,20 @@ module.exports = function(RED) {
     function testNode(n) {
         RED.nodes.createNode(this,n);
         let node=Object.assign(this,n);
-    	node.status({fill:"green",shape:"ring",text:"ready"});
+        try{
+            node.getData= eval("((msg,node)=>"+(node.resultProperty||"msg.payload")+")");
+            node.status({fill:"green",shape:"ring",text:"Ready"});
+        } catch(e) {
+    		node.error(e);
+        	node.status({fill:"red",shape:"ring",text:"Invalid setup "+e.toString()});
+        } 
+        
         this.on("input",function(msg) {
         	if(msg._test) {
         		if(msg._test.id!==node.id) {
         			setError(msg,node,"Sent by another test "+msg._test.id);
-//        		} else if(msg.payload!==msg._test.result) {
-        		} else if(!equalObjects(msg.payload,msg._test.result)) {
+        		} else if(!equalObjects(node.getData(msg,node),msg._test.result)) {
+        			msg._test.testedValue=node.getData(msg,node);
         			setError(msg,node,"Test failed");
         		} else {
         	    	node.status({fill:"green",shape:"ring",text:"Success"});

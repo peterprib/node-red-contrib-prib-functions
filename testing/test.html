@@ -1,8 +1,9 @@
-<script type="text/x-red" data-help-name="Monitor Flow">
+<script type="text/x-red" data-help-name="test">
 	<p>
 		Test a message generated against expected results.
 		Node can be used to inject a new message.
 		On message return to node it is checked against expected result.
+		Can slect location of property for result on return message.
 	</p>
 	<p>
 	A message sent on first port should go thru other nodes and return to test is payload 
@@ -23,9 +24,14 @@
     </div>
 
     <div class="form-row">
-        <label for="node-input-result"><i class="fa fa-envelope"></i> <span data-i18n="common.label.result"> Result </span></label>
+        <label for="node-input-result"><i class="fa fa-thumbs-o-up"></i> <span data-i18n="common.label.result"> Result </span></label>
         <input type="text" id="node-input-result" style="width:70%">
         <input type="hidden" id="node-input-resultType">
+    </div>
+
+    <div class="form-row form-row-http-in-resultProperty show">
+        <label for="node-input-resultProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Property </label>
+        <input type="text" id="node-input-resultProperty" placeholder="msg.payload">
     </div>
 
     <div class="form-row">
@@ -51,7 +57,8 @@
             payload: {value:"", validate: RED.validators.typedInput("payloadType")},
             payloadType: {value:"date"},
             result: {value:"", validate: RED.validators.typedInput("resultType")},
-            resultType: {value:"date"}
+            resultType: {value:"date"},
+            resultProperty: {value:"msg.payload",required:true}
         },
         icon: "test.png",
         inputs:1,
@@ -74,40 +81,51 @@
             return name==label?lab:label;
         },
         label: function() {
+        	var node=this;
             if (this.name) return this.name;
-            if (["string","str","num","bool","json"].includes(this.resultType)) {
-                if ((this.topic !== "") && ((this.topic.length + this.result.length) <= 32)) {
-                    return this.topic + ":" + this.result;
+    		return typeLabel.apply(this,[this.payload,this.payloadType])+" -> "+typeLabel.apply(this,[this.result,this.resultType]);      
+ 	           
+            function typeLabel(data,type) {
+                if (["string","str","num","bool","json"].includes(type)) {
+                    if ((this.topic !== "") && ((this.topic.length + data.length) <= 32)) {
+                        return this.topic + ":" + data;
+                    } else {
+                        return data.length > 0 && data.length < 12
+                        	? data
+                        	: data.substr(0,12)+"...";
+                    }
+                } else if (type === 'date') {
+                	return (this.topic !== "") && (this.topic.length <= 16)
+                		? this.topic + ":" + this._("test.timestamp")
+                		: this._("test.timestamp");
+                } else if (["flow","global"].includes(type)) {
+                    return type+"."+RED.utils.parseContextKey(data).key;
                 } else {
-                    return this.result.length > 0 && this.result.length < 24
-                    	? this.result
-                    	: this._("test.test");
+                    return this._("test.test");
                 }
-            } else if (this.resultType === 'date') {
-            	return (this.topic !== "") && (this.topic.length <= 16)
-            		? this.topic + ":" + this._("test.timestamp")
-            		: this._("test.timestamp");
-            } else if (["flow","global"].includes(this.resultType)) {
-                return this.resultType+"."+RED.utils.parseContextKey(this.result).key;
-            } else {
-                return this._("test.test");
             }
         },
         labelStyle: function() {
             return this.name?"node_label_italic":"";
         },
         oneditprepare: function() {
+        	var node=this;
+        	$("#node-input-resultProperty").change(function() {
+            	if( [null,""].includes(node.resultProperty) ) {
+   	   			 	$("#node-input-resultProperty").val("msg.payload");
+        		}
+           	});
+
         	function setType(type) {
                 if(type == null) {
                 	return type == "" ?"date":"str";
-                } else if(['string','none'].includes(this.payloadType)) {
+                } else if(['string','none'].includes(type)) {
                     return "str";
                 }
         		return type;
         	}
         	this.payloadType=setType(this.payloadType);
         	this.resultType=setType(this.resultType);
-
         	function setInput(t) {
                 $("#node-input-"+t+"Type").val(this[t+"Type"]);
                 $("#node-input-"+t).typedInput({
@@ -118,8 +136,8 @@
 
                 $("#node-input-"+t).typedInput('type',this[t+"Type"]);
         	}        	
-        	setInput("payload");
-        	setInput("result");
+        	setInput.apply(this,["payload"]);
+        	setInput.apply(this,["result"]);
         },
         oneditsave: function() {
         },
