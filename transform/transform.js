@@ -53,6 +53,16 @@ const functions={
 		}
 		return data;
 	},
+	JSONToHTML: (data)=>{
+		if(data instanceof Object){
+			let a=[];
+			for(let p in data) {
+				a.push("<td><![cdata["+p+"]]><td></td><![cdata["+functions.JSONToHTML(data[p])+"]]></td>");
+			}
+			return "<table><tr>"+a.join("</tr><tr>")+"</tr><table>";
+		}
+		return data;
+	},
 	ArrayToCSV: (data)=>data.map(x=>JSON.stringify(x)).join("\n"),
 	JSONToString: (data)=>JSON.stringify(data),
 	StringToJSON: (data)=>JSON.parse(data)

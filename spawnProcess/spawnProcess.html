@@ -1,0 +1,250 @@
+<script type="text/x-red" data-help-name="Spawn Process">
+    <h1>Spawn a Process</h1>
+    <p>Spawn a process where the output from the stdin and stdout goes is sent as messages by separate ports.
+	This allow the out put logs to be processed as messages.  
+	A third port delivers as message on completion of process with return code. 
+	</p>
+	<p>
+	Messages can be recieved which stop or start the process in topic.
+	With a start message the payload can have properties arguments and env to set/add to the values. 
+	<p/>
+</script>
+
+<script type="text/x-red" data-template-name="Spawn Process">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-process"><i class="fa fa-tag"></i> Process </label>
+        <input type="text" id="node-input-process" placeholder="process">
+    </div>
+
+    <div class="form-row">
+    	<label for="node-input-workDirectory"><i class="fa fa-list-ul"></i> Working Directory </label>
+    	<input type="text" id="node-input-workingDirectory" placeholder="directory">
+  	</div>
+
+    <div class="form-row">
+        <label for="node-input-os"><i class="fa fa-list-ul"></i> OS </label>
+        <select id="node-input-os" placeholder="OS">
+            <option value="">Any</option>
+            <option value="Linux">Linux</option>
+            <option value="Windows_NT">Windows</option> 	
+            <option value="Darwin">Mac OS</option> 	
+        </select>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-autoStart"><i class="fa fa-list-ul"></i> Auto Start </label>
+        <select id="node-input-autoStart" placeholder="Auto Start">
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+    </div>
+  	
+	<div class="form-row" style="margin-bottom: 0px;">
+        <label for="" style="width: unset;" id="node-input-argumentslabel"><i class="fa fa-edit"></i> Arguments</label>
+    </div>
+    
+    <div>
+        <input type="hidden" id="node-input-arguments" autofocus="autofocus">
+    </div>
+
+    <div class="form-row node-text-editor-row">
+        <div style="height: 60px; min-height:60px;" class="node-text-editor" id="node-input-arguments-editor" ></div>
+    </div>
+
+   <div class="form-row node-input-envs-container-row" style="margin-bottom:0px; width:100%; min-width:520px">
+		<label style="vertical-align:top;">
+			<i class="fa fa-list-alt"></i> ENV 
+        	<a href="#" class="editor-button editor-button-small" id="node-input-add-env" style="margin-top: 4px; margin-left: 103px;"><i class="fa fa-plus"></i> <span>Add</span></a>
+		</label>
+		<div style="width:100%; display: inline-block; background-color:#f3f3f3; border-top:0px solid; border-radius:0 0 0 0; border-bottom:1px solid #ccc;">
+				<table>
+ 	              	<tbody id="node-input-envs-tbody" stype="display: block;  overflow: auto; max-width:400px; max-height: 400px;">
+                		<tr style="padding-left:4px; border-bottom: 1px solid black; background: lightblue; position: sticky; top: 0;">
+                			<td style="min-width: 10px;">Delete</td>
+                			<td style="min-width: 60px;">Name</td>
+                			<td style="min-width: 200px;">Value </td>
+                		</tr>
+                	</tbody>
+			</table>
+		</div>
+    </div>
+
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('Spawn Process',{
+    	category: 'function',
+        defaults: {
+            name: {value:"",required:false},
+            process: {value:"",required:false},
+            os: {value:"",required:false},
+            autoStart: {value:"true",required:true},
+            workingDirectory: {value:"",required:false},
+            arguments: {value:"", required:false},
+            env: {value:[], required:false}
+        },
+	    inputs:1,
+        inputLabels: "",
+        outputs:3,
+        outputLabels: ["Log","Error","Return Code"],
+        icon: "font-awesome/fa-industry",
+        label: function() {
+            return this.name||this.process;
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+        	let node=this,
+        		envs=$("#node-input-envs-tbody");
+        	if(!node.env) node.env={};
+            node.editor = RED.editor.createEditor({
+                id: 'node-input-arguments-editor',
+                mode: 'ace/mode/sql',
+                value: $("#node-input-arguments").val(),
+                globals: {
+                    msg:true,
+                    context:true,
+                    RED: true,
+                    util: true,
+                    flow: true,
+                    global: true,
+                    console: true,
+                    Buffer: true,
+                    setTimeout: true,
+                    clearTimeout: true,
+                    setInterval: true,
+                    clearInterval: true
+                }
+            });
+            
+            node.editor.getSession().on('change', function() {
+	            $("#node-input-arguments").val(node.editor.getValue());
+	            $("#node-input-arguments").change();
+			});
+            
+            $("#node-input-argumentslabel").click(function(e) {
+                e.preventDefault();
+                var value = node.editor.getValue();
+                RED.editor.editJavaScript({
+                    value: value,
+                    width: "Infinity",
+                    cursor: node.editor.getCursorPosition(),
+                    mode: "ace/mode/text",
+                    complete: function(v,cursor) {
+                    	node.editor.setValue(v, -1);
+                    	node.editor.gotoLine(cursor.row+1,cursor.column,false);
+                        setTimeout(function() {
+                        	node.editor.focus();
+                        },300);
+                    }
+                })
+            })
+          	for (let n in node.env) {
+          		addEnv(n,node.env[n]);
+           	}
+            $("#node-input-add-env").click(function() {
+               addEnv("ENV"+$("#node-input-envs-tbody").children().length, "");
+            });
+
+            function addEnv(name,value) {
+  	        	var row=$('<tr/>').appendTo($("#node-input-envs-tbody"));
+                var deleteButton = $('<a/>',{href:"#",class:"editor-button editor-button-mediium"}).appendTo(row);
+                $('<i/>',{class:"fa fa-remove"}).appendTo(deleteButton);
+                deleteButton.click(function() {
+                	$(this).parent().remove();
+                });
+
+                $('<td/>').append($('<input type="text" size="8" style="width:100%; border:0;" />').attr('value', name)).appendTo(row); // name
+				$('<td/>').append($('<input type="text" size="30" style="width:100%; border:0;" />').attr('value', value)).appendTo(row); // value
+            }
+        },
+        oneditsave: function() {
+            $("#node-input-arguments").val(this.editor.getValue());
+            this.editor.destroy();
+            delete this.editor;
+            
+        	let inputs,node=this;
+        	node.env={};
+        	$('#node-input-envs-tbody tr:gt(0)').each(function () {
+            	inputs=$(this).find("input");
+            	node.env[inputs[0].value]=inputs[1].value;
+			});
+        },
+        oneditresize: function(size) {
+        },
+        button: {
+            enabled: function() {
+                return !this.changed;
+            },
+           	onclick: function() {
+                if (this.changed) {
+                    return RED.notify(RED._("Spawn Process undeployed changes"),"warning");
+                }
+                var label = this._def.label.call(this);
+                if (label.length > 30) {
+                    label = label.substring(0,50)+"...";
+                }
+                label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                var node = this;
+                
+                function sendCommand(element,action) {
+                	const nodeName="Spawn Process";
+                	$(element).dialog("close");
+                	$.get( "/SpawnProcess/"+node.id+"/"+action )
+			        .done(function(json) {
+			        console.log(JSON.stringify(json));
+            		   	RED.notify(node._(nodeName+" signal success",{label:label}),{type:"success",id:"Load Injector"});
+            		   	$('<div></div>').appendTo('body').html(JSON.stringify(json))
+            		   	.dialog({
+      						modal: true,
+      						title: (node.name||'Spawn Process')+" "+action,
+      						zIndex: 10000,
+      						autoOpen: true,
+   							width: 'auto',
+   							resizable: false,
+							buttons: {
+								close: function (event, ui) {
+					    			$(this).remove();
+								}
+							}
+						});
+                	}).fail(function( jqXHR, textStatus, error ) {
+                   				if (jqXHR.status === 404) {
+     			                	RED.notify(node._(nodeName+" signal not deployed"),"error");
+                				} else if (jqXHR.status === 500) {
+   				                	RED.notify(node._(nodeName+" signal inject failed with error "+textStatus||""),"error");
+                				} else if (jqXHR.status === 0) {
+ 									RED.notify(node._(nodeName+" signal no response"),"error");
+                   				} else {
+									RED.notify(node._(nodeName+" signal unexpected status:"+jqXHR.status+" message:"+textStatus),"error");
+								}
+					});
+                }
+                $('<div></div>').appendTo('body').html('<div>Choose Action</div>')
+  				.dialog({
+      				modal: true, title: (node.name||'Spawn Process'), zIndex: 10000, autoOpen: true,
+   					width: 'auto', resizable: false,
+					buttons: {
+						"Kill": function () {
+							sendCommand(this,"kill");
+						},
+						"Start": function () {
+							sendCommand(this,"start");
+						}
+					},
+					close: function (event, ui) {
+				    	$(this).remove();
+					}
+				});
+            }
+        }
+ 
+    });
+</script>

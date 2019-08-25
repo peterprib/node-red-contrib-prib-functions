@@ -7,6 +7,7 @@
 *   Load Injector
 *	Monitor Fow
 *	append
+*	Spawn Process
 
 ------------------------------------------------------------
 
@@ -99,6 +100,22 @@ Test example:
 
 ------------------------------------------------------------
 
+## Spawn Process
+
+Spawn process as per node.js manual with ability to set working directory, environment variables
+and argument passed to process. STDOUT and STDERR are sent as individual messages.
+RC port is sent a message on closure.
+Takes in messages that starts a process with ability to add environment values.
+Message can be sent to kill the process.    
+
+![Spawn Process](documentation/SpawnProcess.JPG "Spawn Process")
+
+Test example:
+
+![Spawn Process example](documentation/SpawnProcessTest.JPG "Spawn Process example")
+
+------------------------------------------------------------
+
 # Install
 
 Run the following command in the root directory of your Node-RED install
@@ -113,6 +130,9 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.6.0
+* add Spawn Process
+* improve experimental transform with json to table html
 
 0.5.0
 * test node add select property tested for result
