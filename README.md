@@ -8,6 +8,8 @@
 *	Monitor Fow
 *	append
 *	Spawn Process
+*	Host Available
+*	node.js os metrics
 
 ------------------------------------------------------------
 
@@ -114,6 +116,33 @@ Test example:
 
 ![Spawn Process example](documentation/SpawnProcessTest.JPG "Spawn Process example")
 
+
+------------------------------------------------------------
+
+## Host Available
+
+Test if host is available sending msg to up or down port so action can be taken.
+Message only sent on state change or if message is sent which doesn't have topic refreshHostAvailable.
+This topic forces a check rather than time check which can be set.
+
+![Host Available](documentation/hostAvailable.JPG "Host Available")
+
+Test example:
+
+![Host Available example](documentation/hostAvailableTest.JPG "Host Available example")
+
+------------------------------------------------------------
+
+## os
+
+The metrics from node.js os
+
+![os](documentation/os.JPG "os")
+
+Test example:
+
+![os example](documentation/osTest.JPG "os example")
+
 ------------------------------------------------------------
 
 # Install
@@ -129,6 +158,9 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.7.0
+* add Host Available
 
 0.6.0
 * add Spawn Process

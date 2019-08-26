@@ -1,0 +1,64 @@
+<script type="text/x-red" data-help-name="os">
+	<p>
+	Access to node.js OS functions and variaribles	
+	<p/>
+</script>
+
+<script type="text/x-red" data-template-name="os">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-property"><i class="fa fa-list-ul"></i> Property </label>
+        <select id="node-input-property" placeholder="OS">
+            <option value="arch">arch</option>
+            <option value="EOL">EOL</option>
+            <option value="constants">constants</option> 	
+            <option value="cpus">cpus</option> 	
+            <option value="endianness">endianness</option> 	
+            <option value="freemem">freemem</option> 	
+            <option value="getPriority">getPriority</option> 	
+            <option value="homedir">homedir</option> 	
+            <option value="hostname">hostname</option> 	
+            <option value="loadavg">loadavg</option> 	
+            <option value="networkInterfaces">networkInterfaces</option> 	
+            <option value="release">release</option> 	
+            <option value="setPriority">setPriority</option> 	
+            <option value="tmpdir">tmpdir</option> 	
+            <option value="totalmem">totalmem</option> 	
+            <option value="type">type</option> 	
+            <option value="uptime">uptime</option> 	
+            <option value="userInfo">userInfo</option> 	
+        </select>
+    </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('os',{
+    	category: 'function',
+        defaults: {
+            name: {value:"",required:false},
+            property: {value:"constants",required:true}
+        },
+	    inputs:1,
+        inputLabels: "",
+        outputs:2,
+        outputLabels: ["Return Data","Error"],
+        icon: "font-awesome/fa-cog",
+        label: function() {
+            return this.name||this.property;
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+        },
+        oneditsave: function() {
+        },
+        oneditresize: function(size) {
+        }
+    });
+</script>

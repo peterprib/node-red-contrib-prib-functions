@@ -64,7 +64,7 @@
                 $.get( "/loadinjector/"+this.id )
                 .done(function( json ) {
                 	RED.notify(node._("load injector signal success",{label:label}),{type:"success",id:"Load Injector"});
-                }).fail(function( jqxhr, textStatus, error ) {
+                }).fail(function( jqXHR, textStatus, error ) {
                    if (jqXHR.status === 404) {
                        RED.notify(node._("load injector signal not deployed"),"error");
                   } else if (jqXHR.status === 500) {

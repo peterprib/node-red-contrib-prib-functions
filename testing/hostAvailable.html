@@ -1,0 +1,96 @@
+<script type="text/javascript">
+    /*globals RED */
+    RED.nodes.registerType('Host Available', {
+        category: 'testing',
+        color: '#fdeea2',
+        defaults: {
+            name: {value: "",required:false},
+            host: {value: "",required:false},
+			port: {value:0, required:false},
+			checkInterval: {required:false}
+        },
+	    inputs:1,
+        inputLabels: "",
+        outputs:2,
+        outputLabels: ["Up","Down"],
+        icon: "font-awesome/fa-plug",
+        label: function() {
+            return this.name||(this.host+(this.port?":"+this.port:""));
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+        },
+        oneditsave: function() {
+        },
+        oneditresize: function() {
+        },
+        resizeRule : function(file,newWidth) {
+        },
+        button: {
+            enabled: function() {
+                return !this.changed;
+            },
+            onclick: function() {
+                if (this.changed) {
+                    return RED.notify(RED._("Host Available undeployed changes"),"warning");
+                }
+                var label = this._def.label.call(this);
+                if (label.length > 30) {
+                    label = label.substring(0,50)+"...";
+                }
+                label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                var node = this;
+                
+                $.get( "/hostAvailable/"+node.id )
+                .done(function( json ) {
+                	RED.notify(node._("Host Available signal success",{label:label}),{type:"success",id:"Host Available"});
+                }).fail(function( jqXHR, textStatus, error ) {
+                   if (jqXHR.status === 404) {
+                       RED.notify(node._("Host Available signal not deployed"),"error");
+                  } else if (jqXHR.status === 500) {
+                       RED.notify(node._("Host Available signal inject failed with error "+textStatus||""),"error");
+                   } else if (jqXHR.status === 0) {
+                       RED.notify(node._("Host Available signal no response"),"error");
+                   } else {
+                       RED.notify(node._("Host Available signal unexpected status:"+jqXHR.status+" message:"+textStatus),"error");
+                   }
+            	 });
+            }
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="Host Available">
+
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-host"><i class="fa fa-tag"></i> Host </label>
+        <input type="text" id="node-input-host" placeholder="host">
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-port"><i class="fa fa-tag"></i> Port </label>
+        <input type="number" id="node-input-port" min=0 max=4096 step=1>
+    </div>
+
+    <div class="form-row">
+        <label for="node-input-checkInterval"><i class="fa fa-tag"></i> Check Interval (secs) </label>
+        <input type="number" id="node-input-checkInterval" min=0 max=4096 step=1>
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="Host Available">
+    <p>
+	Test if host and port can be contacted.
+	Message to OK port if OK.  
+	Message to Eeror port if failed.  
+	</p>
+</script>
+
