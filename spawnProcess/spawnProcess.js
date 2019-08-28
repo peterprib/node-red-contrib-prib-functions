@@ -13,7 +13,7 @@ function debugOn(m) {
 	}
 	console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] Spawn Process "+(m instanceof Object?JSON.stringify(m):m));
 }
-let debug=debugOn,debugCnt=100;
+let debug=debugOff,debugCnt=100;
 let spawn;
 let os=require("os");
 function sendError(node,msg,err) {

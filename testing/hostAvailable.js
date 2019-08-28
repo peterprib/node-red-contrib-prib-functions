@@ -73,7 +73,9 @@ module.exports = function(RED) {
         	}
         });
     }
-
+    hostAvailableNode.prototype.close = function() {
+    	runtimeStop.apply(this);
+    };
     RED.nodes.registerType("Host Available",hostAvailableNode);
     
     RED.httpAdmin.get("/hostAvailable/:id", RED.auth.needsPermission("hostAvailable.write"), function(req,res) {

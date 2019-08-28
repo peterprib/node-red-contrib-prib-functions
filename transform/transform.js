@@ -53,15 +53,21 @@ const functions={
 		}
 		return data;
 	},
-	JSONToHTML: (data)=>{
+	JSONToHTML: (data,level=0)=>{
+		if(Array.isArray(data)) {
+			if(data.length) {
+				return "<table><tr>"+data.map((r)=>functions.JSONToHTML(r,++level)).join("</tr><tr>")+"</tr><table>"
+			} 
+			return "";
+		}
 		if(data instanceof Object){
 			let a=[];
 			for(let p in data) {
-				a.push("<td><![cdata["+p+"]]><td></td><![cdata["+functions.JSONToHTML(data[p])+"]]></td>");
+				a.push("<td style='vertical-align: top;'>"+escape(p)+":</td><td>"+functions.JSONToHTML(data[p],++level)+"</td>");
 			}
 			return "<table><tr>"+a.join("</tr><tr>")+"</tr><table>";
 		}
-		return data;
+		return escape(data);
 	},
 	ArrayToCSV: (data)=>data.map(x=>JSON.stringify(x)).join("\n"),
 	JSONToString: (data)=>JSON.stringify(data),

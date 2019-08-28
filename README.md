@@ -1,11 +1,11 @@
-# node-red-contrib-prib-functions
+# [node-red-contrib-prib-functions][2]
 
 [Node-Red][1] nodes for various functions:
 
 *   Data Analysis
 *	Test  
 *   Load Injector
-*	Monitor Fow
+*	Monitor Flow
 *	append
 *	Spawn Process
 *	Host Available
@@ -158,6 +158,11 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.7.1
+* fix json to table html and minor code improvements.
+turn off debug mode on spawn process.
+clear down timer on close for host available
 
 0.7.0
 * add Host Available
