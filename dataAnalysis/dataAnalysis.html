@@ -8,12 +8,13 @@
             name: {value:"",required:false},
 		    action: {value:"avg",required:true},
 		    term: {value:"10",required:false},
+		    keyProperty: {value:"msg.topic",required:false},
 		    dataProperty: {value:"msg.payload",required:false}
         },
 	    inputs:1,
         inputLabels: "in",
-        outputs:1,
-        outputLabels: ["result"],
+        outputs:2,
+        outputLabels: ["Results","Details"],
         icon: "function.png",
         label: function() {
             return this.name||(this.action+" " +this.dataProperty)||this._("Data Analysis");
@@ -23,6 +24,11 @@
         },
         oneditprepare: function() {
         	var node=this;
+        	$("#node-input-keyProperty").change(function() {
+            	if( [null,""].includes(node.keyProperty) ) {
+   	   			 	$("#node-input-keyProperty").val("msg.topic");
+        		}
+           	});
         	$("#node-input-dataProperty").change(function() {
             	if( [null,""].includes(node.dataProperty) ) {
    	   			 	$("#node-input-dataProperty").val("msg.payload");
@@ -30,7 +36,7 @@
            	});
 			$("#node-input-action").change();
 	       	$("#node-input-action").change(function() {
-        		 if (["movingAvgSimple","movingAvgWeighted","movingAvgExponential"].includes( $(this).val() )) {
+        		 if (["movingAvgSimple","movingAvgWeighted","movingAvgExponential","realtime"].includes( $(this).val() )) {
         			 $(".form-row-http-in-term").show(); 
         		 } else {
         			 $(".form-row-http-in-term").hide();
@@ -41,6 +47,11 @@
         		 } else {
         			 $("#node-input-term").attr({min:1,max:100,step:1});
         			 $("#node-input-term").val(3);
+        		 }        		 
+        		 if (["realtime"].includes( $(this).val() )) {
+           			 $(".form-row-http-in-keyProperty").show();
+           		 } else {
+           			 $(".form-row-http-in-keyProperty").hide();
         		 }        		 
         	 });
         },
@@ -59,6 +70,11 @@
     <div class="form-row">
         <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
         <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+
+    <div class="form-row form-row-http-in-keyProperty hide">
+        <label for="node-input-dataProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Key Property </label>
+        <input type="text" id="node-input-keyProperty" placeholder="key">
     </div>
 
     <div class="form-row form-row-http-in-dataProperty show">
@@ -81,6 +97,7 @@
             <option value="movingAvgExponential">Moving Average Exponential (EMA/EWMA)</option>
             <option value="normalize">Normalise</option>
             <option value="range">Range</option>
+            <option value="realtime">RealTime Metrics</option>
             <option value="standardize">Standardization (Z-score Normalization)</option>
             <option value="stdDev">Standard Deviation</option>
             <option value="skew">Skewness</option>
@@ -98,7 +115,18 @@
 
 <script type="text/x-red" data-help-name="Data Analysis">
     <p>
-Various functions on array expected in msg.payload or selected location.  Output msg.result.
+Various functions on array of vaules expected in msg.payload or selected location.  Output msg.result.
+	</p>
+    <p>
+If realtime metrics it calculates various statistical metrics as it receives key and value in msg.payload property
+for a single data point.
+Must select key property and value property must be singular value along with term.
+The number of keys and term will determine amount of memory consummed.
+Data is not persisted so metrics start from zero sample set on node recycle.
+	</p>
+	<p>
+If real-time stats then a message sent with @stats in topic will send all stored metrics and retained datapoints
+to second port. 
 	</p>
 </script>
 

@@ -2,7 +2,7 @@
 
 [Node-Red][1] nodes for various functions:
 
-*   Data Analysis
+*   Data Analysis  - statistical metrics that has real time option
 *	Test  
 *   Load Injector
 *	Monitor Flow
@@ -14,13 +14,21 @@
 ------------------------------------------------------------
 
 ## Data Analysis
+
+Real time metrics which are recalculated on single of data point and posted in msg.result.
+Key and value can be selected from msg.payload.
+Sending message with topic"@stats" places message with all stats on second port.  
+
+![Data Analysis Realtime](documentation/DataAnalysisRealtime.JPG "Data Analysis Realtime")
+
+
 A set of data analysis functions that can be run over an array of data
 
 Single value metrics:
 * Average
 * Maximum
 * Median
-* Minimun
+* Minimum
 * Range
 * Standard Deviation
 * Skewness
@@ -41,13 +49,15 @@ Array metrics:
 
 example:
 
+![Data Analysis Realtime example](documentation/DataAnalysisTestRealtime.JPG "Data Analysis Realtime example")
+
 ![Data Analysis example](documentation/DataAnalysisTest.JPG "Data Analysis example")
 
 ------------------------------------------------------------
 
 ## Test
 
-Allows a test case for a message to allow simple testing of nodes. Injects a new message via mouse or message.cMessage sent to first port which can be consumed by other nodes and returned back to node in a loop. The Test node then checks against detailed expected payload result. 
+Allows a test case for a message to allow simple testing of nodes. Injects a new message via mouse or message. Message sent to first port which can be consumed by other nodes and returned back to node in a loop. The Test node then checks against detailed expected payload result. 
 
 ![Test](documentation/Test.JPG "Test")
 
@@ -158,6 +168,9 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.8.0 Add realtime metrics to data analysis
+
 
 0.7.1
 * fix json to table html and minor code improvements.

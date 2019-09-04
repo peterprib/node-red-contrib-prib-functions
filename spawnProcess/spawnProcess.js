@@ -3,6 +3,7 @@ console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] Spawn Process 
 
 const debugOff=(()=>false);
 function debugOn(m) {
+	const ts=(new Date().toString()).split(' ');
 	if(!debugCnt--) {
 		console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] Spawn Process debugging turn off");
 		debug=debugOff;

@@ -72,7 +72,7 @@
                    } else if (jqXHR.status === 0) {
                        RED.notify(node._("load injector signal no response"),"error");
                    } else {
-                       RED.notify(node._("load injector signal unexpected status:"+jqXHR.status+" message:"+textStatus),"error");
+                       RED.notify(node._("load injector signal unexpected status:"+jqXHR.status+" message:"+textStatus+" "+error),"error");
                    }
             	 });
             }

@@ -155,7 +155,7 @@
 
             function addEnv(name,value) {
   	        	var row=$('<tr/>').appendTo($("#node-input-envs-tbody"));
-                var deleteButton = $('<a/>',{href:"#",class:"editor-button editor-button-mediium"}).appendTo(row);
+                var deleteButton = $('<a/>',{href:"#",class:"editor-button editor-button-medium"}).appendTo(row);
                 $('<i/>',{class:"fa fa-remove"}).appendTo(deleteButton);
                 deleteButton.click(function() {
                 	$(this).parent().remove();
@@ -223,7 +223,7 @@
                 				} else if (jqXHR.status === 0) {
  									RED.notify(node._(nodeName+" signal no response"),"error");
                    				} else {
-									RED.notify(node._(nodeName+" signal unexpected status:"+jqXHR.status+" message:"+textStatus),"error");
+									RED.notify(node._(nodeName+" signal unexpected status:"+jqXHR.status+" message:"+textStatus+" "+error),"error");
 								}
 					});
                 }

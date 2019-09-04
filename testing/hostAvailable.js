@@ -3,16 +3,29 @@ console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] Host Available
 
 function hostAvailable(host, port, node, availableCB, downCB, timeoutCB) {
 	const socket=new require('net').Socket();
-	socket.setTimeout(2000);
 	socket.on('connect', function() {
-		socket.destroy();
-        availableCB.apply(node,[node]);
+		try{
+			socket.destroy();
+			availableCB.apply(node,[node]);
+		} catch(e) {
+			node.error("hostAvailable on error "+e.message);
+		}
     }).on('error', function(e) {
-    	socket.destroy();
-        downCB.apply(this,[node,e]);
+		try{
+    		socket.destroy();
+    		downCB.apply(this,[node,e]);
+    	} catch(e) {
+    		node.error("hostAvailable on error "+e.message);
+    	}
     }).on('timeout', function() {
-    	(downCB||timeoutCB).apply(node,[node,"time out"]);
-    }).connect(port, host);
+    	try{
+    		(downCB||timeoutCB).apply(node,[node,"time out"]);
+		} catch(e) {
+			node.error("hostAvailable on error "+e.message);
+		}
+    });
+	socket.setTimeout(2000);
+	socket.connect(port, host);
 };
 
 function testHost(node) {

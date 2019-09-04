@@ -52,7 +52,7 @@
                    } else if (jqXHR.status === 0) {
                        RED.notify(node._("monitor flow signal no response"),"error");
                    } else {
-                       RED.notify(node._("monitor flow signal unexpected status:"+jqXHR.status+" message:"+textStatus),"error");
+                       RED.notify(node._("monitor flow signal unexpected status:"+jqXHR.status+" message:"+textStatus+" "+error),"error");
                    }
             	 });
             }
