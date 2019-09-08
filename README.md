@@ -20,6 +20,7 @@ Key and value can be selected from msg.payload.
 Sending message with topic"@stats" places message with all stats on second port.  
 
 ![Data Analysis Realtime](documentation/DataAnalysisRealtime.JPG "Data Analysis Realtime")
+![Data Analysis Pearson R](documentation/DataAnalysisPearsonR.JPG "Data Analysis Pearson R")
 
 
 A set of data analysis functions that can be run over an array of data
@@ -50,6 +51,9 @@ Array metrics:
 example:
 
 ![Data Analysis Realtime example](documentation/DataAnalysisTestRealtime.JPG "Data Analysis Realtime example")
+
+![Data Analysis Pearson R example](documentation/DataAnalysisTestPearsonR.JPG "Data Analysis PearsonR example")
+
 
 ![Data Analysis example](documentation/DataAnalysisTest.JPG "Data Analysis example")
 
@@ -168,6 +172,8 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+0.9.0 Add Pearson R realtime metrics
+
 
 0.8.1 Add the tests for realtime metrics
 0.8.0 Add realtime metrics to data analysis

@@ -1,4 +1,3 @@
-
 <script type="text/javascript">
     /*globals RED */
     RED.nodes.registerType('Data Analysis', {
@@ -9,7 +8,8 @@
 		    action: {value:"avg",required:true},
 		    term: {value:"10",required:false},
 		    keyProperty: {value:"msg.topic",required:false},
-		    dataProperty: {value:"msg.payload",required:false}
+		    dataProperty: {value:"msg.payload",required:false},
+		    dataProperties: {value:["msg.payload[0]","msg.payload[1]"],required:false}
         },
 	    inputs:1,
         inputLabels: "in",
@@ -23,7 +23,7 @@
             return "node_label_italic";
         },
         oneditprepare: function() {
-        	var node=this;
+        	const node=this;
         	$("#node-input-keyProperty").change(function() {
             	if( [null,""].includes(node.keyProperty) ) {
    	   			 	$("#node-input-keyProperty").val("msg.topic");
@@ -53,12 +53,41 @@
            		 } else {
            			 $(".form-row-http-in-keyProperty").hide();
         		 }        		 
+        		 if (["pearsonR"].includes( $(this).val() )) {
+           			 $(".node-input-dataProperties-container-row").show();
+           			 $(".form-row-http-in-dataProperty").hide();
+           		 } else {
+           			 $(".node-input-dataProperties-container-row").hide();
+           			 $(".form-row-http-in-dataProperty").show();
+        		 }        		 
         	 });
+	       	
+  	    	node.dataProperties.forEach((r)=>addDataProperty(r));
+            $("#node-input-add-dataProperties").click(function() {
+            	addDataProperty("msg.payload["+($("#node-input-dataProperties-tbody").children().length-1)+"]");
+            });
+            function addDataProperty(dataProperty) {
+  	        	let row=$('<tr/>').appendTo($("#node-input-dataProperties-tbody"));
+  	        	if($("#node-input-dataProperties-tbody").children().length>3){
+	                let deleteButton = $('<a/>',{href:"#",class:"editor-button editor-button-medium"}).appendTo(row);
+    	            $('<i/>',{class:"fa fa-remove"}).appendTo(deleteButton);
+        	        deleteButton.click(function() {
+            	    	$(this).parent().remove();
+                	});
+  	        	} else {
+  	        		$('<a/>').appendTo(row);
+  	        	}
+                $('<td/>').append($('<input type="text" size="30" style="width:100%; border:0;" />').attr('value', dataProperty)).appendTo(row); // Topic
+            }
+
         },
         oneditsave: function() {
-//        	if (!$("#node-input-name").val()) {
-//        		$("#node-input-name").val($("#node-input-action").val());
-//        	}
+       		let inputs,node=this;
+        	node.dataProperties=[];
+        	$('#node-input-dataProperties-tbody tr:gt(0)').each(function () {
+            	inputs=$(this).find("input");
+            	node.dataProperties.push(inputs[0].value);
+			});
         },
         oneditresize: function() {
         },
@@ -88,6 +117,7 @@
             <option value="avg">Average</option>
             <option value="deltas">Deltas</option>
             <option value="deltaNormalised">Deltas Normalised</option>
+            <option value="pearsonR">Linear Correlation Coefficient</option>
             <option value="max">Maximum</option>
             <option value="median">Median</option>
             <option value="min">Minimun</option>
@@ -97,6 +127,7 @@
             <option value="movingAvgExponential">Moving Average Exponential (EMA/EWMA)</option>
             <option value="normalize">Normalise</option>
             <option value="range">Range</option>
+            <option value="pearsonR">Pearson Product Moment Correlation (PPMC)</option>
             <option value="realtime">RealTime Metrics</option>
             <option value="standardize">Standardization (Z-score Normalization)</option>
             <option value="stdDev">Standard Deviation</option>
@@ -110,6 +141,24 @@
         <label for="node-input-term"><i class="icon-bookmark"></i> Term</label>
         <input type="number" id="node-input-term" placeholder="term" min=2 max=100 step=1>
     </div>
+
+
+   <div class="form-row node-input-dataProperties-container-row hide" style="margin-bottom:0px; width:100%; min-width:520px">
+		<label style="vertical-align:top;">
+			<i class="fa fa-list-alt"></i> Topic 
+        	<a href="#" class="editor-button editor-button-small" id="node-input-add-dataProperties" style="margin-top: 4px; margin-left: 103px;"><i class="fa fa-plus"></i> <span>Add</span></a>
+		</label>
+		<div style="width:100%; display: inline-block; background-color:#f3f3f3; border-top:0px solid; border-radius:0 0 0 0; border-bottom:1px solid #ccc;">
+				<table>
+ 	              	<tbody id="node-input-dataProperties-tbody" stype="display: block;  overflow: auto; max-width:400px; max-height: 400px;">
+                		<tr style="padding-left:4px; border-bottom: 1px solid black; background: lightblue; position: sticky; top: 0;">
+                			<td style="min-width: 10px;">Delete</td>
+                			<td style="min-width: 200px;">Property</td>
+                		</tr>
+                	</tbody>
+			</table>
+		</div>
+    </div>		
 
 </script>
 

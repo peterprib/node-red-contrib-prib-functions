@@ -44,13 +44,53 @@ functions={
 		return d.map( (c,i,a)=>( range ? (c-avg)/range : 0) );
 	},
 	range:(d)=>Math.max(...d)-Math.min(...d),
-/*
-	pearsonR:(d)=>{
-		  (sum(xy)-sum(x)sum(y)/n)/(sqrt(sum(x2) -sum(x)2/n)(sqrt(sum(y2) -sum(y)2/n)
-	
-		count++
+	pearsonR:(d,term,node)=>{
+		functions.pearsonRLoad(d,term,node);
+		functions.pearsonRCalc(d,term,node);
+		return functions.pearsonRResults(node);
 	},
-*/
+	pearsonRLoad:(d,term,node)=>{
+		if(!node.dataPoints) {
+			node.dataPoints=[];
+			node.samples=0;
+			for(let j,i=0; i<node.dataProperties.length; i++) {
+				node.dataPoints[i]={sum:0,sumSquared:0,sumj:[]};
+				for(j=i+1; j<node.dataProperties.length; j++) {
+					node.dataPoints[i].sumj[j]=0;
+				}
+			}
+		}
+		node.samples++;
+		for(let v,dp,i=0; i<node.dataProperties.length; i++) {
+			v=d[i];
+			dp=node.dataPoints[i];
+			dp.sum+=v;
+			dp.sumSquared+=v*v;
+			for(let j=i+1; j<node.dataProperties.length; j++) {
+				dp.sumj[j]+=v*d[j];
+			}
+		}
+	},
+	pearsonRCalc:(d,term,node)=>{
+		node.pearsonR=[];
+		for(let dpi,j, i=0; i<node.dataProperties.length; i++) {
+			dpi=node.dataPoints[i];
+			for(j=i+1; j<node.dataProperties.length; j++) {
+				dpj=node.dataPoints[j];
+				let v = ( node.samples*dpi.sumj[j] - dpi.sum*dpj.sum
+						)/( 	(Math.sqrt(node.samples*dpi.sumSquared - Math.pow(dpi.sum,2)))
+							*	(Math.sqrt(node.samples*dpj.sumSquared - Math.pow(dpj.sum,2)))
+						);
+				node.pearsonR.push({value:v,i:i,j:j});
+			}
+		}
+		node.pearsonR.sort((a,b)=>a.value>b.value);
+	},
+	pearsonRResults:(node)=>{
+		if(node.hasOwnProperty("pearsonR")) {
+			return {pearsonR:node.pearsonR,dataPoints:node.dataPoints,samples:node.samples};
+		}
+	},
 	standardize:(d)=>{
 		let avg=functions.avg(d),
 			stdDev=functions.stdDev(d);
@@ -129,10 +169,14 @@ module.exports = function (RED) {
         	} else {
         		throw Error("action not found");
         	}
-        	
-        	if(node.action=="realtime") {
+        	switch (node.action) {
+        	case "realtime":
                 node.getDatafunction= "((msg,node)=>{return {key:"+node.keyProperty+",value:"+(node.dataProperty||"msg.payload")+"};})";
-        	} else {
+        		break;
+        	case "pearsonR":
+        		node.getDatafunction= "((msg,node)=>{return ["+node.dataProperties.join(',')+"];})";
+        		break;
+        	default:
                 node.getDatafunction= "((msg,node)=>"+(node.dataProperty||"msg.payload")+")";
         	}
         	node.log("get data function: "+node.getDatafunction);
@@ -144,8 +188,13 @@ module.exports = function (RED) {
         } 
         node.on("input", function(msg) {
         	if(msg.topic && msg.topic.startsWith("@stats")) {
-        		if(node.action=="realtime") {
+        		switch(node.action) {
+        		case "realtime":
         			msg.result=node.dataPoint;
+        			break
+        		case "pearsonR":
+        			msg.result=functions.pearsonRResults(node);
+        			break
         		}
      			node.send([null,msg]);
      			return;
