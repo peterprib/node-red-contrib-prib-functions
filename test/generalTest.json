@@ -110,6 +110,10 @@
         "z": "dc02dc92.d7af9",
         "name": "avg",
         "action": "avg",
+        "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 390,
         "y": 100,
         "wires": [
@@ -186,6 +190,10 @@
         "z": "dc02dc92.d7af9",
         "name": "max",
         "action": "max",
+        "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 390,
         "y": 40,
         "wires": [
@@ -217,6 +225,10 @@
         "z": "dc02dc92.d7af9",
         "name": "min",
         "action": "min",
+        "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 390,
         "y": 160,
         "wires": [
@@ -233,6 +245,10 @@
         "z": "dc02dc92.d7af9",
         "name": "median",
         "action": "median",
+        "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 400,
         "y": 220,
         "wires": [
@@ -249,6 +265,10 @@
         "z": "dc02dc92.d7af9",
         "name": "range",
         "action": "range",
+        "term": "3",
+        "keyProperty": "msg.topic",
+        "dataProperty": "msg.payload",
+        "dataProperties": [],
         "x": 390,
         "y": 260,
         "wires": [
@@ -265,6 +285,10 @@
         "z": "dc02dc92.d7af9",
         "name": "sum",
         "action": "sum",
+        "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 390,
         "y": 300,
         "wires": [
@@ -341,6 +365,10 @@
         "z": "dc02dc92.d7af9",
         "name": "variance",
         "action": "variance",
+        "term": "3",
+        "keyProperty": "msg.topic",
+        "dataProperty": "msg.payload",
+        "dataProperties": [],
         "x": 400,
         "y": 340,
         "wires": [
@@ -357,6 +385,10 @@
         "z": "dc02dc92.d7af9",
         "name": "stdDev",
         "action": "stdDev",
+        "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 400,
         "y": 380,
         "wires": [
@@ -373,6 +405,10 @@
         "z": "dc02dc92.d7af9",
         "name": "skew",
         "action": "skew",
+        "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 390,
         "y": 420,
         "wires": [
@@ -435,6 +471,9 @@
         "name": "movingAvgCumulative",
         "action": "movingAvgCumulative",
         "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 440,
         "y": 460,
         "wires": [
@@ -482,6 +521,9 @@
         "name": "movingAvgSimple",
         "action": "movingAvgSimple",
         "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 430,
         "y": 500,
         "wires": [
@@ -519,6 +561,9 @@
         "name": "movingAvgExponential",
         "action": "movingAvgExponential",
         "term": "0.5",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 440,
         "y": 580,
         "wires": [
@@ -536,6 +581,9 @@
         "name": "movingAvgWeighted",
         "action": "movingAvgWeighted",
         "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 440,
         "y": 540,
         "wires": [
@@ -583,6 +631,9 @@
         "name": "deltas",
         "action": "deltas",
         "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 390,
         "y": 620,
         "wires": [
@@ -650,6 +701,9 @@
         "name": "deltaNormalised",
         "action": "deltaNormalised",
         "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 420,
         "y": 660,
         "wires": [
@@ -697,6 +751,9 @@
         "name": "normalise",
         "action": "normalize",
         "term": "3",
+        "keyProperty": "",
+        "dataProperty": "",
+        "dataProperties": [],
         "x": 400,
         "y": 700,
         "wires": [
@@ -714,7 +771,9 @@
         "name": "standardization",
         "action": "standardize",
         "term": "3",
-        "dataProperty": "",
+        "keyProperty": "",
+        "dataProperty": "msg.payload",
+        "dataProperties": [],
         "x": 420,
         "y": 740,
         "wires": [
@@ -1105,7 +1164,9 @@
         "name": "",
         "action": "min",
         "term": "3",
+        "keyProperty": "",
         "dataProperty": "msg.payload.data",
+        "dataProperties": [],
         "x": 420,
         "y": 800,
         "wires": [
@@ -2022,12 +2083,16 @@
         "term": "3",
         "keyProperty": "msg.payload.assignedColor",
         "dataProperty": "msg.payload.salary",
+        "dataProperties": [],
         "x": 437,
         "y": 80,
         "wires": [
             [],
             [
                 "d7f811fe.76a75"
+            ],
+            [
+                "c79a70a2.0202b"
             ]
         ]
     },
@@ -2105,6 +2170,41 @@
             [],
             [
                 "d7f811fe.76a75"
+            ]
+        ]
+    },
+    {
+        "id": "c79a70a2.0202b",
+        "type": "debug",
+        "z": "ebd0cc75.16e66",
+        "name": "outlier",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 670,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "4dad0215.7143cc",
+        "type": "inject",
+        "z": "ebd0cc75.16e66",
+        "name": "outiler",
+        "topic": "",
+        "payload": "{\"name\":\"test outlier \",\"work\":\"outlier\",\"email\":\"{{email}}\",\"address\":\"{{int 1 100}} {{street}}\",\"country\":\"{{country}}\",\"salary\":700,\"assignedColor\":\"red\",\"age\":69,\"height\":2.6}",
+        "payloadType": "json",
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 130,
+        "y": 280,
+        "wires": [
+            [
+                "e452d93a.c25838"
             ]
         ]
     }

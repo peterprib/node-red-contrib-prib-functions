@@ -13,8 +13,8 @@
         },
 	    inputs:1,
         inputLabels: "in",
-        outputs:2,
-        outputLabels: ["Results","Details"],
+        outputs:3,
+        outputLabels: ["Results","Details","Outliers"],
         icon: "function.png",
         label: function() {
             return this.name||(this.action+" " +this.dataProperty)||this._("Data Analysis");
@@ -50,8 +50,10 @@
         		 }        		 
         		 if (["realtime"].includes( $(this).val() )) {
            			 $(".form-row-http-in-keyProperty").show();
+           			 node.outputs=3;
            		 } else {
            			 $(".form-row-http-in-keyProperty").hide();
+           			node.outputs=2;
         		 }        		 
         		 if (["pearsonR"].includes( $(this).val() )) {
            			 $(".node-input-dataProperties-container-row").show();

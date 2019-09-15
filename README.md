@@ -17,7 +17,9 @@
 
 Real time metrics which are recalculated on single of data point and posted in msg.result.
 Key and value can be selected from msg.payload.
-Sending message with topic"@stats" places message with all stats on second port.  
+Sending message with topic"@stats" places message with all stats on second port.
+If realtime metrics then a third port is shown where the message is sent if it is an outlier
+being outside 3 standard deviations from mean. 
 
 ![Data Analysis Realtime](documentation/DataAnalysisRealtime.JPG "Data Analysis Realtime")
 ![Data Analysis Pearson R](documentation/DataAnalysisPearsonR.JPG "Data Analysis Pearson R")
@@ -26,7 +28,7 @@ Sending message with topic"@stats" places message with all stats on second port.
 A set of data analysis functions that can be run over an array of data
 
 Single value metrics:
-* Average
+* Average/Mean
 * Maximum
 * Median
 * Minimum
@@ -172,8 +174,9 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
-0.9.0 Add Pearson R realtime metrics
 
+0.9.1 Add outlier detection
+0.9.0 Add Pearson R realtime metrics
 
 0.8.1 Add the tests for realtime metrics
 0.8.0 Add realtime metrics to data analysis

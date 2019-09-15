@@ -112,14 +112,15 @@ functions={
 		} else {
 			dp={key:d.key,
 				values:[],
-				count:0,
-				sum:0,
-				sumSquared:0,
-				sumCubed:0,
 				avg:0,
+				count:0,
 				movingSum:0,
 				movingSumSquared:0,
 				movingSumCubed:0,
+				outlier:false,
+				sum:0,
+				sumSquared:0,
+				sumCubed:0,
 				term:term
 			};
 			node.dataPoint[d.key]=dp;
@@ -149,6 +150,7 @@ functions={
 		dp.movingStandardized=( (d.value-dp.movingAvg)/dp.movingStdDev )||0;
 		dp.skewness=(dp.sumCubed-3*dp.avg*dp.variance-Math.pow(dp.avg,3))/dp.variance*dp.stdDev;
 		dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
+		dp.outlier=Math.abs(dp.standardized)>3;
 		return dp;
 	},
 	sum:(d)=>d.reduce((p,c)=>p+c),
@@ -200,7 +202,15 @@ module.exports = function (RED) {
      			return;
         	} 
         	try{
-               	msg.result=node.actionfunction.apply(node,[node.getData(msg,node),node.term,node]);   		
+               	msg.result=node.actionfunction.apply(node,[node.getData(msg,node),node.term,node]);
+        		switch(node.action) {
+        		case "realtime":
+        			if(msg.result.outlier) {
+        				node.send([msg,null,msg]);
+        				return;
+        			}
+        			break;
+        		}
         	} catch(e) {
         		msg.error=e.message;
         		if(node.maxErrorDisplay) {
