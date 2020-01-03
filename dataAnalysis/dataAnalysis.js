@@ -39,9 +39,11 @@ functions={
 		});
 	},
 	normalize:(d)=>{
-		let range=functions.range(d)
-			avg=functions.avg(d);
-		return d.map( (c,i,a)=>( range ? (c-avg)/range : 0) );
+		const range=functions.range(d);
+		if(range==0) return d.map(c=>0); 
+		const avg=functions.avg(d),
+			offset=avg/range;
+		return d.map(c=>c/range-offset);
 	},
 	range:(d)=>Math.max(...d)-Math.min(...d),
 	pearsonR:(d,term,node)=>{
