@@ -1,5 +1,8 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] monitorflow Copyright 2019 Jaroslav Peter Prib");
+const nodeLabel="Monitor Flow";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
+
 function runtimeStop() {
 	if(this.runtimeTimer) {
 		clearTimeout(this.runtimeTimer);
@@ -15,7 +18,6 @@ function reset() {
     this.count10sec=0;
     this.countMinute=0;
     this.count5Minute=0;
-
 }
 const timemin=60;
 const time5min=5*60;
@@ -68,10 +70,6 @@ module.exports = function (RED) {
     	}
     });   
     
-    RED.nodes.registerType("Monitor Flow",monitorFlowNode);
+    RED.nodes.registerType(nodeLabel,monitorFlowNode);
 
 };
-
-
-
-

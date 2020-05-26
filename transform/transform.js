@@ -1,5 +1,7 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] transform Copyright 2019 Jaroslav Peter Prib");
+const nodeLabel="transform";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 let ISO8583,ISO8583message;
 const regexLines=/(?!\B"[^"]*)\n(?![^"]*"\B)/g;
@@ -110,7 +112,7 @@ module.exports = function (RED) {
 			node.send(msg);
         });                
     }
-    RED.nodes.registerType("transform",transformNode);
+    RED.nodes.registerType(nodeLabel,transformNode);
 };
 
 const ISO8583BitMap=[

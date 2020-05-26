@@ -1,6 +1,7 @@
 const nodeLabel="Data Analysis";
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] "+nodeLabel+" Copyright 2019 Jaroslav Peter Prib");
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 functions={
 	avg:(d)=>functions.sum(d)/d.length,
@@ -152,7 +153,7 @@ functions={
 		dp.movingStandardized=( (d.value-dp.movingAvg)/dp.movingStdDev )||0;
 		dp.skewness=(dp.sumCubed-3*dp.avg*dp.variance-Math.pow(dp.avg,3))/dp.variance*dp.stdDev;
 		dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
-		dp.outlier=Math.abs(dp.standardized)>3;
+		dp.outlier=Math.abs(dp.standardized)>node.outliersStdDevs;
 		return dp;
 	},
 	sum:(d)=>d.reduce((p,c)=>p+c),
@@ -166,7 +167,7 @@ functions={
 module.exports = function (RED) {
     function dataAnalysisNode(n) {
         RED.nodes.createNode(this, n);
-        var node=Object.assign(this,n,{maxErrorDisplay:10,dataPoint:{}});
+        let node=Object.assign(this,{outliersStdDevs:3},n,{maxErrorDisplay:10,dataPoint:{}});
         try{
         	if(functions.hasOwnProperty(node.action)) {
                 node.actionfunction=functions[node.action];
@@ -175,6 +176,8 @@ module.exports = function (RED) {
         	}
         	switch (node.action) {
         	case "realtime":
+           		node.outliersStdDevs=Number.parseInt(node.outliersStdDevs,10)||3;
+        		if(![1,2,3].includes(node.outliersStdDevs)) throw Error("outlier std deviation "+node.outliersStdDevs+" not 1,2 or 3");
                 node.getDatafunction= "((msg,node)=>{return {key:"+node.keyProperty+",value:"+(node.dataProperty||"msg.payload")+"};})";
         		break;
         	case "pearsonR":
@@ -187,6 +190,7 @@ module.exports = function (RED) {
         	node.getData= eval(node.getDatafunction);
             node.status({fill:"green",shape:"ring",text:"Ready"});
         } catch(e) {
+        	logger.send({label:"initialise error",node:n});
     		node.error(e);
         	node.status({fill:"red",shape:"ring",text:"Invalid setup "+e.toString()});
         } 

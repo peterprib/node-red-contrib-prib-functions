@@ -1,5 +1,8 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] test Copyright 2019 Jaroslav Peter Prib");
+const nodeLabel="test";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
+
 function setError(msg,node,err) {
 	msg._test.error=err;
 	node.error(err);
@@ -82,7 +85,7 @@ module.exports = function(RED) {
         });
     }
 
-    RED.nodes.registerType("test",testNode);
+    RED.nodes.registerType(nodeLabel,testNode);
     
     RED.httpAdmin.post("/test/:id", RED.auth.needsPermission("test.write"), function(req,res) {
         let node = RED.nodes.getNode(req.params.id);

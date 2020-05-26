@@ -6,6 +6,7 @@
         defaults: {
             name: {value:"",required:false},
 		    action: {value:"avg",required:true},
+		    outliersStdDevs: {value:"3",required:false},
 		    term: {value:"10",required:false},
 		    keyProperty: {value:"msg.topic",required:false},
 		    dataProperty: {value:"msg.payload",required:false},
@@ -26,43 +27,60 @@
         	const node=this;
         	$("#node-input-keyProperty").change(function() {
             	if( [null,""].includes(node.keyProperty) ) {
-   	   			 	$("#node-input-keyProperty").val("msg.topic");
+   	   			 	$(this).val("msg.topic");
         		}
+           	});
+        	$("#node-input-outliersStdDevs").change(function() {
+            	if( [null,""].includes($(this).val()) || $(this).val()>3 ){
+   	   			 	$(this).val(3);
+        		} else if($(this).val()<0){
+   	   			 	$(this).val(1);
+				}
            	});
         	$("#node-input-dataProperty").change(function() {
             	if( [null,""].includes(node.dataProperty) ) {
-   	   			 	$("#node-input-dataProperty").val("msg.payload");
+   	   			 	$(this).val("msg.payload");
         		}
            	});
-			$("#node-input-action").change();
 	       	$("#node-input-action").change(function() {
-        		 if (["movingAvgSimple","movingAvgWeighted","movingAvgExponential","realtime"].includes( $(this).val() )) {
-        			 $(".form-row-http-in-term").show(); 
+        		 if(["movingAvgSimple","movingAvgWeighted","movingAvgExponential","realtime"].includes( $(this).val() )) {
+        			$(".form-row-http-in-term").show(); 
         		 } else {
-        			 $(".form-row-http-in-term").hide();
+        			$(".form-row-http-in-term").hide();
         		 }
-        		 if (["movingAvgExponential"].includes( $(this).val() )) {
-        			 $("#node-input-term").attr({min:0,max:1,step:0.1});
-        			 $("#node-input-term").val(0.5);
+        		 if(["movingAvgExponential"].includes( $(this).val() )) {
+        			$("#node-input-term").attr({min:0,max:1,step:0.1});
+					if(node.term<0 || node.term>1) $("#node-input-term").val(0.5);
+	       			$("#node-input-term").change(function() {
+						if(node.term<0) $(this).val(0);
+						if(node.term>1) $(this).val(1);
+					});
         		 } else {
-        			 $("#node-input-term").attr({min:1,max:100,step:1});
-        			 $("#node-input-term").val(3);
+        			$("#node-input-term").attr({min:1,max:100,step:1});
+	       			$("#node-input-term").change(function() {
+						if(node.term<1) $(this).val(1);
+						if(node.term>100) $(this).val(100);
+					});
         		 }        		 
-        		 if (["realtime"].includes( $(this).val() )) {
-           			 $(".form-row-http-in-keyProperty").show();
-           			 node.outputs=3;
+        		 if(["realtime"].includes( $(this).val() )) {
+	        		node.outputs=3;
+           			$(".form-row-http-in-keyProperty").show();
+           			$(".form-row-http-in-outliersStdDevs").show();
+					$("#node-input-outliersStdDevs").change();
            		 } else {
-           			 $(".form-row-http-in-keyProperty").hide();
            			node.outputs=2;
+           			$(".form-row-http-in-keyProperty").hide();
+           			$(".form-row-http-in-outliersStdDevs").hide();
         		 }        		 
-        		 if (["pearsonR"].includes( $(this).val() )) {
-           			 $(".node-input-dataProperties-container-row").show();
-           			 $(".form-row-http-in-dataProperty").hide();
+        		 if(["pearsonR"].includes( $(this).val() )) {
+           			$(".node-input-dataProperties-container-row").show();
+           			$(".form-row-http-in-dataProperty").hide();
            		 } else {
-           			 $(".node-input-dataProperties-container-row").hide();
-           			 $(".form-row-http-in-dataProperty").show();
+           			$(".node-input-dataProperties-container-row").hide();
+           			$(".form-row-http-in-dataProperty").show();
         		 }        		 
-        	 });
+				$("#node-input-term").change();
+        	});
 	       	
   	    	node.dataProperties.forEach((r)=>addDataProperty(r));
             $("#node-input-add-dataProperties").click(function() {
@@ -81,7 +99,7 @@
   	        	}
                 $('<td/>').append($('<input type="text" size="30" style="width:100%; border:0;" />').attr('value', dataProperty)).appendTo(row); // Topic
             }
-
+			$("#node-input-action").change();
         },
         oneditsave: function() {
        		let inputs,node=this;
@@ -141,9 +159,13 @@
 
     <div class="form-row form-row-http-in-term hide">
         <label for="node-input-term"><i class="icon-bookmark"></i> Term</label>
-        <input type="number" id="node-input-term" placeholder="term" min=2 max=100 step=1>
+        <input type="number" id="node-input-term" placeholder="term" min="2" max="100" step="1">
     </div>
 
+    <div class="form-row form-row-http-in-outliersStdDevs hide">
+        <label for="node-input-outliersStdDevs"><i class="icon-bookmark"></i> Outlier, std devs.</label>
+        <input type="number" id="node-input-outliersStdDevs" placeholder="outliersStdDevs" min="1" max="3" step="1">
+    </div>
 
    <div class="form-row node-input-dataProperties-container-row hide" style="margin-bottom:0px; width:100%; min-width:520px">
 		<label style="vertical-align:top;">
@@ -179,5 +201,12 @@ Data is not persisted so metrics start from zero sample set on node recycle.
 If real-time stats then a message sent with @stats in topic will send all stored metrics and retained datapoints
 to second port. 
 	</p>
+	<p>
+	Outliers are not within:
+		<ul>	
+			<li>1 standard deviation of the mean about 68%
+			<li>2 standard deviation of the mean about 95%
+			<li>3 standard deviations of the mean about 99.7%
+		</ul>	
+	</p>
 </script>
-

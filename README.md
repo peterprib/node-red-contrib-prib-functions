@@ -175,10 +175,14 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.9.3 Outlier allowed to set number of deviations
+
 0.9.1 Add outlier detection
+
 0.9.0 Add Pearson R realtime metrics
 
 0.8.1 Add the tests for realtime metrics
+
 0.8.0 Add realtime metrics to data analysis
 
 0.7.1

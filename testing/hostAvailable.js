@@ -1,5 +1,7 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] Host Available Copyright 2019 Jaroslav Peter Prib");
+const nodeLabel="Host Available";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 function hostAvailable(host, port, node, availableCB, downCB, timeoutCB) {
 	const socket=new require('net').Socket();
@@ -89,7 +91,7 @@ module.exports = function(RED) {
     hostAvailableNode.prototype.close = function() {
     	runtimeStop.apply(this);
     };
-    RED.nodes.registerType("Host Available",hostAvailableNode);
+    RED.nodes.registerType(nodeLabel,hostAvailableNode);
     
     RED.httpAdmin.get("/hostAvailable/:id", RED.auth.needsPermission("hostAvailable.write"), function(req,res) {
         let node = RED.nodes.getNode(req.params.id);

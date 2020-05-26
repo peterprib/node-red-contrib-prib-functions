@@ -1,5 +1,8 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] load-injector Copyright 2019 Jaroslav Peter Prib");
+const nodeLabel="Load Injector";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
+
 function thinkTimeTime() {
 	return this.thinktimemin+Math.floor(Math.random()*this.thinkRange);
 }
@@ -116,8 +119,7 @@ module.exports = function (RED) {
     	}
     });
     
-    
-    RED.nodes.registerType("Load Injector",LoadInjectorNode);
+    RED.nodes.registerType(nodeLabel,LoadInjectorNode);
 
 };
 

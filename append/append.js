@@ -1,7 +1,9 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] append Copyright 2019 Jaroslav Peter Prib");
+const nodeLabel="append";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
-var fs=require('fs'),
+const fs=require('fs'),
 	path=require('path');
 
 module.exports = function (RED) {
@@ -37,5 +39,5 @@ module.exports = function (RED) {
 			node.send(msg);
         });                
     }
-    RED.nodes.registerType("append",appendNode);
+    RED.nodes.registerType(nodeLabel,appendNode);
 };

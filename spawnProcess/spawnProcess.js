@@ -1,43 +1,27 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] Spawn Process Copyright 2019 Jaroslav Peter Prib");
+const nodeLabel="Spawn Process";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
-const debugOff=(()=>false);
-function debugOn(m) {
-	const ts=(new Date().toString()).split(' ');
-	if(!debugCnt--) {
-		console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] Spawn Process debugging turn off");
-		debug=debugOff;
-	}
-	if(debugCnt<0) {
-		debugCnt=100;
-		console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] Spawn Process debugging next "+debugCnt+" debug points");
-	}
-	console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] Spawn Process "+(m instanceof Object?JSON.stringify(m):m));
-}
-let debug=debugOff,debugCnt=100;
 let spawn;
-let os=require("os");
+const os=require("os");
 function sendError(node,msg,err) {
 	node.error(err);
 }
 function start(node,msg) {
-	if(node.started) {
-		throw Error("Already started");
-	}
-	debug({label:"start test os",wantedOS:node.os,runningOS:os.type()});
-	if(node.os && node.os !== os.type()) {
-		throw Error("Process only valid for os "+node.os+" running under "+os.type());
-	}
+	if(node.started) throw Error("Already started");
+	if(logger.active) logger.send({label:"start test os",wantedOS:node.os,runningOS:os.type()});
+	if(node.os && node.os !== os.type()) throw Error("Process only valid for os "+node.os+" running under "+os.type());
 	node.started=true;
 	node.startArgs= node.arguments
 	if(msg && msg.payload && msg.payload.arguments) {
-			node.startArgs+=msg.payload.arguments;
+		node.startArgs+=msg.payload.arguments;
 	}
 	node.startOptions={};
 	if(node.workingDirectory) node.startOptions.cwd=node.workingDirectory;  //Current working directory of the child process
 	if(node.env) node.startOptions.env=node.env;  // Object Environment key-value pairs 
 	if(node.uid) node.startOptions.uid=node.uid;  // uid Number Sets the user identity of the process. (See setuid(2).)
-	if(node.gid) node.startOptions.gid=node.gid;  // ugid Number Sets the group identity of the process. (See setgid
+	if(node.gid) node.startOptions.gid=node.gid;  // gid Number Sets the group identity of the process. (See setgid
 	if(msg && msg.payload && msg.payload.arguments) {
 		if(msg.payload.cwd) node.startOptions.cwd=msg.payload.cwd
 		if(msg.payload.env) node.startOptions.concat(msg.payload.env);
@@ -46,11 +30,11 @@ function start(node,msg) {
 	}
 //   			stdio Array|String Child's stdio configuration. (See below)
 //   			detached Boolean Prepare child to run independently of its parent process. Specific behavior depends on the platform, see below)
-	debug({label:"spawn",args:node.startArgs,options:node.startOptions})
+	if(logger.active) logger.send({label:"spawn",args:node.startArgs,options:node.startOptions})
 	node.child = spawn(node.process,node.startArgs.replace(/\n|\r/g, " ").split(' '),node.startOptions)
 	.on('error', function( err ){ 
 		node.send([null,{payload:node.process+" cannot be found "+err.toString(),count:node.outCnt++,timestamp:(Date.now())}]);
-		debug({label:"child.spawn.error",data:err.toString()});
+		if(logger.active) logger.send({label:"child.spawn.error",data:err.toString()});
 		node.started=false;
 	});
 
@@ -58,14 +42,14 @@ function start(node,msg) {
 	node.child.stdout.setEncoding('utf8'); //if you want text chunks
 	node.child.stdout.on('data', (chunk) => {
 		node.send({payload:chunk.toString(),count:node.outCnt++,timestamp:(Date.now())});
-		debug({label:"child.stdout.on data",data:chunk.toString()});
+		if(logger.active) logger.send({label:"child.stdout.on data",data:chunk.toString()});
 	});
 	node.child.stderr.on('data', (chunk) => {
 		node.send([null,{payload:chunk.toString(),count:node.outCnt++,timestamp:(Date.now())}]);
-		debug({label:"child.stderr.on data",data:chunk.toString()});
+		if(logger.active) logger.send({label:"child.stderr.on data",data:chunk.toString()});
 	});
 	node.child.on('close', (code) => {
-		debug({label:"child.on close",code:code});
+		if(logger.active) logger.send({label:"child.on close",code:code});
 		node.send([
 			{payload:"closed, exited with code: "+code,count:node.outCnt++,timestamp:(Date.now())},
 			{payload:"closed, exited with code: "+code,count:node.outCnt,timestamp:(Date.now())},
@@ -100,7 +84,7 @@ module.exports = function(RED) {
    		node.status({ fill: 'yellow', shape: 'ring', text: "Initialising" });
    		try{
    			if(!spawn) {
-   				debug({label:"require child_process"});
+   				if(logger.active) logger.send({label:"require child_process"});
    	   			spawn=require('child_process').spawn;
    			}
    			if(node.autoStart=="true") {
@@ -127,7 +111,7 @@ module.exports = function(RED) {
             				throw Error("invalid topic"); 
                 	}
             	} catch(e) {
-            		debug({label:"input catch",error:e,msg:msg});
+            		if(logger.active) logger.send({label:"input catch",error:e,msg:msg});
      				msg.error=e.toString();
       				node.send([null,msg]);
             	}
@@ -143,7 +127,7 @@ module.exports = function(RED) {
        		done();
    		});
     }
-    RED.nodes.registerType("Spawn Process",SpawnProcessNode);
+    RED.nodes.registerType(nodeLabel,SpawnProcessNode);
     RED.httpAdmin.get("/SpawnProcess/:id/:action/", RED.auth.needsPermission("SpawnProcess.write"),  function(req,res) {
     	var node = RED.nodes.getNode(req.params.id);
     	if (node && node.type==="Spawn Process") {

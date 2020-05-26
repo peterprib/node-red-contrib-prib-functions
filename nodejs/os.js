@@ -1,21 +1,9 @@
-const ts=(new Date().toString()).split(' ');
-console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [info] osCopyright 2019 Jaroslav Peter Prib");
+const nodeLabel="os";
+const Logger = require("node-red-contrib-logger");
+const logger = new Logger(nodeLabel);
+logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
-const debugOff=(()=>false);
-function debugOn(m) {
-	const ts=(new Date().toString()).split(' ');
-	if(!debugCnt--) {
-		console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] os debugging turn off");
-		debug=debugOff;
-	}
-	if(debugCnt<0) {
-		debugCnt=100;
-		console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] os debugging next "+debugCnt+" debug points");
-	}
-	console.log([parseInt(ts[2],10),ts[1],ts[4]].join(' ')+" - [debug] os "+(m instanceof Object?JSON.stringify(m):m));
-}
-let debug=debugOff,debugCnt=100;
-let os=require("os");
+const os=require("os");
 
 module.exports = function(RED) {
     function osNode(n) {
@@ -49,7 +37,7 @@ module.exports = function(RED) {
             		}
             		node.send(msg);
             	} catch(e) {
-            		debug({label:"input catch",error:e,msg:msg});
+            		if(logger.active) logger.send({label:"input catch",error:e,msg:msg});
      				msg.error=e.toString();
       				node.send([null,msg]);
             	}
@@ -60,5 +48,5 @@ module.exports = function(RED) {
        		return;
     	}
     }
-    RED.nodes.registerType("os",osNode);
+    RED.nodes.registerType(nodeLabel,osNode);
 };
