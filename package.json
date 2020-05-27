@@ -3,7 +3,7 @@
   "version": "0.9.3",
   "description": "Node-RED added node functions.",
   "dependencies": {
-  	"node-red-contrib-logger":"*"
+    "node-red-contrib-logger": "*"
   },
   "devDependencies": {},
   "scripts": {
