@@ -7,6 +7,7 @@
             name: {value:"",required:false},
 		    action: {value:"avg",required:true},
 		    outputs: {value:"2",required:true},
+		    outliersBase: {value:"avg",required:false},
 		    outliersStdDevs: {value:"3",required:false},
 		    term: {value:"10",required:false},
 		    keyProperty: {value:"msg.topic",required:false},
@@ -66,11 +67,13 @@
 	        		node.outputs=3;
            			$(".form-row-http-in-keyProperty").show();
            			$(".form-row-http-in-outliersStdDevs").show();
+           			$(".form-row-http-in-outliersBase").show();
 					$("#node-input-outliersStdDevs").change();
            		 } else {
            			node.outputs=2;
            			$(".form-row-http-in-keyProperty").hide();
            			$(".form-row-http-in-outliersStdDevs").hide();
+           			$(".form-row-http-in-outliersBase").hide();
         		 }        		 
         		 if(["pearsonR"].includes( $(this).val() )) {
            			$(".node-input-dataProperties-container-row").show();
@@ -162,6 +165,14 @@
         <input type="number" id="node-input-term" placeholder="term" min="2" max="100" step="1">
     </div>
 
+    <div class="form-row form-row-http-in-outliersBase hide">
+        <label for="node-input-outliersBase"><i class="fa fa-list-ul"></i> Outlier base</label>
+        <select id="node-input-outliersBase" placeholder="outliersBase">
+            <option value="avg">Average</option>
+            <option value="median">Median</option>
+        </select>
+    </div>
+
     <div class="form-row form-row-http-in-outliersStdDevs hide">
         <label for="node-input-outliersStdDevs"><i class="icon-bookmark"></i> Outlier, std devs.</label>
         <input type="number" id="node-input-outliersStdDevs" placeholder="outliersStdDevs" min="1" max="3" step="1">
@@ -200,13 +211,15 @@ Data is not persisted so metrics start from zero sample set on node recycle.
 	<p>
 If real-time stats then a message sent with @stats in topic will send all stored metrics and retained datapoints
 to second port. 
+"@stats reset" will reset all stats and "@stats reset <a data point>" will reset a particular data point.
+"@stats set" will set stats with ith msg.payload and "@stats set <a data point>" will set a particular data point with msg.payload.
 	</p>
 	<p>
 	Outliers are not within:
 		<ul>	
-			<li>1 standard deviation of the mean about 68%
-			<li>2 standard deviation of the mean about 95%
-			<li>3 standard deviations of the mean about 99.7%
+			<li>1 standard deviation of the mean is about 68%
+			<li>2 standard deviation of the mean is about 95%
+			<li>3 standard deviations of the mean is about 99.7%
 		</ul>	
 	</p>
 </script>

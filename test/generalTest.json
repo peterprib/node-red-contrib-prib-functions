@@ -1,176 +1,26 @@
 [
     {
-        "id": "c74e1689.1bcae8",
-        "type": "tab",
-        "label": "Spawn Process",
-        "disabled": false,
-        "info": ""
-    },
-    {
-        "id": "5081f2d1.5ba1ec",
-        "type": "debug",
-        "z": "c74e1689.1bcae8",
-        "name": "ok",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 590,
-        "y": 60,
-        "wires": []
-    },
-    {
-        "id": "bea892bb.9b166",
-        "type": "inject",
-        "z": "c74e1689.1bcae8",
+        "id": "83e839dc.a833b8",
+        "type": "Data Analysis",
+        "z": "9cd0f421.339168",
         "name": "",
-        "topic": "start",
-        "payload": "",
-        "payloadType": "date",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "x": 160,
-        "y": 120,
+        "action": "realtime",
+        "outputs": 3,
+        "outliersBase": "median",
+        "outliersStdDevs": "2",
+        "term": "10",
+        "keyProperty": "msg.payload.assignedColor",
+        "dataProperty": "msg.payload.salary",
+        "dataProperties": [],
+        "x": 437,
+        "y": 80,
         "wires": [
+            [],
             [
-                "33e35fbc.60ae7",
-                "54561db2.e6d614",
-                "e7895d00.90d02",
-                "70a9a78c.118ba8"
-            ]
-        ]
-    },
-    {
-        "id": "33e35fbc.60ae7",
-        "type": "Spawn Process",
-        "z": "c74e1689.1bcae8",
-        "name": "",
-        "process": "ls",
-        "os": "Linux",
-        "autoStart": "false",
-        "workingDirectory": "",
-        "arguments": "",
-        "x": 350,
-        "y": 120,
-        "wires": [
-            [
-                "5081f2d1.5ba1ec"
+                "416d6512.86042c"
             ],
             [
-                "3aa49113.bc6c4e"
-            ],
-            [
-                "8fcc76a6.33dbd8"
-            ]
-        ]
-    },
-    {
-        "id": "54561db2.e6d614",
-        "type": "Spawn Process",
-        "z": "c74e1689.1bcae8",
-        "name": "",
-        "process": "ping",
-        "os": "Windows_NT",
-        "autoStart": "false",
-        "workingDirectory": "",
-        "arguments": "127.0.0.1",
-        "x": 350,
-        "y": 40,
-        "wires": [
-            [
-                "5081f2d1.5ba1ec"
-            ],
-            [
-                "3aa49113.bc6c4e"
-            ],
-            [
-                "8fcc76a6.33dbd8"
-            ]
-        ]
-    },
-    {
-        "id": "e7895d00.90d02",
-        "type": "Spawn Process",
-        "z": "c74e1689.1bcae8",
-        "name": "",
-        "process": "failAsNotFound",
-        "os": "",
-        "autoStart": "true",
-        "workingDirectory": "",
-        "arguments": "",
-        "x": 360,
-        "y": 240,
-        "wires": [
-            [
-                "5081f2d1.5ba1ec"
-            ],
-            [
-                "3aa49113.bc6c4e"
-            ],
-            [
-                "8fcc76a6.33dbd8"
-            ]
-        ]
-    },
-    {
-        "id": "3aa49113.bc6c4e",
-        "type": "debug",
-        "z": "c74e1689.1bcae8",
-        "name": "error",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 590,
-        "y": 160,
-        "wires": []
-    },
-    {
-        "id": "8fcc76a6.33dbd8",
-        "type": "debug",
-        "z": "c74e1689.1bcae8",
-        "name": "exit",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "x": 590,
-        "y": 240,
-        "wires": []
-    },
-    {
-        "id": "70a9a78c.118ba8",
-        "type": "Spawn Process",
-        "z": "c74e1689.1bcae8",
-        "name": "windows cmd.exe",
-        "process": "cmd.exe",
-        "os": "Windows_NT",
-        "autoStart": "true",
-        "workingDirectory": "../",
-        "arguments": "/c echo %cd% %ENV1% %ENV2aa%",
-        "env": {
-            "ENV1": "t1",
-            "ENV2aa": "t2"
-        },
-        "x": 360,
-        "y": 340,
-        "wires": [
-            [
-                "5081f2d1.5ba1ec"
-            ],
-            [
-                "3aa49113.bc6c4e"
-            ],
-            [
-                "8fcc76a6.33dbd8"
+                "327b5f8f.225bd"
             ]
         ]
     }

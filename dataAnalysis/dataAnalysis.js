@@ -153,7 +153,7 @@ functions={
 		dp.movingStandardized=( (d.value-dp.movingAvg)/dp.movingStdDev )||0;
 		dp.skewness=(dp.sumCubed-3*dp.avg*dp.variance-Math.pow(dp.avg,3))/dp.variance*dp.stdDev;
 		dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
-		dp.outlier=Math.abs(dp.standardized)>node.outliersStdDevs;
+		dp.outlier=node.outliersFunction(node,dp,d);
 		return dp;
 	},
 	sum:(d)=>d.reduce((p,c)=>p+c),
@@ -178,6 +178,19 @@ module.exports = function (RED) {
         	case "realtime":
            		node.outliersStdDevs=Number.parseInt(node.outliersStdDevs,10)||3;
         		if(![1,2,3].includes(node.outliersStdDevs)) throw Error("outlier std deviation "+node.outliersStdDevs+" not 1,2 or 3");
+        		const outliersFunction=(node.outliersBase||"avg")=="median";
+        		node.log("realtime outliersBase set avg "+outliersFunction);
+        		node.outliersFunction=(outliersFunction
+        				?(node,dp,d)=>{
+        					const standardized=Math.abs(((d.value-dp.median)/dp.stdDev )||0);
+//        					if(logger.active) logger.send({label:"outlier median",standardized:standardized,outliersStdDevs:node.outliersStdDevs,});
+        					return Math.abs(standardized)>node.outliersStdDevs;
+        				}
+        				:(node,dp,d)=>{ 
+//        					if(logger.active) logger.send({label:"outlier avg",standardized:dp.standardized,outliersStdDevs:node.outliersStdDevs});
+        					return Math.abs(dp.standardized)>node.outliersStdDevs;
+        					});
+        		
                 node.getDatafunction= "((msg,node)=>{return {key:"+node.keyProperty+",value:"+(node.dataProperty||"msg.payload")+"};})";
         		break;
         	case "pearsonR":
@@ -196,15 +209,36 @@ module.exports = function (RED) {
         } 
         node.on("input", function(msg) {
         	if(msg.topic && msg.topic.startsWith("@stats")) {
-        		switch(node.action) {
-        		case "realtime":
-        			msg.result=node.dataPoint;
-        			break
-        		case "pearsonR":
-        			msg.result=functions.pearsonRResults(node);
-        			break
-        		}
-     			node.send([null,msg]);
+    			try{
+    				const topic=msg.topic.trim(' ');
+        			if(topic=="@stats set") {
+        				node.dataPoint=msg.payload;
+        				node.warn(topic);
+        			} else if(topic=="@stats reset") {
+        				node.dataPoint={};
+        				node.warn(topic);
+        			} else if(topic.startsWith("@stats set ")) {
+               			const dataPoint=topic.substring("@stats set ".length);
+               			node.dataPoint[dataPoint]=msg.payload;
+        				node.warn(topic);
+        			} else if(topic.startsWith("@stats reset ")) {
+               			const dataPoint=topic.substring("@stats reset ".length);
+               			delete node.dataPoint[dataPoint];
+        				node.warn(topic);
+        			} else {
+            			switch(node.action) {
+            			case "realtime":
+            				msg.result=node.dataPoint;
+            				break
+            			case "pearsonR":
+            				msg.result=functions.pearsonRResults(node);
+            				break
+            			}
+         				node.send([null,msg]);
+        			}
+    			} catch(e) {
+        			node.error(topic+" failed "+e);        				
+    			}
      			return;
         	} 
         	try{

@@ -19,7 +19,7 @@ Real time metrics which are recalculated on single of data point and posted in m
 Key and value can be selected from msg.payload.
 Sending message with topic"@stats" places message with all stats on second port.
 If realtime metrics then a third port is shown where the message is sent if it is an outlier
-being outside 3 standard deviations from mean. 
+being outside 3 standard deviations from mean. This can be changed to median and number of deviations.
 
 ![Data Analysis Realtime](documentation/DataAnalysisRealtime.JPG "Data Analysis Realtime")
 ![Data Analysis Pearson R](documentation/DataAnalysisPearsonR.JPG "Data Analysis Pearson R")
