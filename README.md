@@ -175,7 +175,7 @@ Test/example flow in test/generalTest.json
 
 # Version
 
-0.9.3 Outlier allowed to set number of deviations
+0.9.4 Outlier allowed to set number of deviations if median and reset or set stats
 
 0.9.1 Add outlier detection
 
