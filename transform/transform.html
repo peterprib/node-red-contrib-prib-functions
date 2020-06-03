@@ -8,6 +8,8 @@
             name: {value: ""},
             actionSource: {value:"csv",required:true},
             actionTarget: {value:"JSON",required:true},
+			sourceProperty:{value:"msg.payload"},
+			targetProperty:{value:"msg.payload"},
             delimiter: {value:",",required:true}
         },
         inputs: 1,
@@ -22,11 +24,35 @@
         },
         oneditprepare: function() {
             $("#node-input-actionSource").change(function() {
-                if($(this).val()=="csv") {
-                    $(".form-row-in-http-delimiter").show();
-                } else {
-                    $(".form-row-http-in-delimiter").hide();
-                }
+				$(".form-row-http-in-delimiter").hide();
+				let options={};
+				switch ($(this).val()) {
+				case 'csv':
+					$(".form-row-in-http-delimiter").show();
+					break;
+				case 'path':
+					options["Basename"]="basename";
+					options["Dirname"]="dirname";
+					options["Extname"]="extname";
+					options["IsAbsolute"]="isAbsolute";
+					options["Join"]="join";
+					options["Normalize"]="normalize";
+					options["Resolve"]="resolve";
+					break;
+				default:
+					options["Array"]="Array";
+					options["CSVWithHeader"]="CSV with header";
+					options["CSV"]="CSV";
+					options["ISO8385"]="ISO 8583";
+					options["HTML"]="HTML";
+					options["JSON"]="JSON";
+					options["String"]="String";
+				}
+				const selectElement = $("#node-input-actionTarget");
+				selectElement.empty(); // remove old options
+				$.each(options, function(key,value) {
+  					selectElement.append($("<option></option>").attr("value", key).text(value));
+				});
             }).change();
             $("#node-input-actionTarget").change(function() {
                 if($(this).val()=="csv") {
@@ -55,7 +81,17 @@
         <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
         <input type="text" id="node-input-name" placeholder="Name">
     </div>
-  
+
+    <div class="form-row form-row-http-in-sourceProperty show">
+        <label for="node-input-sourceProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Source Property </label>
+        <input type="text" id="node-input-sourceProperty" placeholder="msg.payload">
+    </div>
+
+    <div class="form-row form-row-http-in-targetProperty show">
+        <label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
+        <input type="text" id="node-input-targetProperty" placeholder="msg.payload">
+    </div>
+
     <div class="form-row">
         <label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
         <select id="node-input-actionSource" placeholder="actionSource">
@@ -65,19 +101,13 @@
             <option value="ISO8385">ISO 8583</option>
  			<option value="JSON">JSON</option> 
 			<option value="String">String</option> 
+			<option value="path">Path</option> 
         </select>
     </div>
 
     <div class="form-row">
         <label for="node-input-actionTarget"><i class="fa fa-list-ul"></i> Target Type </label>
         <select id="node-input-actionTarget" placeholder="actionTarget">
-            <option value="Array">Array</option>
-            <option value="CSVWithHeader">CSV with header</option>
-            <option value="CSV">CSV</option>
-            <option value="ISO8385">ISO 8583</option>
- 			<option value="HTML">HTML</option> 
- 			<option value="JSON">JSON</option> 
-			<option value="String">String</option> 
         </select>
     </div>
 

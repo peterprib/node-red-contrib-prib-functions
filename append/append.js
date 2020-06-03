@@ -1,6 +1,4 @@
-const nodeLabel="append";
-const Logger = require("node-red-contrib-logger");
-const logger = new Logger(nodeLabel);
+const logger = new (require("node-red-contrib-logger"))("append");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 const fs=require('fs'),
@@ -24,12 +22,13 @@ module.exports = function (RED) {
         		continue;
         	}
         	try{
-            	var filename= require.resolve(file.value);
+       			var filename= require.resolve(file.value);
             	node.log("loading: "+filename);
             	node.data+=fs.readFileSync(filename);
-        	} catch(err) {
-				node.error("require "+file.value+" "+err);
-				errCnt++;
+        	} catch(ex) {
+    			logger.send("not found require")
+       			node.error("require "+file.value+" "+ex);
+       			errCnt++;
         	}
         }
         node.status({fill:errCnt<1?"green":"red",shape:"ring",text:"initially loaded: "+loadCnt+" errors: "+errCnt});
@@ -39,5 +38,5 @@ module.exports = function (RED) {
 			node.send(msg);
         });                
     }
-    RED.nodes.registerType(nodeLabel,appendNode);
+    RED.nodes.registerType(logger.label,appendNode);
 };

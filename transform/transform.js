@@ -6,10 +6,13 @@ logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 let ISO8583,ISO8583message;
 const regexLines=/(?!\B"[^"]*)\n(?![^"]*"\B)/g;
 const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
+const path = require('path');
 function removeQuotes(d){
 	return d.length>1 && d.startsWith('"') && d.endsWith('"') ? d.slice(1,-1) : d;
 }
 const functions={
+	ArrayToCSV: (data)=>data.map(x=>JSON.stringify(x)).join("\n"),
+	ArrayToISO8385: (data)=>ISO8583message.packSync(data),
 	CSVToArray: (data)=>{
 		let lines = data.split(regexLines);
 		lines.forEach((value, idx) => {
@@ -38,7 +41,6 @@ const functions={
 		});
 		return r;
 	},
-	ArrayToISO8385: (data)=>ISO8583message.packSync(data),
 	JSONToISO8385: (data)=>{
 		var d=[];
 		Object.getOwnPropertyNames(data).forEach((v)=>d.push([ISO8583BitMapName[v].id,data[v]]));
@@ -71,48 +73,68 @@ const functions={
 		}
 		return escape(data);
 	},
-	ArrayToCSV: (data)=>data.map(x=>JSON.stringify(x)).join("\n"),
 	JSONToString: (data)=>JSON.stringify(data),
-	StringToJSON: (data)=>JSON.parse(data)
+	StringToJSON: (data)=>JSON.parse(data),  
+	pathToBasename: (data)=>path.basename(data),
+	pathToDirname: (data)=>path.dirname(data),
+	pathToExtname: (data)=>path.extname(data),
+	pathToFormat: (data)=>path.format(data),
+	pathToIsAbsolute: (data)=>path.isAbsolute(data),
+	pathToJoin: (...data)=>path.join(...data),
+	pathToParse: (data)=>path.parse(data),
+	pathToNormalize: (data)=>path.normalize(data),
+	pathToResolve: (data)=>path.resolve(data)
 };
 module.exports = function (RED) {
-    function transformNode(n) {
-        RED.nodes.createNode(this,n);
-    	var node=Object.assign(this,n);
-    	if(node.actionSource=="ISO8583" || node.actionTarget=="ISO8583") {
-    		if(!ISO8583) {
-        		try{
-            		ISO8583 = require('iso-8583');
-            		ISO8583message = ISO8583.Message();
-            		node.log("loaded iso-8583");
-        		} catch (e) {
-        			node.error("need to run 'npm install iso-8583'");
-        			this.status({fill:"red",shape:"ring",text:"iso-8583 not installed"});
-        			return;
-        		}
-    		}
-    	}
-    	try {
-        	node.transform=functions[node.actionSource+"To"+node.actionTarget];
-        	if(!node.transform) throw Error("transform routine not found");
-    	} catch (e) {
+	function transformNode(n) {
+		RED.nodes.createNode(this,n);
+		var node=Object.assign(this,n);
+		try{
+			node.getData=eval("((msg,node)=>"+(node.sourceProperty||"msg.payload")+")");
+			node.setData=eval("((msg,node,data)=>"+(node.targetProperty||"msg.payload")+"=data)");
+		} catch(e) {
+			node.error(e);
+			node.status({fill:"red",shape:"ring",text:"Invalid setup "+e.toString()});
+			return;
+		} 
+
+		
+		if(node.actionSource=="ISO8583" || node.actionTarget=="ISO8583") {
+			if(!ISO8583) {
+				try{
+					ISO8583 = require('iso-8583');
+					ISO8583message = ISO8583.Message();
+					node.log("loaded iso-8583");
+				} catch (e) {
+					node.error("need to run 'npm install iso-8583'");
+					this.status({fill:"red",shape:"ring",text:"iso-8583 not installed"});
+					return;
+				}
+			}
+		}
+		try {
+			node.transform=functions[node.actionSource+"To"+node.actionTarget];
+			if(!node.transform) throw Error("transform routine not found");
+		} catch (e) {
 			node.error(node.actionSource+" to "+node.actionTarget + " not implemented, "+e);
 			this.status({fill:"red",shape:"ring",text:node.actionSource+"\nto "+node.actionTarget + " not implemented"});
 			return;
-    	}
+		}
+		
 		this.status({fill:"green",shape:"ring",text:"Ready"});
-        node.on("input", function(msg) {
-        	try{
-            	msg.payload=node.transform.apply(node,[msg.payload]);
-        	} catch (e) {
-    			node.error(node.actionSource+" to "+node.actionTarget + " " +e);
-    			this.status({fill:"red",shape:"ring",text:"Error(s)"});
-    			return;
-        	}
+		node.on("input", function(msg) {
+			try{
+//				msg.payload=node.transform.apply(node,[node.getData(msg,node)]);
+				node.setData(msg,node,node.transform.apply(node,[node.getData(msg)]));
+			} catch (e) {
+				node.error(node.actionSource+" to "+node.actionTarget + " " +e);
+				this.status({fill:"red",shape:"ring",text:"Error(s)"});
+				return;
+			}
 			node.send(msg);
-        });                
-    }
-    RED.nodes.registerType(nodeLabel,transformNode);
+		});				
+	}
+	RED.nodes.registerType(nodeLabel,transformNode);
 };
 
 const ISO8583BitMap=[
