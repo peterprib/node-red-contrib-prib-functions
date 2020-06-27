@@ -1,31 +1,88 @@
-const nodeLabel="transform";
-const Logger = require("node-red-contrib-logger");
-const logger = new Logger(nodeLabel);
+const logger = new (require("node-red-contrib-logger"))("transform");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 let ISO8583,ISO8583message;
-const regexLines=/(?!\B"[^"]*)\n(?![^"]*"\B)/g;
+//const regexLines=/(?!\B"[^"]*)\n(?![^"]*"\B)/g;
 const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
 const path = require('path');
-function removeQuotes(d){
-	return d.length>1 && d.startsWith('"') && d.endsWith('"') ? d.slice(1,-1) : d;
+function removeQuotes(data){
+	try{
+		const d=data.trim();
+		if(d.length>1 && d.startsWith('"') && d.endsWith('"')) return d.slice(1,-1);
+		const r=Number(d); 
+		return r?r:d;
+	} catch(ex) {
+		return data;
+	}
+}
+function csvLines(data,skipLeading=0,skipTrailing=0) {
+	if(logger.active) logger.send({label:"csvLines",skipLeading:skipLeading,skipTrailing:skipTrailing});
+	let lines=data.split(/[\r\n]+/g),skip=skipLeading;
+	while(skip--) lines.shift();
+	skip=skipTrailing;
+	while(skip--) lines.pop();
+	return lines;
+}
+function array2tag(a,t,tf){
+	const ts="<"+t+">",te="</"+t+">"
+	return a.reduce((a,c)=>a+=ts+tf(c)+te,"");
 }
 const functions={
-	ArrayToCSV: (data)=>data.map(x=>JSON.stringify(x)).join("\n"),
-	ArrayToISO8385: (data)=>ISO8583message.packSync(data),
-	CSVToArray: (data)=>{
-		let lines = data.split(regexLines);
+	ArrayToCSV: (RED,node,msg,data)=>data.map(c=>JSON.stringify(c)).join("\n"),
+	ArrayToHTML: (RED,node,msg,data)=>
+		"<table>"+ array2tag(data,"tr",(c)=>(
+			Array.isArray(c)?
+				array2tag(c,"td",(cc)=>
+					Array.isArray(cc)?
+						functions.ArrayToHTML(RED,node,msg,cc):
+						"<![CDATA["+cc+"]]>"
+					):
+				"<![CDATA["+c+"]]>"
+			)
+		)+"</table>",
+	ArrayToISO8385: (RED,node,msg,data)=>ISO8583message.packSync(data),
+	ArrayToMessages: (RED,node,msg,data)=>{
+		if(logger.active) logger.send({label:"ArrayToMessages",arraySize:data.length});
+		data.map((c,i)=>{
+			const newMsg=RED.util.cloneMessage(msg);
+			newMsg.payload=c;
+			newMsg._msgid=newMsg._msgid+":"+i;
+			if(node.hasNewTopic) newMsg.topic=node.topicFunction(RED,node,newMsg);
+			node.send(newMsg);
+		})
+	},
+	CSVToArray: (RED,node,msg,data)=>{
+		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
 		lines.forEach((value, idx) => {
 			lines[idx]=value.split(regexCSV).map((c)=>removeQuotes(c));
 		});
 		return lines;
 	},
-	CSVWithHeaderToArray: (data)=>functions.CSV2Array(data).shift(),
-	CSVWithHeaderToJSON: (data)=>{
-		let lines = data.split(regexLines);
-		var headers=lines.pop().split(regexCSV);
+	CSVToHTML: (RED,node,msg,data)=>
+		"<table>"+ array2tag(csvLines(data,node.skipLeading,node.skipTrailing),"tr",(line)=>
+			array2tag(line.split(regexCSV),"td",(c)=>"<![CDATA["+removeQuotes(c)+"]]>")
+		)+"</table>",
+	CSVToMessages: (RED,node,msg,data)=>{
+		functions.ArrayToMessages(RED,node,msg,csvLines(data,this.skipLeading,this.skipTrailing));
+	},
+	CSVWithHeaderToArray: (RED,node,msg,data)=>{
+		let r=functions.CSVToArray(RED,node,msg,data);
+		r.shift();
+		return r;	
+	},
+	CSVWithHeaderToHTML: (RED,node,msg,data)=>{
+		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
+		const header=array2tag(lines.shift().split(regexCSV),"th",(c)=>"<![CDATA["+removeQuotes(c)+"]]>");
+		return "<table><tr>"+header+"</tr>"+array2tag(lines,"tr",(line)=>
+			array2tag(line.split(regexCSV),'td',(c)=>"<![CDATA["+removeQuotes(c)+"]]>")
+		)+"</table>"
+	},
+	CSVWithHeaderToJSON: (RED,node,msg,data)=>{
+		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
+		let header=lines.shift().split(regexCSV);
+		if(logger.active) logger.send({label:"CSVWithHeaderToJSON",header:header});
 		lines.forEach((value, idx) => {
-			var o={};
+			let o={};
 			value.split(regexCSV).forEach((c,i)=>{
 				o[header[i]]=removeQuotes(c);
 			});
@@ -33,77 +90,89 @@ const functions={
 		});
 		return lines;
 	},
-	ISO8385ToArray: (data)=>ISO8583message.unpackSync(data, data.length),
-	ISO8385ToJSON: (data)=>{
+	ISO8385ToArray: (RED,node,msg,data)=>ISO8583message.unpackSync(data, data.length),
+	ISO8385ToJSON: (RED,node,msg,data)=>{
 		let j={},d=ISO8583message.unpackSync(data, data.length);
 		d.forEach((r)=>{
 			j[ISO8583BitMapId(r[0]).name]=r[1];
 		});
 		return r;
 	},
-	JSONToISO8385: (data)=>{
+	JSONToISO8385: (RED,node,msg,data)=>{
 		var d=[];
 		Object.getOwnPropertyNames(data).forEach((v)=>d.push([ISO8583BitMapName[v].id,data[v]]));
 		d.sort((a, b) => a[0] - b[0]);
 		return ISO8583message.packSync(d);
 	},
-	JSONToArray: (data)=>{
+	JSONToArray: (RED,node,msg,data)=>{
 		if(data instanceof Object){
 			let a=[];
 			for(let p in data) {
-				a.push([p,functions.JSONToArray(data[p])]);
+				a.push([p,functions.JSONToArray(RED,node,msg,data[p])]);
 			}
 			return a;
 		}
 		return data;
 	},
-	JSONToHTML: (data,level=0)=>{
+	JSONToHTML: (RED,node,msg,data,level=0)=>{
 		if(Array.isArray(data)) {
-			if(data.length) {
-				return "<table><tr>"+data.map((r)=>functions.JSONToHTML(r,++level)).join("</tr><tr>")+"</tr><table>"
-			} 
-			return "";
+			return data.length?"<table><tr>"+data.map((r)=>functions.JSONToHTML(RED,node,msg,r,++level)).join("</tr><tr>")+"</tr><table>":"";
 		}
 		if(data instanceof Object){
 			let a=[];
 			for(let p in data) {
-				a.push("<td style='vertical-align: top;'>"+escape(p)+":</td><td>"+functions.JSONToHTML(data[p],++level)+"</td>");
+				a.push("<td style='vertical-align: top;'>"+escape(p)+":</td><td>"+functions.JSONToHTML(RED,node,msg,data[p],++level)+"</td>");
 			}
 			return "<table><tr>"+a.join("</tr><tr>")+"</tr><table>";
 		}
 		return escape(data);
 	},
-	JSONToString: (data)=>JSON.stringify(data),
-	StringToJSON: (data)=>JSON.parse(data),  
-	pathToBasename: (data)=>path.basename(data),
-	pathToDirname: (data)=>path.dirname(data),
-	pathToExtname: (data)=>path.extname(data),
-	pathToFormat: (data)=>path.format(data),
-	pathToIsAbsolute: (data)=>path.isAbsolute(data),
-	pathToJoin: (...data)=>path.join(...data),
-	pathToParse: (data)=>path.parse(data),
-	pathToNormalize: (data)=>path.normalize(data),
-	pathToResolve: (data)=>path.resolve(data)
+	JSONToString: (RED,node,msg,data)=>JSON.stringify(data),
+	StringToJSON: (RED,node,msg,data)=>JSON.parse(data),  
+	pathToBasename: (RED,node,msg,data)=>path.basename(data),
+	pathToDirname: (RED,node,msg,data)=>path.dirname(data),
+	pathToExtname: (RED,node,msg,data)=>path.extname(data),
+	pathToFormat: (RED,node,msg,data)=>path.format(data),
+	pathToIsAbsolute: (RED,node,msg,data)=>path.isAbsolute(data),
+	pathToJoin: (RED,node,msg,...data)=>path.join(...data),
+	pathToParse: (RED,node,msg,data)=>path.parse(data),
+	pathToNormalize: (RED,node,msg,data)=>path.normalize(data),
+	pathToResolve: (RED,node,msg,data)=>path.resolve(data)
 };
+function evalFunction(id,mapping){
+	try{
+		return eval(mapping);
+	} catch(ex) {
+		throw Error(id+" "+ex.message);
+	}
+}
 module.exports = function (RED) {
 	function transformNode(n) {
 		RED.nodes.createNode(this,n);
-		var node=Object.assign(this,n);
+		let node=Object.assign(this,n,{RED:RED});
+		node.sendInFunction=["Messages"].includes(node.actionTarget);
+		node.hasNewTopic=![null,"","msg.topic"].includes(node.topicProperty);
+		const sourceMap="(RED,node,msg)=>"+(node.sourceProperty||"msg.payload"),
+			targetMap="(RED,node,msg,data)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
+				(node.sendInFunction && node.hasNewTopic? "" : "msg.topic=node.topicFunction(RED,node,msg);")+
+				(node.sendInFunction ? "" : "node.send(msg);" )+
+				"}",
+			topicMap="(RED,node,msg)=>"+(node.topicProperty||"msg.topic");
+		logger.sendInfo({label:"mappings",source:sourceMap,target:targetMap,topicMap:topicMap});
 		try{
-			node.getData=eval("((msg,node)=>"+(node.sourceProperty||"msg.payload")+")");
-			node.setData=eval("((msg,node,data)=>"+(node.targetProperty||"msg.payload")+"=data)");
-		} catch(e) {
-			node.error(e);
-			node.status({fill:"red",shape:"ring",text:"Invalid setup "+e.toString()});
+			node.getData=evalFunction("source",sourceMap);
+			node.setData=evalFunction("target",targetMap);
+			node.topicFunction=evalFunction("topic",topicMap);
+		} catch(ex) {
+			node.error(ex);
+			node.status({fill:"red",shape:"ring",text:"Invalid setup "+ex.message});
 			return;
-		} 
-
-		
+		}
 		if(node.actionSource=="ISO8583" || node.actionTarget=="ISO8583") {
 			if(!ISO8583) {
 				try{
-					ISO8583 = require('iso-8583');
-					ISO8583message = ISO8583.Message();
+					ISO8583=require('iso-8583');
+					ISO8583message=ISO8583.Message();
 					node.log("loaded iso-8583");
 				} catch (e) {
 					node.error("need to run 'npm install iso-8583'");
@@ -124,17 +193,17 @@ module.exports = function (RED) {
 		this.status({fill:"green",shape:"ring",text:"Ready"});
 		node.on("input", function(msg) {
 			try{
-//				msg.payload=node.transform.apply(node,[node.getData(msg,node)]);
-				node.setData(msg,node,node.transform.apply(node,[node.getData(msg)]));
-			} catch (e) {
-				node.error(node.actionSource+" to "+node.actionTarget + " " +e);
+				node.setData(RED,node,msg,node.transform(RED,node,msg,node.getData(RED,node,msg)));
+			} catch (ex) {
+				msg.error=node.actionSource+" to "+node.actionTarget + " " +ex.message;
+				node.error(msg.error);
 				this.status({fill:"red",shape:"ring",text:"Error(s)"});
+				node.send([null,msg]);
 				return;
 			}
-			node.send(msg);
 		});				
 	}
-	RED.nodes.registerType(nodeLabel,transformNode);
+	RED.nodes.registerType(logger.label,transformNode);
 };
 
 const ISO8583BitMap=[

@@ -1,0 +1,17 @@
+[
+    {
+        "id": "ed497dc0.0d342",
+        "type": "debug",
+        "z": "b68ee1.3f2d512",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "x": 470,
+        "y": 960,
+        "wires": []
+    }
+]

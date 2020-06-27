@@ -1,34 +1,60 @@
 
 <script type="text/javascript">
-    /*globals RED */
-    RED.nodes.registerType('transform', {
-        category: 'function',
-        color: '#fdeea2',
-        defaults: {
-            name: {value: ""},
-            actionSource: {value:"csv",required:true},
-            actionTarget: {value:"JSON",required:true},
+	/*globals RED */
+	RED.nodes.registerType('transform', {
+		category: 'function',
+		color: '#fdeea2',
+		defaults: {
+			name: {value: ""},
+			actionSource: {value:"csv",required:true},
+			actionTarget: {value:"JSON",required:true},
 			sourceProperty:{value:"msg.payload"},
 			targetProperty:{value:"msg.payload"},
-            delimiter: {value:",",required:true}
-        },
-        inputs: 1,
-        outputs: 1,
-        icon: "fontawesome/fa-random",
-        align: 'left',
-        paletteLabel: "transform",
-        inputLabels: "Message In",
-        outputLabels: ["Message Out"],
-        label: function () {
-            return this.name ||this.actionSource+"=>"+this.actionTarget|| "Transform";
-        },
-        oneditprepare: function() {
-            $("#node-input-actionSource").change(function() {
+			topicProperty:{value:"msg.topic"},
+			skipLeading: {value:0},
+			skipTrailing: {value:0},
+			delimiter: {value:",",required:true}
+		},
+		inputs: 1,
+		outputs: 2,
+		icon: "fontawesome/fa-random",
+		align: 'left',
+		paletteLabel: "transform",
+		inputLabels: "Message In",
+		outputLabels: ["Message Out","Error"],
+		label: function () {
+			return this.name ||this.actionSource+"=>"+this.actionTarget|| "Transform";
+		},
+		oneditprepare: function() {
+			const actionTarget=this.actionTarget
+			$("#node-input-actionSource").change(function() {
 				$(".form-row-http-in-delimiter").hide();
+				$(".form-row-http-in-skip").hide();
 				let options={};
 				switch ($(this).val()) {
-				case 'csv':
+				case 'CSV':
+				case 'CSVWithHeader':
 					$(".form-row-in-http-delimiter").show();
+					$(".form-row-http-in-skip").show();
+					break;
+				}
+				switch ($(this).val()) {
+				case 'Array':
+					options["CSV"]="CSV";
+					options["HTML"]="HMTL";
+					options["ISO8385"]="ISO8385";
+					options["Messages"]="Messages";
+					break;
+				case 'CSVWithHeader':
+					options["JSON"]="JSON";
+				case 'CSV':
+					options["Array"]="Array";
+					options["HTML"]="HTML";
+					options["Messages"]="Messages";
+					break;
+				case 'ISO8385':
+					options["JSON"]="JSON";
+					options["Array"]="Array";
 					break;
 				case 'path':
 					options["Basename"]="basename";
@@ -38,6 +64,9 @@
 					options["Join"]="join";
 					options["Normalize"]="normalize";
 					options["Resolve"]="resolve";
+					break;
+				case 'String':
+					options["JSON"]="JSON";
 					break;
 				default:
 					options["Array"]="Array";
@@ -51,86 +80,104 @@
 				const selectElement = $("#node-input-actionTarget");
 				selectElement.empty(); // remove old options
 				$.each(options, function(key,value) {
-  					selectElement.append($("<option></option>").attr("value", key).text(value));
+					selectElement.append($("<option></option>").attr("value", key).text(value));
 				});
-            }).change();
-            $("#node-input-actionTarget").change(function() {
-                if($(this).val()=="csv") {
-                    $(".form-row-in-http-delimiter").show();
-                } else {
-                    $(".form-row-http-in-delimiter").hide();
-                }
-            }).change();
-        },
-        oneditsave: function() {
-        },
-        oneditresize: function() {
-        },
-        resizeRule : function(file,newWidth) {
-        }
-    });
+				selectElement.val(actionTarget);
+			}).change();
+			$("#node-input-actionTarget").change(function() {
+				if($(this).val()=="csv") {
+					$(".form-row-in-http-delimiter").show();
+				} else {
+					$(".form-row-http-in-delimiter").hide();
+				}
+			}).change();
+		},
+		oneditsave: function() {
+		},
+		oneditresize: function() {
+		},
+		resizeRule : function(file,newWidth) {
+		}
+	});
 </script>
 
 <script type="text/x-red" data-template-name="transform">
 
-    <div class="form-row">
-        <label for="node-input-beta" style="color:red"><i class="fa fa-tag"></i> EXPERIMENTIAL </label>
-    </div>
+	<div class="form-row">
+		<label for="node-input-beta" style="color:red"><i class="fa fa-tag"></i> EXPERIMENTIAL </label>
+	</div>
 
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
-        <input type="text" id="node-input-name" placeholder="Name">
-    </div>
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
 
-    <div class="form-row form-row-http-in-sourceProperty show">
-        <label for="node-input-sourceProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Source Property </label>
-        <input type="text" id="node-input-sourceProperty" placeholder="msg.payload">
-    </div>
+	<div class="form-row form-row-http-in-sourceProperty show">
+		<label for="node-input-sourceProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Source Property </label>
+		<input type="text" id="node-input-sourceProperty" placeholder="msg.payload">
+	</div>
 
-    <div class="form-row form-row-http-in-targetProperty show">
-        <label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
-        <input type="text" id="node-input-targetProperty" placeholder="msg.payload">
-    </div>
+	<div class="form-row form-row-http-in-targetProperty show">
+		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
+		<input type="text" id="node-input-targetProperty" placeholder="msg.payload">
+	</div>
 
-    <div class="form-row">
-        <label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
-        <select id="node-input-actionSource" placeholder="actionSource">
-            <option value="Array">Array</option>
-            <option value="CSVWithHeader">CSV with header</option>
-            <option value="CSV">CSV</option>
-            <option value="ISO8385">ISO 8583</option>
+	<div class="form-row form-row-http-in-topicProperty show">
+		<label for="node-input-topicProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Topic Property </label>
+		<input type="text" id="node-input-topicProperty" placeholder="msg.topic">
+	</div>
+
+	<div class="form-row">
+		<label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
+		<select id="node-input-actionSource" placeholder="actionSource">
+			<option value="Array">Array</option>
+			<option value="CSVWithHeader">CSV with header</option>
+			<option value="CSV">CSV</option>
+			<option value="ISO8385">ISO 8583</option>
  			<option value="JSON">JSON</option> 
 			<option value="String">String</option> 
 			<option value="path">Path</option> 
-        </select>
-    </div>
+		</select>
+	</div>
 
-    <div class="form-row">
-        <label for="node-input-actionTarget"><i class="fa fa-list-ul"></i> Target Type </label>
-        <select id="node-input-actionTarget" placeholder="actionTarget">
-        </select>
-    </div>
+	<div class="form-row">
+		<label for="node-input-actionTarget"><i class="fa fa-list-ul"></i> Target Type </label>
+		<select id="node-input-actionTarget" placeholder="actionTarget">
+		</select>
+	</div>
 
-    <div class="form-row form-row-http-in-delimiter hide">
-        <label for="node-input-delimiter"><i class="icon-bookmark"></i> Delimiter</label>
-        <input type="text" id="node-input-delimiter" placeholder="delimiter" size="1" minlength="1">
-    </div>
+	<div class="form-row form-row-http-in-delimiter hide">
+		<label for="node-input-delimiter"><i class="icon-bookmark"></i> Delimiter</label>
+		<input type="text" id="node-input-delimiter" placeholder="delimiter" size="1" minlength="1">
+	</div>
+
+	<div class="form-row form-row-http-in-skip hide">
+		<label for="node-input-skipLeading"><i class="icon-bookmark"></i> Skip Leading</label>
+		<input type="number" id="node-input-skipLeading" placeholder="skipLeading" min="0" max="10000" step="1">
+		<label for="node-input-skipTrailing"><i class="icon-bookmark"></i> Skip Trailing</label>
+		<input type="number" id="node-input-skipTrailing" placeholder="skipTrailing" min="0" max="10000" step="1">
+
+	</div>
 
 </script>
 
 <script type="text/x-red" data-help-name="transform">
-    <p>translates msg payload from one form to another</p>
-    <h3>Inputs</h3>
-    <dl class="message-properties">
-        <dt>msg <span class="property-type">payload</span></dt>
-        <dd>incoming message with payload</dd>
-        <dt>msg <span class="property-type">topic</span></dt>
-        <dd></dd>
-    </dl>
-    <h3>Outputs</h3>
-    <dl class="message-properties">
-        <dt>msg <span class="property-type">payload</span></dt>
-        <dd>a message payload which has be transformed</dd>
-    </dl>
+	<p>translates msg payload from one form to another</p>
+	<p>
+	Source/Target/Topic allows the override of the property to an expression which can reference RED, node or msg variables.
+	</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>msg <span class="property-type">topic</span></dt>
+		<dd>incoming message with topic</dd>
+		<dt>msg <span class="property-type">payload</span></dt>
+		<dd></dd>
+	</dl>
+	<h3>Ports</h3>
+	<dl class="message-properties">
+		<dt><span class="property-type">message out</span></dt>
+		<dd>a message with payload which has be transformed</dd>
+		<dt><span class="property-type">error</span></dt>
+		<dd>a message where msg.error details error during transformation</dd>
+	</dl>
 </script>
-

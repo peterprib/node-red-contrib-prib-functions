@@ -9,176 +9,189 @@
 	A message sent on first port should go thru other nodes and return to test is payload 
 	is has the expected results.  Several test can be arranged. 
 	</p>
-    <h3>Inputs</h3>
+	<h3>Inputs</h3>
 	If message genrated by this node, then payload checked against expected result 
 	otherwise payload changed to form 
-    <h3>Outputs</h3>
+	<h3>Outputs</h3>
 	First port is a new mesage, that, us
 	Second port will contain the message if the test fails.
 </script>
 <script type="text/x-red" data-template-name="test">
-    <div class="form-row">
-        <label for="node-input-payload"><i class="fa fa-envelope"></i> <span data-i18n="common.label.payload"> Payload </span></label>
-        <input type="text" id="node-input-payload" style="width:70%">
-        <input type="hidden" id="node-input-payloadType">
-    </div>
+	<div class="form-row">
+		<label for="node-input-payload"><i class="fa fa-envelope"></i> <span data-i18n="common.label.payload"> Payload </span></label>
+		<input type="text" id="node-input-payload" style="width:70%">
+		<input type="hidden" id="node-input-payloadType">
+	</div>
 
-    <div class="form-row">
-        <label for="node-input-result"><i class="fa fa-thumbs-o-up"></i> <span data-i18n="common.label.result"> Result </span></label>
-        <input type="text" id="node-input-result" style="width:70%">
-        <input type="hidden" id="node-input-resultType">
-    </div>
+	<div class="form-row">
+		<label for="node-input-result"><i class="fa fa-thumbs-o-up"></i> <span data-i18n="common.label.result"> Result </span></label>
+		<input type="text" id="node-input-result" style="width:70%">
+		<input type="hidden" id="node-input-resultType">
+	</div>
 
-    <div class="form-row form-row-http-in-resultProperty show">
-        <label for="node-input-resultProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Property </label>
-        <input type="text" id="node-input-resultProperty" placeholder="msg.payload">
-    </div>
+	<div class="form-row form-row-http-in-escapeString show">
+		<label for="node-input-escapeString"> Escape string</label>
+		<label for="node-input-escapeString" style="width:70%">
+			<input type="checkbox" id="node-input-escapeString" style="display:inline-block; width:22px; vertical-align:baseline;"><span data-i18n="debug.toescapeString"></span>
+		</label>
+	</div>
 
-    <div class="form-row">
-        <label for="node-input-topic"><i class="fa fa-tasks"></i> <span data-i18n="common.label.topic"></span> Topic </label>
-        <input type="text" id="node-input-topic">
-    </div>
+	<div class="form-row form-row-http-in-resultProperty show">
+		<label for="node-input-resultProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Property </label>
+		<input type="text" id="node-input-resultProperty" placeholder="msg.payload">
+	</div>
 
-    <div class="form-row">
-        <label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"> Name </span></label>
-        <input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
-    </div>
+	<div class="form-row">
+		<label for="node-input-topic"><i class="fa fa-tasks"></i> <span data-i18n="common.label.topic"></span> Topic </label>
+		<input type="text" id="node-input-topic">
+	</div>
 
-    <div class="form-tips" data-i18n="[html]test.tip"></div>
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> <span data-i18n="common.label.name"> Name </span></label>
+		<input type="text" id="node-input-name" data-i18n="[placeholder]common.label.name">
+	</div>
+
+	<div class="form-tips" data-i18n="[html]test.tip"></div>
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('test',{
-        category: 'testing',
-        color:"#a6bbcf",
-        defaults: {
-            name: {value:""},
-            topic: {value:""},
-            payload: {value:"", validate: RED.validators.typedInput("payloadType")},
-            payloadType: {value:"date"},
-            result: {value:"", validate: RED.validators.typedInput("resultType")},
-            resultType: {value:"date"},
-            resultProperty: {value:"msg.payload",required:true}
-        },
-        icon: "test.png",
-        inputs:1,
-        outputs:2,
-        outputLabels: function(index) {
-        	if(index==1) {return "Error";}
-            var lab = this.payloadType;
-            if (lab === "json") {
-                try {
-                    lab = typeof JSON.parse(this.payload);
-                    if (lab === "object") {
-                        if (Array.isArray(JSON.parse(this.payload))) { lab = "Array"; }
-                    }
-                } catch(e) {
-                    return this._("test.label.invalid"); 
-                }
-            }
-            var name = "test.label."+lab;
-            var label = this._(name);
-            return name==label?lab:label;
-        },
-        label: function() {
-        	var node=this;
-            if (this.name) return this.name;
-    		return typeLabel.apply(this,[this.payload,this.payloadType])+" -> "+typeLabel.apply(this,[this.result,this.resultType]);      
- 	           
-            function typeLabel(data,type) {
-                if (["string","str","num","bool","json"].includes(type)) {
-                    if ((this.topic !== "") && ((this.topic.length + data.length) <= 32)) {
-                        return this.topic + ":" + data;
-                    } else {
-                        return data.length > 0 && data.length < 12
-                        	? data
-                        	: data.substr(0,12)+"...";
-                    }
-                } else if (type === 'date') {
-                	return (this.topic !== "") && (this.topic.length <= 16)
-                		? this.topic + ":" + this._("test.timestamp")
-                		: this._("test.timestamp");
-                } else if (["flow","global"].includes(type)) {
-                    return type+"."+RED.utils.parseContextKey(data).key;
-                } else {
-                    return this._("test.test");
-                }
-            }
-        },
-        labelStyle: function() {
-            return this.name?"node_label_italic":"";
-        },
-        oneditprepare: function() {
-        	var node=this;
-        	$("#node-input-resultProperty").change(function() {
-            	if( [null,""].includes(node.resultProperty) ) {
+	RED.nodes.registerType('test',{
+		category: 'testing',
+		color:"#a6bbcf",
+		defaults: {
+			name: {value:""},
+			topic: {value:""},
+			payload: {value:"", validate: RED.validators.typedInput("payloadType")},
+			payloadType: {value:"date"},
+			result: {value:"", validate: RED.validators.typedInput("resultType")},
+			resultType: {value:"date"},
+			escapeString:  {value:false,required:false},
+			resultProperty: {value:"msg.payload",required:true}
+		},
+		icon: "test.png",
+		inputs:1,
+		outputs:3,
+		outputLabels: function(index) {
+			if(index==1) {return "Error";}
+			if(index==2) {return "OK";}
+			var lab = this.payloadType;
+			if (lab === "json") {
+				try {
+					lab = typeof JSON.parse(this.payload);
+					if (lab === "object") {
+						if (Array.isArray(JSON.parse(this.payload))) { lab = "Array"; }
+					}
+				} catch(e) {
+					return this._("test.label.invalid"); 
+				}
+			}
+			var name = "test.label."+lab;
+			var label = this._(name);
+			return name==label?lab:label;
+		},
+		label: function() {
+			var node=this;
+			if (this.name) return this.name;
+			return typeLabel.apply(this,[this.payload,this.payloadType])+" -> "+typeLabel.apply(this,[this.result,this.resultType]);	  
+ 			   
+			function typeLabel(data,type) {
+				if(["string","str","num","bool","json"].includes(type)) {
+					if((this.topic !== "") && ((this.topic.length + data.length) <= 32)) {
+						return this.topic + ":" + data;
+					} else {
+						return data.length > 0 && data.length < 12
+							? data
+							: data.substr(0,12)+"...";
+					}
+				} else if(type === 'date') {
+					return (this.topic !== "") && (this.topic.length <= 16)
+						? this.topic + ":" + this._("test.timestamp")
+						: this._("test.timestamp");
+				} else if(["flow","global"].includes(type)) {
+					return type+"."+RED.utils.parseContextKey(data).key;
+				} else {
+					return this._("test.test");
+				}
+			}
+		},
+		labelStyle: function() {
+			return this.name?"node_label_italic":"";
+		},
+		oneditprepare: function() {
+			var node=this;
+			$("#node-input-resultProperty").change(function() {
+				if( [null,""].includes(node.resultProperty) ) {
    	   			 	$("#node-input-resultProperty").val("msg.payload");
-        		}
-           	});
+				}
+		   	});
 
-        	function setType(type) {
-                if(type == null) {
-                	return type == "" ?"date":"str";
-                } else if(['string','none'].includes(type)) {
-                    return "str";
-                }
-        		return type;
-        	}
-        	this.payloadType=setType(this.payloadType);
-        	this.resultType=setType(this.resultType);
-        	function setInput(t) {
-                $("#node-input-"+t+"Type").val(this[t+"Type"]);
-                $("#node-input-"+t).typedInput({
-                    default: 'str',
-                    typeField: $("#node-input-"+t+"Type"),
-                    types:['flow','global','str','num','bool','json','bin','date','env']
-                });
+			function setType(type) {
+				if(type == null) {
+					return type == "" ?"date":"str";
+				} else if(['string','none'].includes(type)) {
+					return "str";
+				}
+				return type;
+			}
+			this.payloadType=setType(this.payloadType);
+			this.resultType=setType(this.resultType);
+			function setInput(t) {
+				let types=['flow','global','str','num','bool','json','bin','date','env'];
+				if(t=="result") types.push('re');
+				$("#node-input-"+t+"Type").val(this[t+"Type"]);
+				$("#node-input-"+t).typedInput({
+					default: 'str',
+					typeField: $("#node-input-"+t+"Type"),
+					types:types,
+					validate: ()=>{
 
-                $("#node-input-"+t).typedInput('type',this[t+"Type"]);
-        	}        	
-        	setInput.apply(this,["payload"]);
-        	setInput.apply(this,["result"]);
-        },
-        oneditsave: function() {
-        },
-        button: {
-            enabled: function() {
-                return !this.changed
-            },
-            onclick: function() {
-                if (this.changed) {
-                    return RED.notify(RED._("notification.warning", {message:RED._("notification.warnings.undeployedChanges")}),"warning");
-                }
-                var payload = this.payload;
-                if (['flow','global'].includes(this.payloadType)) {
-                    payload = this.payloadType+"."+RED.utils.parseContextKey(payload).key;
-                }
-                var label = this._def.label.call(this);
-                if (label.length > 30) {
-                    label = label.substring(0,50)+"...";
-                }
-                label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-                var node = this;
-                $.ajax({
-                    url: "test/"+this.id,
-                    type:"POST",
-                    success: function(resp) {
-                        RED.notify(node._("test.success",{label:label}),{type:"success",id:"test"});
-                    },
-                    error: function(jqXHR,textStatus,errorThrown) {
-                        if (jqXHR.status == 404) {
-                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.not-deployed")}),"error");
-                        } else if (jqXHR.status == 500) {
-                            RED.notify(node._("common.notification.error",{message:node._("test.errors.failed")}),"error");
-                        } else if (jqXHR.status == 0) {
-                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.no-response")}),"error");
-                        } else {
-                            RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.unexpected",{status:jqXHR.status,message:textStatus})}),"error");
-                        }
-                    }
-                });
-            }
-        }
-    });
+					}
+				});
+				$("#node-input-"+t).typedInput('type',this[t+"Type"]);
+			}			
+			setInput.apply(this,["payload"]);
+			setInput.apply(this,["result"]);
+		},
+		oneditsave: function() {
+		},
+		button: {
+			enabled: function() {
+				return !this.changed
+			},
+			onclick: function() {
+				if (this.changed) {
+					return RED.notify(RED._("notification.warning", {message:RED._("notification.warnings.undeployedChanges")}),"warning");
+				}
+				var payload = this.payload;
+				if (['flow','global'].includes(this.payloadType)) {
+					payload = this.payloadType+"."+RED.utils.parseContextKey(payload).key;
+				}
+				var label = this._def.label.call(this);
+				if (label.length > 30) {
+					label = label.substring(0,50)+"...";
+				}
+				label = label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+				var node = this;
+				$.ajax({
+					url: "test/"+this.id,
+					type:"POST",
+					success: function(resp) {
+						RED.notify(node._("test.success",{label:label}),{type:"success",id:"test"});
+					},
+					error: function(jqXHR,textStatus,errorThrown) {
+						if (jqXHR.status == 404) {
+							RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.not-deployed")}),"error");
+						} else if (jqXHR.status == 500) {
+							RED.notify(node._("common.notification.error",{message:node._("test.errors.failed")}),"error");
+						} else if (jqXHR.status == 0) {
+							RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.no-response")}),"error");
+						} else {
+							RED.notify(node._("common.notification.error",{message:node._("common.notification.errors.unexpected",{status:jqXHR.status,message:textStatus})}),"error");
+						}
+					}
+				});
+			}
+		}
+	});
 
 </script>

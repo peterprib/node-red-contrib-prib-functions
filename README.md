@@ -175,6 +175,12 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.10.0 Many fixes to transform.  Array and csv to various forms work.  Added test to validate.
+Improved test to allow for escape to put special characters into a string.
+
+0.9.6 Enhance transform with csv ignore lead or trailing lines.
+Add Array and CSV to Messages. Add in topic override
+
 0.9.5 Enhance transform with path and setting source and target
 
 0.9.4 Outlier allowed to set number of deviations if median and reset or set stats
