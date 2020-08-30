@@ -176,7 +176,7 @@ Test/example flow in test/generalTest.json
 
 # Version
 
-0.10.1 Real time weighted moving average, for test allow testing of "infinity","-infinity" and "NaN" in JSON.
+0.10.1 Real time weighted moving average, levenshtein Distance, for test allow testing of "infinity","-infinity" and "NaN" in JSON.
 
 0.10.0 Many fixes to transform.  Array and csv to various forms work.  Added test to validate.
 Improved test to allow for escape to put special characters into a string.
