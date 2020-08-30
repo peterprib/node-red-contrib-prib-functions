@@ -1,5 +1,5 @@
 const assert=require('assert');
-const levenshteinDistance=require("../levenshteinDistance/levenshteinDistance");
+const levenshteinDistance=require("../levenshteinDistance/levenshteindistance");
 describe("Levenshtein Distance", function() {
 	it('sameword', function(done) {
 		assert.strictEqual(levenshteinDistance("",""),0);
