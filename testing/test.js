@@ -31,6 +31,9 @@ function setError(msg,node,err) {
 
 function equalObjects(obj1,obj2) {
 	if( obj1 === obj2 ) return true;
+	if( obj1 === Number.POSITIVE_INFINITY && obj2==="Infinity") return true;
+	if( obj1 === Number.NEGATIVE_INFINITY && obj2==="-Infinity") return true;
+	if( Number.isNaN(obj1) && obj2==="NaN") return true;
 	if( typeof obj1 != typeof obj2 ) return false;
 	if( !(obj1 instanceof Object) ) return false; 
 	if( Object.keys(obj1).length !== Object.keys(obj2).length ) return false;

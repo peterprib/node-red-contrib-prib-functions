@@ -1,12 +1,129 @@
-const nodeLabel="Data Analysis";
-const Logger = require("node-red-contrib-logger");
-const logger = new Logger(nodeLabel);
+const logger = new (require("node-red-contrib-logger"))("Data Analysis");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
+Object.defineProperty(Array.prototype, "last", {
+	value() {
+		return this[this.length-1];
+	},
+	writable: true,
+	configurable: true
+});
+
+function crossNormalisedDeltas() {
+	const dataPoints=this.dataPoint;
+	const keys=Object.keys(dataPoints);
+	const normalisedAvgDelta=keys.reduce((a,c,i)=>a+=dataPoints[c].normalised,0)/keys.length;
+	return keys.map(c=>{
+		return {key:c,value:dataPoints[c].normalised-normalisedAvgDelta};
+	}).sort((a,b)=>a.value-b.value);
+}
+function predictForKey(node,key) {
+	const dp=node.dataPoint[key];
+	if(dp) return new Predictions(dp);
+	throw Error("no data points");
+}
+function Predictions(dp) {
+	const predictions=[];
+	if(!dp) throw Error("no data points");
+	const lastValue=dp.value.last(),lastValue2=lastValue*2;
+	if(dp.delta) {
+		const delta=dp.delta,
+			lastDeltaValue=delta.value.last(),
+			deltaMovingAvg=delta.movingAvg,
+			deltaWeightedMovingAvg=delta.weightedMovingAvg;
+		predictions.push(lastValue+lastDeltaValue);
+		predictions.push(lastValue+deltaMovingAvg);
+		predictions.push(lastValue+deltaWeightedMovingAvg);
+		predictions.push(lastValue2-dp.exponentialWeightedMoving[0].movingAverage);
+		predictions.push(lastValue+delta.exponentialWeightedMoving[0].movingAverage);
+		predictions.push(lastValue2-dp.exponentialWeightedMoving[1].movingAverage);
+		predictions.push(lastValue+delta.exponentialWeightedMoving[1].movingAverage);
+		predictions.push(lastValue2-dp.exponentialWeightedMoving[2].movingAverage);
+		predictions.push(lastValue+delta.exponentialWeightedMoving[2].movingAverage);
+	}
+	this.prediction=predictions;
+	return this;
+}
+Predictions.prototype.validate=function(value) {
+	this.accuracy=this.predictions.map(c=>Math.abs(c-value)/c);
+	return this;
+};
+function realtimePredict(d,term,node) {
+	const m=functions.realtime(d,term,node);
+	m.predict=predict(m);
+	return m;
+}
+function EMA(coefficient=0.5) {
+	if(coefficient<0 || coefficient>1 ) throw Error("coefficient must be between 0 and 1");
+	this.factor=(1-coefficient);
+	this.weightedSum=0;
+	this.weightedCount=0;
+	this.movingAverage=0;
+	return this;
+}
+EMA.prototype.sample=function(value) {
+	this.weightedSum=value+this.factor*this.weightedSum;
+	this.weightedCount=1+this.factor*this.weightedSum;
+	this.movingAverage=this.weightedSum/this.weightedCount;
+	return this;
+}
+
+function setDataPoint(value,term,node,dp) {
+	if(logger.active) logger.send({label:"setDataPoint",value:value,term,dp});
+	if(!dp.values) {
+		Object.assign(dp,{
+			values:[],
+			avg:0,
+			count:0,
+			movingSum:0,
+			movingSumSquared:0,
+			movingSumCubed:0,
+			outlier:false,
+			sum:0,
+			sumSquared:0,
+			sumCubed:0,
+			term:term,
+			weightedMovingSum:0,
+			exponentialWeightedMoving:[new EMA(0.25),new EMA(0.5),new EMA(0.75)]
+		});
+	}
+	;
+	const count=++dp.count,values=dp.values;
+	values.push(value);
+	dp.isMaxSize=(values.length>dp.term);
+	dp.removedValue=(dp.isMaxSize?values.shift():0);
+	const removedValue=dp.removedValue;
+	dp.max=Math.max(dp.max||value,value);
+	dp.min=Math.min(dp.min||value,value);
+	dp.range=dp.max-dp.min;
+	dp.sum+=value;
+	dp.sumSquared+=Math.pow(value,2);
+	dp.sumCubed+=Math.pow(value,3);
+	dp.movingSum+=value-removedValue;
+	dp.movingSumSquared+=Math.pow(value,2)-Math.pow(removedValue,2);
+	dp.movingSumCubed+=Math.pow(value,3)-Math.pow(removedValue,3);
+	dp.avg=dp.sum/count;
+	const avg=dp.avg;
+	dp.normalised=dp.range ? (value-avg)/dp.range : 0;
+	dp.movingAvg=dp.movingSum/values.length;
+	dp.variance=dp.sumSquared/count - Math.pow(avg,2);
+	dp.stdDev=Math.sqrt(dp.variance);
+	dp.movingVariance=dp.movingSumSquared/values.length - Math.pow(dp.movingAvg,2);
+	dp.movingStdDev=Math.sqrt(dp.movingVariance);
+	dp.median=functions.median(values);
+	dp.standardized=( (value-avg)/dp.stdDev )||0;
+	dp.movingStandardized=( (value-dp.movingAvg)/dp.movingStdDev )||0;
+	dp.skewness=(dp.sumCubed-3*avg*dp.variance-Math.pow(avg,3))/dp.variance*dp.stdDev;
+	dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
+	dp.outlier=node.outliersFunction(node,dp,value);
+	dp.weightedMovingSum+=count*value;
+	dp.weightedMovingAvg=(dp.weightedMovingAvg*2/count)/(count+1);
+	dp.exponentialWeightedMoving.forEach(c=>c.sample(value));
+}
 functions={
 	avg:(d)=>functions.sum(d)/d.length,
-	deltas :(d)=>d.map( (c,i,a)=>c-(d[i-1]||0) ),
-	deltaNormalised :(d)=>d.map( (c,i,a)=>(c-(d[i-1]||0)) / (d[i-1]||0) ),
+	deltas :(d)=>d.map( (c,i)=>c-(d[i-1]||0) ),
+	deltaNormalised :(d)=>d.map( (c,i)=>(c-(d[i-1]||0)) / (d[i-1]||0) ),
 	max: (d)=> Math.max(...d),
 	median:(d)=>{
 		let i=Math.floor(d.length/2);
@@ -19,13 +136,13 @@ functions={
 	},
 	movingAvgCumulative :(d)=>{
 		let avg=0; 
-		return d.map( (c,i,a)=>{ avg+=(c-avg)/(i+1); return avg; }); 
+		return d.map( (c,i)=>{ avg+=(c-avg)/(i+1); return avg; }); 
 	},
 	movingAvgExponential:(d,f)=>{
 		if(f<0 || f>1) throw Error("factor must be >=0 and <=1");
 		if(d.length==0) return [];
 		let s=d[0],fi=1-f;
-		return d.map( (c,i,a)=>{
+		return d.map( (c)=>{
 			s=c*f+fi*s;
 			return s; 
 		});
@@ -41,7 +158,7 @@ functions={
 	},
 	normalize:(d)=>{
 		const range=functions.range(d);
-		if(range==0) return d.map(c=>0); 
+		if(range==0) return d.map(()=>0); 
 		const avg=functions.avg(d),
 			offset=avg/range;
 		return d.map(c=>c/range-offset);
@@ -97,7 +214,7 @@ functions={
 	standardize:(d)=>{
 		let avg=functions.avg(d),
 			stdDev=functions.stdDev(d);
-		return d.map( (c,i,a)=>(c-avg)/stdDev);
+		return d.map( (c)=>(c-avg)/stdDev);
 	},
 	stdDev:(d)=>Math.sqrt(functions.variance(d)),
 	skew:(d)=>{
@@ -108,52 +225,23 @@ functions={
 			- Math.pow(avg,3))
 			/ variance*Math.sqrt(variance);
 	},
+	realtimePredict: realtimePredict,
 	realtime:(d,term,node)=>{
+		if(!d.key) throw Error("key is null,  "+JSON.stringify(d));
+		if(!d.value) throw Error("value is null "+JSON.stringify(d));
 		let dp;
 		if(d.key in node.dataPoint) {
 			dp=node.dataPoint[d.key];
 		} else {
-			dp={key:d.key,
-				values:[],
-				avg:0,
-				count:0,
-				movingSum:0,
-				movingSumSquared:0,
-				movingSumCubed:0,
-				outlier:false,
-				sum:0,
-				sumSquared:0,
-				sumCubed:0,
-				term:term
-			};
+			dp={key:d.key};
 			node.dataPoint[d.key]=dp;
 		}
-		++dp.count;
-		dp.values.push(d.value);
-		dp.isMaxSize=(dp.values.length>dp.term);
-		dp.removedValue=(dp.isMaxSize?dp.values.shift():0);
-		dp.max=Math.max(dp.max||d.value,d.value);
-		dp.min=Math.min(dp.min||d.value,d.value);
-		dp.range=dp.max-dp.min;
-		dp.sum+=d.value;
-		dp.sumSquared+=Math.pow(d.value,2);
-		dp.sumCubed+=Math.pow(d.value,3);
-		dp.movingSum+=d.value-dp.removedValue;
-		dp.movingSumSquared+=Math.pow(d.value,2)-Math.pow(dp.removedValue,2);
-		dp.movingSumCubed+=Math.pow(d.value,3)-Math.pow(dp.removedValue,3);
-		dp.normalised=dp.range ? (d.value-dp.avg)/dp.range : 0;
-		dp.avg=dp.sum/dp.count;
-		dp.movingAvg=dp.movingSum/dp.values.length;
-		dp.variance=dp.sumSquared/dp.count - Math.pow(dp.avg,2);
-		dp.stdDev=Math.sqrt(dp.variance);
-		dp.movingVariance=dp.movingSumSquared/dp.values.length - Math.pow(dp.movingAvg,2);
-		dp.movingStdDev=Math.sqrt(dp.movingVariance);
-		dp.median=functions.median(dp.values);
-		dp.standardized=( (d.value-dp.avg)/dp.stdDev )||0;
-		dp.movingStandardized=( (d.value-dp.movingAvg)/dp.movingStdDev )||0;
-		dp.skewness=(dp.sumCubed-3*dp.avg*dp.variance-Math.pow(dp.avg,3))/dp.variance*dp.stdDev;
-		dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
-		dp.outlier=node.outliersFunction(node,dp,d);
+		setDataPoint(d.value,term,node,dp);
+		if(dp.delta) {
+			setDataPoint(d.value-dp.values[dp.values.length-2],term,node,dp.delta);
+		} else {
+			dp.delta={};
+		}
 		return dp;
 	},
 	sum:(d)=>d.reduce((p,c)=>p+c),
@@ -165,106 +253,115 @@ functions={
 }
 
 module.exports = function (RED) {
-    function dataAnalysisNode(n) {
-        RED.nodes.createNode(this, n);
-        let node=Object.assign(this,{outliersStdDevs:3},n,{maxErrorDisplay:10,dataPoint:{}});
-        try{
-        	if(functions.hasOwnProperty(node.action)) {
-                node.actionfunction=functions[node.action];
-        	} else {
-        		throw Error("action not found");
-        	}
-        	switch (node.action) {
-        	case "realtime":
-           		node.outliersStdDevs=Number.parseInt(node.outliersStdDevs,10)||3;
-        		if(![1,2,3].includes(node.outliersStdDevs)) throw Error("outlier std deviation "+node.outliersStdDevs+" not 1,2 or 3");
-        		const outliersFunction=(node.outliersBase||"avg")=="median";
-        		node.log("realtime outliersBase set avg "+outliersFunction);
-        		node.outliersFunction=(outliersFunction
-        				?(node,dp,d)=>{
-        					const standardized=Math.abs(((d.value-dp.median)/dp.stdDev )||0);
-//        					if(logger.active) logger.send({label:"outlier median",standardized:standardized,outliersStdDevs:node.outliersStdDevs,});
-        					return Math.abs(standardized)>node.outliersStdDevs;
-        				}
-        				:(node,dp,d)=>{ 
-//        					if(logger.active) logger.send({label:"outlier avg",standardized:dp.standardized,outliersStdDevs:node.outliersStdDevs});
-        					return Math.abs(dp.standardized)>node.outliersStdDevs;
-        					});
-        		
-                node.getDatafunction= "((msg,node)=>{return {key:"+node.keyProperty+",value:"+(node.dataProperty||"msg.payload")+"};})";
-        		break;
-        	case "pearsonR":
-        		node.getDatafunction= "((msg,node)=>{return ["+node.dataProperties.join(',')+"];})";
-        		break;
-        	default:
-                node.getDatafunction= "((msg,node)=>"+(node.dataProperty||"msg.payload")+")";
-        	}
-        	node.log("get data function: "+node.getDatafunction);
-        	node.getData= eval(node.getDatafunction);
-            node.status({fill:"green",shape:"ring",text:"Ready"});
-        } catch(e) {
-        	logger.send({label:"initialise error",node:n});
-    		node.error(e);
-        	node.status({fill:"red",shape:"ring",text:"Invalid setup "+e.toString()});
-        } 
-        node.on("input", function(msg) {
-        	if(msg.topic && msg.topic.startsWith("@stats")) {
-    			try{
-    				const topic=msg.topic.trim(' ');
-        			if(topic=="@stats set") {
-        				node.dataPoint=msg.payload;
-        				node.warn(topic);
-        			} else if(topic=="@stats reset") {
-        				node.dataPoint={};
-        				node.warn(topic);
-        			} else if(topic.startsWith("@stats set ")) {
-               			const dataPoint=topic.substring("@stats set ".length);
-               			node.dataPoint[dataPoint]=msg.payload;
-        				node.warn(topic);
-        			} else if(topic.startsWith("@stats reset ")) {
-               			const dataPoint=topic.substring("@stats reset ".length);
-               			delete node.dataPoint[dataPoint];
-        				node.warn(topic);
-        			} else {
-            			switch(node.action) {
-            			case "realtime":
-            				msg.result=node.dataPoint;
-            				break
-            			case "pearsonR":
-            				msg.result=functions.pearsonRResults(node);
-            				break
-            			}
-         				node.send([null,msg]);
-        			}
-    			} catch(e) {
-        			node.error(topic+" failed "+e);        				
-    			}
-     			return;
-        	} 
-        	try{
-               	msg.result=node.actionfunction.apply(node,[node.getData(msg,node),node.term,node]);
-        		switch(node.action) {
-        		case "realtime":
-        			if(msg.result.outlier) {
-        				node.send([msg,null,msg]);
-        				return;
-        			}
-        			break;
-        		}
-        	} catch(e) {
-        		msg.error=e.message;
-        		if(node.maxErrorDisplay) {
-        			--node.maxErrorDisplay;
-        			if(node.action=="realtime") {
-            			node.error(node.action+" error: "+e.toString());
-        			} else {
-            			node.error(Array.isArray(node.getData(msg,node))? node.action+" error: "+e.toString() : "payload not array");
-        			}
-        			node.status({fill:"red",shape:"ring",text:"error(s)"});
-        		}
-        	}
+	function dataAnalysisNode(n) {
+		RED.nodes.createNode(this, n);
+		const node=Object.assign(this,
+			{outliersStdDevs:3,crossNormalisedDeltas:crossNormalisedDeltas.bind(this)},
+			n,
+			{maxErrorDisplay:10,dataPoint:{}}
+		);
+		try{
+			if(functions.hasOwnProperty(node.action)) {
+				node.actionfunction=functions[node.action];
+			} else {
+				throw Error("action not found");
+			}
+			switch (node.action) {
+			case "realtime":
+					node.outliersStdDevs=Number.parseInt(node.outliersStdDevs,10)||3;
+				if(![1,2,3].includes(node.outliersStdDevs)) throw Error("outlier std deviation "+node.outliersStdDevs+" not 1,2 or 3");
+				const outliersFunction=(node.outliersBase||"avg")=="median";
+				node.log("realtime outliersBase set avg "+outliersFunction);
+				node.outliersFunction=(outliersFunction
+						?(node,dp,value)=>{
+							const standardized=Math.abs(((value-dp.median)/dp.stdDev )||0);
+//							if(logger.active) logger.send({label:"outlier median",standardized:standardized,outliersStdDevs:node.outliersStdDevs,});
+							return Math.abs(standardized)>node.outliersStdDevs;
+						}
+						:(node,dp,value)=>{ 
+//							if(logger.active) logger.send({label:"outlier avg",standardized:dp.standardized,outliersStdDevs:node.outliersStdDevs});
+							return Math.abs(dp.standardized)>node.outliersStdDevs;
+							});
+				
+				node.getDatafunction= "((msg,node)=>{return {key:"+node.keyProperty+",value:"+(node.dataProperty||"msg.payload")+"};})";
+				break;
+			case "pearsonR":
+				node.getDatafunction= "((msg,node)=>{return ["+node.dataProperties.join(',')+"];})";
+				break;
+			default:
+				node.getDatafunction= "((msg,node)=>"+(node.dataProperty||"msg.payload")+")";
+			}
+			node.log("get data function: "+node.getDatafunction);
+			node.getData=eval(node.getDatafunction);
+			node.status({fill:"green",shape:"ring",text:"Ready"});
+		} catch(ex) {
+			logger.send({label:"initialise error",node:n});
+			node.error(ex);
+			node.status({fill:"red",shape:"ring",text:"Invalid setup "+ex.message});
+		} 
+		node.on("input", function(msg) {
+			if(msg.topic && msg.topic.startsWith("@")) {
+				try{
+					const topic=msg.topic.trim(' ');
+					if(topic=="@stats") {
+						switch(node.action) {
+						case "realtime":
+							msg.result=node.dataPoint;
+							break;
+						case "pearsonR":
+							msg.result=functions.pearsonRResults(node);
+							break;
+						}
+		 				node.send([null,msg]);
+					} else if(topic=="@stats set") {
+						node.dataPoint=msg.payload;
+						node.warn(topic);
+					} else if(topic=="@stats reset") {
+						node.dataPoint={};
+						node.warn(topic);
+					} else if(topic.startsWith("@stats set ")) {
+						const dataPoint=topic.substring("@stats set ".length);
+						node.dataPoint[dataPoint]=msg.payload;
+						node.warn(topic);
+					} else if(topic.startsWith("@stats reset ")) {
+						const dataPoint=topic.substring("@stats reset ".length);
+						delete node.dataPoint[dataPoint];
+						node.warn(topic);
+					} else if(topic=="@deltasCrossNormalised") {
+						msg.payload=node.crossNormalisedDeltas();
+						node.send([null,msg]);
+					} else {
+						throw Error("unknown");
+					}
+				} catch(ex) {
+					node.error(msg.topic+" failed "+ex.message);
+				}
+	 			return;
+			} 
+			try{
+				msg.result=node.actionfunction.apply(node,[node.getData(msg,node),node.term,node]);
+				switch(node.action) {
+				case "realtime":
+					if(msg.result.outlier) {
+						node.send([msg,null,msg]);
+						return;
+					}
+					break;
+				}
+			} catch(ex) {
+				msg.error=ex.message;
+				if(node.maxErrorDisplay) {
+					--node.maxErrorDisplay;
+					if(node.action=="realtime") {
+						node.error(node.action+" error: "+ex.message);
+					} else {
+						node.error(Array.isArray(node.getData(msg,node))? node.action+" error: "+ex.message : "payload not array");
+					}
+					node.status({fill:"red",shape:"ring",text:"error(s)"});
+				}
+			}
  			node.send(msg);
-        });                
-    }
-    RED.nodes.registerType(nodeLabel,dataAnalysisNode);
+		});				
+	}
+	RED.nodes.registerType(logger.label,dataAnalysisNode);
 };

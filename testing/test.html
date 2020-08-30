@@ -3,7 +3,8 @@
 		Test a message generated against expected results.
 		Node can be used to inject a new message.
 		On message return to node it is checked against expected result.
-		Can slect location of property for result on return message.
+		Can select location of property for result on return message.
+		For json test positive infinity by property value "Infinity",negative infinity by "-Infinity" and not a number by "NaN".
 	</p>
 	<p>
 	A message sent on first port should go thru other nodes and return to test is payload 
@@ -60,13 +61,14 @@
 		color:"#a6bbcf",
 		defaults: {
 			name: {value:""},
-			topic: {value:""},
+			escapeString: {value:false,required:false},
+			infiniteIsNull: {value:false,required:false},
 			payload: {value:"", validate: RED.validators.typedInput("payloadType")},
 			payloadType: {value:"date"},
 			result: {value:"", validate: RED.validators.typedInput("resultType")},
 			resultType: {value:"date"},
-			escapeString:  {value:false,required:false},
-			resultProperty: {value:"msg.payload",required:true}
+			resultProperty: {value:"msg.payload",required:true},
+			topic: {value:""}
 		},
 		icon: "test.png",
 		inputs:1,
@@ -124,7 +126,6 @@
    	   			 	$("#node-input-resultProperty").val("msg.payload");
 				}
 		   	});
-
 			function setType(type) {
 				if(type == null) {
 					return type == "" ?"date":"str";

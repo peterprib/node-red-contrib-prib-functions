@@ -44,7 +44,7 @@
         		}
            	});
 	       	$("#node-input-action").change(function() {
-        		 if(["movingAvgSimple","movingAvgWeighted","movingAvgExponential","realtime"].includes( $(this).val() )) {
+        		 if(["movingAvgSimple","movingAvgWeighted","movingAvgExponential","realtime","realtimePredict"].includes( $(this).val() )) {
         			$(".form-row-http-in-term").show(); 
         		 } else {
         			$(".form-row-http-in-term").hide();
@@ -63,7 +63,7 @@
 						if(node.term>100) $(this).val(100);
 					});
         		 }        		 
-        		 if(["realtime"].includes( $(this).val() )) {
+        		 if(["realtime","realtimePredict"].includes( $(this).val() )) {
 	        		node.outputs=3;
            			$(".form-row-http-in-keyProperty").show();
            			$(".form-row-http-in-outliersStdDevs").show();
@@ -152,6 +152,7 @@
             <option value="range">Range</option>
             <option value="pearsonR">Pearson Product Moment Correlation (PPMC)</option>
             <option value="realtime">RealTime Metrics</option>
+            <option value="realtimePredict">RealTime Metrics + predicts</option>
             <option value="standardize">Standardization (Z-score Normalization)</option>
             <option value="stdDev">Standard Deviation</option>
             <option value="skew">Skewness</option>
@@ -209,17 +210,20 @@ The number of keys and term will determine amount of memory consummed.
 Data is not persisted so metrics start from zero sample set on node recycle.
 	</p>
 	<p>
-If real-time stats then a message sent with @stats in topic will send all stored metrics and retained datapoints
-to second port. 
-"@stats reset" will reset all stats and "@stats reset <a data point>" will reset a particular data point.
-"@stats set" will set stats with ith msg.payload and "@stats set <a data point>" will set a particular data point with msg.payload.
+If real-time stats then a message can send directive instruction in topic: 
+<dl>
+<dt>"@predict <key>"<\dt><dd></dd>Send send predictions to second port for selected key.
+<dt>"@stats"<\dt><dd></dd>send all stored metrics and retained datapoints to second port.
+<dt>"@stats reset"<\dt><dd>Reset all stats and "@stats reset <key>" will reset a particular data point.</dd>
+<dt>"@stats set"<\dt><dd>Set stats with ith msg.payload and "@stats set <a data point>" will set a particular data point with msg.payload.</dd>
+</dl>
 	</p>
 	<p>
 	Outliers are not within:
 		<ul>	
-			<li>1 standard deviation of the mean is about 68%
-			<li>2 standard deviation of the mean is about 95%
-			<li>3 standard deviations of the mean is about 99.7%
+			<li>1 standard deviation of the mean (or median), around 68%
+			<li>2 standard deviation of the mean (or median), around 95%
+			<li>3 standard deviations of the mean (or median), around 99.7%
 		</ul>	
 	</p>
 </script>

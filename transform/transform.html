@@ -11,6 +11,7 @@
 			sourceProperty:{value:"msg.payload"},
 			targetProperty:{value:"msg.payload"},
 			topicProperty:{value:"msg.topic"},
+			maxMessages: {value:1000},
 			skipLeading: {value:0},
 			skipTrailing: {value:0},
 			delimiter: {value:",",required:true}
@@ -28,16 +29,11 @@
 		oneditprepare: function() {
 			const actionTarget=this.actionTarget
 			$("#node-input-actionSource").change(function() {
-				$(".form-row-http-in-delimiter").hide();
 				$(".form-row-http-in-skip").hide();
-				let options={};
-				switch ($(this).val()) {
-				case 'CSV':
-				case 'CSVWithHeader':
-					$(".form-row-in-http-delimiter").show();
-					$(".form-row-http-in-skip").show();
-					break;
+				if(!['CSV','CSVWithHeader'].includes($("#node-input-actionSource").val())) {
+					$(".form-row-http-in-csv").hide();
 				}
+				let options={};
 				switch ($(this).val()) {
 				case 'Array':
 					options["CSV"]="CSV";
@@ -48,6 +44,8 @@
 				case 'CSVWithHeader':
 					options["JSON"]="JSON";
 				case 'CSV':
+					$(".form-row-http-in-csv").show();
+					$(".form-row-http-in-skip").show();
 					options["Array"]="Array";
 					options["HTML"]="HTML";
 					options["Messages"]="Messages";
@@ -55,6 +53,16 @@
 				case 'ISO8385':
 					options["JSON"]="JSON";
 					options["Array"]="Array";
+					break;
+				case 'JSON':
+					options["Array"]="Array";
+					options["CSVWithHeader"]="CSV with header";
+					options["CSV"]="CSV";
+					options["ISO8385"]="ISO 8583";
+					options["HTML"]="HTML";
+					options["JSON"]="JSON";
+					options["Messages"]="Messages";
+					options["String"]="String";
 					break;
 				case 'path':
 					options["Basename"]="basename";
@@ -85,10 +93,17 @@
 				selectElement.val(actionTarget);
 			}).change();
 			$("#node-input-actionTarget").change(function() {
-				if($(this).val()=="csv") {
-					$(".form-row-in-http-delimiter").show();
-				} else {
-					$(".form-row-http-in-delimiter").hide();
+				$(".form-row-http-in-maxMessages").hide();
+				if(!['CSV','CSVWithHeader'].includes($("#node-input-actionTarget").val())) {
+					$(".form-row-http-in-csv").hide();
+				}
+				switch ($(this).val()) {
+				case 'CSV':
+					$(".form-row-http-in-csv").show();
+					break;
+				case 'Messages':
+					$(".form-row-http-in-maxMessages").show();
+					break;
 				}
 			}).change();
 		},
@@ -106,27 +121,22 @@
 	<div class="form-row">
 		<label for="node-input-beta" style="color:red"><i class="fa fa-tag"></i> EXPERIMENTIAL </label>
 	</div>
-
 	<div class="form-row">
 		<label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
 		<input type="text" id="node-input-name" placeholder="Name">
 	</div>
-
 	<div class="form-row form-row-http-in-sourceProperty show">
 		<label for="node-input-sourceProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Source Property </label>
 		<input type="text" id="node-input-sourceProperty" placeholder="msg.payload">
 	</div>
-
 	<div class="form-row form-row-http-in-targetProperty show">
 		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
 		<input type="text" id="node-input-targetProperty" placeholder="msg.payload">
 	</div>
-
 	<div class="form-row form-row-http-in-topicProperty show">
 		<label for="node-input-topicProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Topic Property </label>
 		<input type="text" id="node-input-topicProperty" placeholder="msg.topic">
 	</div>
-
 	<div class="form-row">
 		<label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
 		<select id="node-input-actionSource" placeholder="actionSource">
@@ -139,24 +149,24 @@
 			<option value="path">Path</option> 
 		</select>
 	</div>
-
 	<div class="form-row">
 		<label for="node-input-actionTarget"><i class="fa fa-list-ul"></i> Target Type </label>
 		<select id="node-input-actionTarget" placeholder="actionTarget">
 		</select>
 	</div>
-
-	<div class="form-row form-row-http-in-delimiter hide">
+	<div class="form-row form-row-http-in-csv hide">
 		<label for="node-input-delimiter"><i class="icon-bookmark"></i> Delimiter</label>
 		<input type="text" id="node-input-delimiter" placeholder="delimiter" size="1" minlength="1">
 	</div>
-
 	<div class="form-row form-row-http-in-skip hide">
 		<label for="node-input-skipLeading"><i class="icon-bookmark"></i> Skip Leading</label>
 		<input type="number" id="node-input-skipLeading" placeholder="skipLeading" min="0" max="10000" step="1">
 		<label for="node-input-skipTrailing"><i class="icon-bookmark"></i> Skip Trailing</label>
 		<input type="number" id="node-input-skipTrailing" placeholder="skipTrailing" min="0" max="10000" step="1">
-
+	</div>
+	<div class="form-row form-row-http-in-maxMessages hide">
+		<label for="node-input-maxMessages"><i class="icon-bookmark"></i> Max Messages</label>
+		<input type="number" id="node-input-maxMessages" placeholder="maxMessages" min="1" max="10000" step="100">
 	</div>
 
 </script>

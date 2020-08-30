@@ -1,10 +1,50 @@
 const logger = new (require("node-red-contrib-logger"))("transform");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
+const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
+	os=require('os'),
+	path=require('path'),
+	process=require('process');
 let ISO8583,ISO8583message;
-//const regexLines=/(?!\B"[^"]*)\n(?![^"]*"\B)/g;
-const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/;
-const path = require('path');
+function SendArray(RED,node,msg,array){
+	if(logger.active) logger.send({label:"SendArray",size:array.length});
+	this.index=0;
+	this.RED=RED;
+	this.node=node;
+	this.msg=msg;
+	this.array=array;
+	node.deleteSourceProperty(RED,node,msg);
+	this.next();
+}
+SendArray.prototype.next=function() {
+	this.usageCPU=process.cpuUsage(this.usageCPU);
+	this.resourceUsage=process.resourceUsage();
+/*
+userCPUTime <integer> maps to ru_utime computed in microseconds. It is the same value as process.cpuUsage().user.
+systemCPUTime
+*/
+	const memoryUsage=process.memoryUsage(), 
+		heapUsedRatio=memoryUsage.heapUsed/memoryUsage.heapTotal,
+		memoryUsedRatio=os.freemem()/os.totalmem();
+		currentTime=Date.now(),
+		cpuUsedRatio=(this.usageCPU.user+this.usageCPU.system)/((currentTime-this.lastTouchTime)*100000);
+	if(logger.active) logger.send({label:"SendArray.next",index:this.index,cpuUsedRatio:cpuUsedRatio,memoryUsedRatio:memoryUsedRatio,heapUsedRatio:heapUsedRatio});
+	this.lastTouchTime=currentTime;
+	
+	let i=cpuUsedRatio>0.9 || memoryUsedRatio>0.9 || heapUsedRatio>0.99?1:100;
+	while(--i) {
+		if(this.index>=this.array.length) {
+			delete this;
+			return;	
+		}
+		const newMsg=this.RED.util.cloneMessage(this.msg);
+		newMsg._msgid=newMsg._msgid+":"+this.index;
+		this.node.setData(this.RED,this.node,newMsg,this.array[this.index++])
+		this.node.send(newMsg);
+	}
+	const call=this.next.bind(this);
+	this.timeoutID=setTimeout(call, 100);
+};
 function removeQuotes(data){
 	try{
 		const d=data.trim();
@@ -43,13 +83,13 @@ const functions={
 	ArrayToISO8385: (RED,node,msg,data)=>ISO8583message.packSync(data),
 	ArrayToMessages: (RED,node,msg,data)=>{
 		if(logger.active) logger.send({label:"ArrayToMessages",arraySize:data.length});
+		if(data.length>node.maxMessages) throw Error("messages to be created "+data.length +"> max: "+node.maxMessages);
 		data.map((c,i)=>{
 			const newMsg=RED.util.cloneMessage(msg);
-			newMsg.payload=c;
 			newMsg._msgid=newMsg._msgid+":"+i;
-			if(node.hasNewTopic) newMsg.topic=node.topicFunction(RED,node,newMsg);
+			node.setData(RED,node,msg,c)
 			node.send(newMsg);
-		})
+		});
 	},
 	CSVToArray: (RED,node,msg,data)=>{
 		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
@@ -98,12 +138,6 @@ const functions={
 		});
 		return r;
 	},
-	JSONToISO8385: (RED,node,msg,data)=>{
-		var d=[];
-		Object.getOwnPropertyNames(data).forEach((v)=>d.push([ISO8583BitMapName[v].id,data[v]]));
-		d.sort((a, b) => a[0] - b[0]);
-		return ISO8583message.packSync(d);
-	},
 	JSONToArray: (RED,node,msg,data)=>{
 		if(data instanceof Object){
 			let a=[];
@@ -127,6 +161,24 @@ const functions={
 		}
 		return escape(data);
 	},
+	JSONToISO8385: (RED,node,msg,data)=>{
+		var d=[];
+		Object.getOwnPropertyNames(data).forEach((v)=>d.push([ISO8583BitMapName[v].id,data[v]]));
+		d.sort((a, b) => a[0] - b[0]);
+		return ISO8583message.packSync(d);
+	},
+	JSONToMessages: (RED,node,msg,data)=>{
+		if(logger.active) logger.send({label:"JSONToMessages",messages:data.length});
+		if(Array.isArray(data)) {
+			new node.SendArray(RED,node,msg,data);
+//			functions.ArrayToMessages(RED,node,msg,data);
+		} else {
+			const newMsg=RED.util.cloneMessage(msg);
+			newMsg._msgid=newMsg._msgid+":0";
+			node.setData(RED,node,newMsg,data)
+			node.send(newMsg);
+		}
+	},
 	JSONToString: (RED,node,msg,data)=>JSON.stringify(data),
 	StringToJSON: (RED,node,msg,data)=>JSON.parse(data),  
 	pathToBasename: (RED,node,msg,data)=>path.basename(data),
@@ -149,10 +201,11 @@ function evalFunction(id,mapping){
 module.exports = function (RED) {
 	function transformNode(n) {
 		RED.nodes.createNode(this,n);
-		let node=Object.assign(this,n,{RED:RED});
+		let node=Object.assign(this,{maxMessages:1000,SendArray:SendArray},n,{RED:RED});
 		node.sendInFunction=["Messages"].includes(node.actionTarget);
 		node.hasNewTopic=![null,"","msg.topic"].includes(node.topicProperty);
 		const sourceMap="(RED,node,msg)=>"+(node.sourceProperty||"msg.payload"),
+			sourceDelete="(RED,node,msg)=>{delete "+(node.sourceProperty||"msg.payload")+";}",
 			targetMap="(RED,node,msg,data)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
 				(node.sendInFunction && node.hasNewTopic? "" : "msg.topic=node.topicFunction(RED,node,msg);")+
 				(node.sendInFunction ? "" : "node.send(msg);" )+
@@ -161,6 +214,7 @@ module.exports = function (RED) {
 		logger.sendInfo({label:"mappings",source:sourceMap,target:targetMap,topicMap:topicMap});
 		try{
 			node.getData=evalFunction("source",sourceMap);
+			node.deleteSourceProperty=evalFunction("source delete",sourceDelete);
 			node.setData=evalFunction("target",targetMap);
 			node.topicFunction=evalFunction("topic",topicMap);
 		} catch(ex) {
