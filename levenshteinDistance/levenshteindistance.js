@@ -1,4 +1,4 @@
-const logger = new (require("node-red-contrib-logger"))("Levenshtein Distance");
+const logger = new (require("node-red-contrib-logger"))("LevenshteinDistance");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 // distance between the two given strings

@@ -1,11 +1,13 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.10.1",
+	"version": "0.10.2",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"node-red-contrib-logger": "0.0.4"
 	},
 	"devDependencies": {
+		"bl": ">=1.2.3",
+		"bcrypt": ">=5.0.0",
 		"eslint": "^6.8.0",
 		"eslint-config-standard": "^14.1.0",
 		"eslint-plugin-import": "^2.19.1",
@@ -87,9 +89,10 @@
 			"append": "append/append.js",
 			"dataAnalysis": "dataAnalysis/dataAnalysis.js",
 			"hostAvailable": "testing/hostAvailable.js",
+			"levenshteinDistance": "levenshteinDistance/levenshteinDistanceNode.js",
 			"load-injector": "testing/load-injector.js",
-			"os": "nodejs/os.js",
 			"monitorflow": "monitor/monitorflow.js",
+			"os": "nodejs/os.js",
 			"spawnProcess": "spawnProcess/spawnProcess.js",
 			"test": "testing/test.js",
 			"transform": "transform/transform.js"

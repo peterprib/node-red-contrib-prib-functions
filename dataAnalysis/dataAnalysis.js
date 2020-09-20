@@ -122,11 +122,33 @@ function setDataPoint(value,term,node,dp) {
 }
 functions={
 	avg:(d)=>functions.sum(d)/d.length,
+	covariance: (d)=>{
+		const means=[],covars=[],dl=d.length,dlminus1=dl-1,N=d[0].length;
+		d.forEach((e,i)=>{
+			means.push(e.reduce((a,c)=>a+c)/N);
+		});
+		for(let i=0;i<dlminus1;i++){
+			covars[i]=[];
+			const di=d[i],v=covars[i],meani=means[i];
+			for(let j=i+1;j<dl;j++){
+				const dj=d[j],meanj=means[j];
+				v[j-1]=di.reduce( (a,c,k)=>a+(c-meani)*(dj[k]-meanj),0)/N;
+			}
+		};
+		if(dl==2) return covars[0]; 
+		return covars;
+	},
+	corelationship:(d)=>{
+		const covars=functions.covariance(d);
+		const stdDev=d.map(c=>functions.stdDev(c));
+		logger.send({label:"test",d:d,covars:covars,stdDev:stdDev});
+		return 1//covars.map((a)=>a.map((c,i)=>c==null?null:c/(stdDev[i+1]*stdDev[i])));
+	},
 	deltas :(d)=>d.map( (c,i)=>c-(d[i-1]||0) ),
 	deltaNormalised :(d)=>d.map( (c,i)=>(c-(d[i-1]||0)) / (d[i-1]||0) ),
 	max: (d)=> Math.max(...d),
 	median:(d)=>{
-		let i=Math.floor(d.length/2);
+		const i=Math.floor(d.length/2);
 		return d.length%2 ? d[i] : (d[i]+d[i-1])/2; 
 	},
 	min:(d)=>Math.min(...d),
@@ -212,13 +234,13 @@ functions={
 		}
 	},
 	standardize:(d)=>{
-		let avg=functions.avg(d),
+		const avg=functions.avg(d),
 			stdDev=functions.stdDev(d);
 		return d.map( (c)=>(c-avg)/stdDev);
 	},
 	stdDev:(d)=>Math.sqrt(functions.variance(d)),
 	skew:(d)=>{
-		let avg=functions.avg(d),
+		const avg=functions.avg(d),
 			variance=functions.sumWithFunction(d,(v)=>Math.pow(v,2)) - Math.pow(avg,2);
 		return (functions.sumWithFunction(d,(v)=>Math.pow(v,3))
 			- 3*avg*variance
@@ -245,13 +267,13 @@ functions={
 		return dp;
 	},
 	sum:(d)=>d.reduce((p,c)=>p+c),
-	sumWithFunction:(d,f)=>d.reduce((p,c)=>p+f.apply(this,[c])),
+	sumWithFunction:(d,f)=>d.reduce((p,c)=>p+f.apply(this,[c]),0),
 	variance:(d)=>{  //Var(X) = E (X − E(X))2 = E(X2) − (E(X))2
 		return functions.sumWithFunction(d,(v)=>Math.pow(v,2))
 			- Math.pow(functions.avg(d),2);
 	}
 }
-
+functions.mean=functions.avg;
 module.exports = function (RED) {
 	function dataAnalysisNode(n) {
 		RED.nodes.createNode(this, n);

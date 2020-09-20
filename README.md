@@ -89,6 +89,13 @@ Test example:
 
 ![append example](documentation/appendTest.JPG "append example")
 
+------------------------------------------------------------
+
+## Levenshtein Distance
+
+The levenshtein distance between two character strings.
+
+![Levenshtein Distance](documentation/levenshteinDistance.JPG "Levenshtein Distance")
 
 ------------------------------------------------------------
 
@@ -175,6 +182,8 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.10.2 Transform validate for array source, bug fixes on transform and add improvems to array 2 messages. Added node for levenshtein Distance
 
 0.10.1 Real time weighted moving average, levenshtein Distance, for test allow testing of "infinity","-infinity" and "NaN" in JSON.
 

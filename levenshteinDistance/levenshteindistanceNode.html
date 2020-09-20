@@ -7,17 +7,15 @@
 			name: {value: ""},
 			source1Property:{value:"msg.payload"},
 			source2Property:{value:"msg.payload"},
-			targetProperty:{value:"msg.payload"},
-			columnsProperty:{value:""},
-			columnsPropertyValid:{value:true,validate:(v)=>v}
+			targetProperty:{value:"msg.payload"}
 		},
 		inputs: 1,
-		outputs: 3,
-		icon: "fontawesome/fa-cubes",
+		outputs: 2,
+		icon: "Tape-Measure-icon.png",
 		align: 'left',
-		paletteLabel: "gpu",
+		paletteLabel: "Levenshtein Distance",
 		inputLabels: "Message In",
-		outputLabels: ["Message Out","Error","No GPU"],
+		outputLabels: ["Message Out","Error"],
 		label: function () {
 			return this.name || "Levenshtein Distance";
 		},

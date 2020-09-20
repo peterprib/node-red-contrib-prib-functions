@@ -6,6 +6,12 @@ const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
 	path=require('path'),
 	process=require('process');
 let ISO8583,ISO8583message;
+
+function error(node,message,shortMessage){
+	if(logger.active) logger.send({label:"transformNode catch",node:n,error:error,shortMessage});
+	node.error(message);
+	node.status({fill:"red",shape:"ring",text:shortMessage});
+}
 function SendArray(RED,node,msg,array){
 	if(logger.active) logger.send({label:"SendArray",size:array.length});
 	this.index=0;
@@ -19,10 +25,6 @@ function SendArray(RED,node,msg,array){
 SendArray.prototype.next=function() {
 	this.usageCPU=process.cpuUsage(this.usageCPU);
 	this.resourceUsage=process.resourceUsage();
-/*
-userCPUTime <integer> maps to ru_utime computed in microseconds. It is the same value as process.cpuUsage().user.
-systemCPUTime
-*/
 	const memoryUsage=process.memoryUsage(), 
 		heapUsedRatio=memoryUsage.heapUsed/memoryUsage.heapTotal,
 		memoryUsedRatio=os.freemem()/os.totalmem();
@@ -37,9 +39,10 @@ systemCPUTime
 			delete this;
 			return;	
 		}
-		const newMsg=this.RED.util.cloneMessage(this.msg);
-		newMsg._msgid=newMsg._msgid+":"+this.index;
-		this.node.setData(this.RED,this.node,newMsg,this.array[this.index++])
+		const newMsg=this.RED.util.cloneMessage(this.msg),index=this.index;
+		newMsg._msgid=newMsg._msgid+":"+index;
+		this.node.setData(this.RED,this.node,newMsg,this.array[index],index)
+		this.index++;
 		this.node.send(newMsg);
 	}
 	const call=this.next.bind(this);
@@ -84,10 +87,11 @@ const functions={
 	ArrayToMessages: (RED,node,msg,data)=>{
 		if(logger.active) logger.send({label:"ArrayToMessages",arraySize:data.length});
 		if(data.length>node.maxMessages) throw Error("messages to be created "+data.length +"> max: "+node.maxMessages);
-		data.map((c,i)=>{
+		data.map((row,i)=>{
 			const newMsg=RED.util.cloneMessage(msg);
 			newMsg._msgid=newMsg._msgid+":"+i;
-			node.setData(RED,node,msg,c)
+			if(logger.active) logger.send({label:"ArrayToMessages",row:row,index:i});
+			node.setData(RED,node,newMsg,row,i)
 			node.send(newMsg);
 		});
 	},
@@ -175,7 +179,7 @@ const functions={
 		} else {
 			const newMsg=RED.util.cloneMessage(msg);
 			newMsg._msgid=newMsg._msgid+":0";
-			node.setData(RED,node,newMsg,data)
+			node.setData(RED,node,newMsg,data,0)
 			node.send(newMsg);
 		}
 	},
@@ -189,7 +193,8 @@ const functions={
 	pathToJoin: (RED,node,msg,...data)=>path.join(...data),
 	pathToParse: (RED,node,msg,data)=>path.parse(data),
 	pathToNormalize: (RED,node,msg,data)=>path.normalize(data),
-	pathToResolve: (RED,node,msg,data)=>path.resolve(data)
+	pathToResolve: (RED,node,msg,data)=>path.resolve(data),
+	invalidArray:(v=>!Array.isArray(v))
 };
 function evalFunction(id,mapping){
 	try{
@@ -201,16 +206,17 @@ function evalFunction(id,mapping){
 module.exports = function (RED) {
 	function transformNode(n) {
 		RED.nodes.createNode(this,n);
+		if(logger.active) logger.send({label:"transformNode",node:n});
 		let node=Object.assign(this,{maxMessages:1000,SendArray:SendArray},n,{RED:RED});
 		node.sendInFunction=["Messages"].includes(node.actionTarget);
-		node.hasNewTopic=![null,"","msg.topic"].includes(node.topicProperty);
+		node.hasNewTopic=![null,""].includes(node.topicProperty);
 		const sourceMap="(RED,node,msg)=>"+(node.sourceProperty||"msg.payload"),
 			sourceDelete="(RED,node,msg)=>{delete "+(node.sourceProperty||"msg.payload")+";}",
-			targetMap="(RED,node,msg,data)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
-				(node.sendInFunction && node.hasNewTopic? "" : "msg.topic=node.topicFunction(RED,node,msg);")+
+			targetMap="(RED,node,msg,data,index)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
+				(node.sendInFunction && node.hasNewTopic? "msg.topic=node.topicFunction(RED,node,msg,data,index);":"")+
 				(node.sendInFunction ? "" : "node.send(msg);" )+
 				"}",
-			topicMap="(RED,node,msg)=>"+(node.topicProperty||"msg.topic");
+			topicMap="(RED,node,msg,data,index)=>"+(node.topicProperty||"msg.topic");
 		logger.sendInfo({label:"mappings",source:sourceMap,target:targetMap,topicMap:topicMap});
 		try{
 			node.getData=evalFunction("source",sourceMap);
@@ -218,8 +224,7 @@ module.exports = function (RED) {
 			node.setData=evalFunction("target",targetMap);
 			node.topicFunction=evalFunction("topic",topicMap);
 		} catch(ex) {
-			node.error(ex);
-			node.status({fill:"red",shape:"ring",text:"Invalid setup "+ex.message});
+			error(node,ex,"Invalid setup "+ex.message);
 			return;
 		}
 		if(node.actionSource=="ISO8583" || node.actionTarget=="ISO8583") {
@@ -228,32 +233,36 @@ module.exports = function (RED) {
 					ISO8583=require('iso-8583');
 					ISO8583message=ISO8583.Message();
 					node.log("loaded iso-8583");
-				} catch (e) {
-					node.error("need to run 'npm install iso-8583'");
-					this.status({fill:"red",shape:"ring",text:"iso-8583 not installed"});
+				} catch (ex) {
+					error(node,"need to run 'npm install iso-8583'","iso-8583 not installed");
 					return;
 				}
 			}
 		}
 		try {
+			node.invalidSourceType=functions["invalid"+node.actionSource];
+		} catch (e) {
+			node.invalidSourceType=(()=>false);
+		}
+		try {
 			node.transform=functions[node.actionSource+"To"+node.actionTarget];
 			if(!node.transform) throw Error("transform routine not found");
-		} catch (e) {
-			node.error(node.actionSource+" to "+node.actionTarget + " not implemented, "+e);
-			this.status({fill:"red",shape:"ring",text:node.actionSource+"\nto "+node.actionTarget + " not implemented"});
+		} catch (ex) {
+			error(node,ex,node.actionSource+"\nto "+node.actionTarget + " not implemented")
 			return;
 		}
 		
 		this.status({fill:"green",shape:"ring",text:"Ready"});
 		node.on("input", function(msg) {
+			if(logger.active) logger.send({label:"input",msgid:msg._msgid,topic:msg.topic});
 			try{
-				node.setData(RED,node,msg,node.transform(RED,node,msg,node.getData(RED,node,msg)));
+				const data=node.getData(RED,node,msg);
+				if(node.invalidSourceType(data)) throw Error("expected source data type "+node.actionSource); 
+				node.setData(RED,node,msg,node.transform(RED,node,msg,data));
 			} catch (ex) {
 				msg.error=node.actionSource+" to "+node.actionTarget + " " +ex.message;
-				node.error(msg.error);
-				this.status({fill:"red",shape:"ring",text:"Error(s)"});
+				error(node,msg.error,"Error(s)");
 				node.send([null,msg]);
-				return;
 			}
 		});				
 	}

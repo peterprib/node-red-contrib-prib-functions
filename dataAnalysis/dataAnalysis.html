@@ -75,7 +75,7 @@
            			$(".form-row-http-in-outliersStdDevs").hide();
            			$(".form-row-http-in-outliersBase").hide();
         		 }        		 
-        		 if(["pearsonR"].includes( $(this).val() )) {
+        		 if(["pearsonR","covariance","corelationship"].includes( $(this).val() )) {
            			$(".node-input-dataProperties-container-row").show();
            			$(".form-row-http-in-dataProperty").hide();
            		 } else {
@@ -138,10 +138,13 @@
         <label for="node-input-action"><i class="fa fa-list-ul"></i> Method</label>
         <select id="node-input-action" placeholder="action">
             <option value="avg">Average</option>
+            <option value="covariance">Covariance</option>
+            <option value="corelationship">Corelationship</option>
             <option value="deltas">Deltas</option>
             <option value="deltaNormalised">Deltas Normalised</option>
             <option value="pearsonR">Linear Correlation Coefficient</option>
             <option value="max">Maximum</option>
+            <option value="avg">Mean</option>
             <option value="median">Median</option>
             <option value="min">Minimun</option>
             <option value="movingAvgSimple">Moving Average Simple (SMA)</option>
@@ -149,8 +152,8 @@
             <option value="movingAvgWeighted">Moving Average Weighted (WMA)</option>
             <option value="movingAvgExponential">Moving Average Exponential (EMA/EWMA)</option>
             <option value="normalize">Normalise</option>
-            <option value="range">Range</option>
             <option value="pearsonR">Pearson Product Moment Correlation (PPMC)</option>
+            <option value="range">Range</option>
             <option value="realtime">RealTime Metrics</option>
             <option value="realtimePredict">RealTime Metrics + predicts</option>
             <option value="standardize">Standardization (Z-score Normalization)</option>
