@@ -80,24 +80,23 @@ describe('transform', function() {
 
 	it('ARVO', function(done) {
 		const flow = [ 
-			{id :"inHelper",	type : "helper",wires : [ [ "JSON2ARVO" ] ]},
 			{	id : "JSON2ARVO",
+				name : "JSON2ARVOname",
 				type : "transform",
 				actionSource: "JSON",
 				actionTarget: "ARVO",
 				sourceProperty:"msg.payload",
 				targetProperty:"msg.payload",
-				topicProperty:"index",
 				schema: '{"type":"record","fields":[{"name":"name","type":"string"}]}',
 				wires : [ [ "ARVO2JSON" ],["errorHelper"] ]
 			}, 
 			{	id : "ARVO2JSON",
+				name : "ARVO2JSONname",
 				type : "transform",
 				actionSource: "ARVO",
 				actionTarget: "JSON",
 				sourceProperty:"msg.payload",
 				targetProperty:"msg.payload",
-				topicProperty:"index",
 				schema: '{"type":"record","fields":[{"name":"name","type":"string"}]}',
 				wires : [ [ "outHelper" ],["errorHelper"] ]
 			}, 
@@ -105,18 +104,27 @@ describe('transform', function() {
 			{id :"errorHelper",	type : "helper"}
 		];
 		helper.load(transformNode, flow, function() {
-			const inHelper = helper.getNode("inHelper");
+			const JSON2ARVO = helper.getNode("JSON2ARVO");
 			const outHelper = helper.getNode("outHelper");
 			const errorHelper = helper.getNode("errorHelper");
-			const data ='{"name":"testname"}';
+			const testData ='{"name":"testname"}';
 			outHelper.on("input", function(msg) {
-				done(msg.payload==data?null:"mismatch  in:"+data +" returned: "+msg.payload);
+				console.log("outHelper "+msg.payload);
+				if(JSON.stringify(msg.payload)==testData) {
+					console.log("mismatch  in: "+testData +" returned: "+JSON.stringify(msg.payload));
+					done();
+				} else {
+					console.log("mismatch  in: "+testData +" returned: "+JSON.stringify(msg.payload));
+					done("mismatch");
+				}
 			});
 			errorHelper.on("input", function(msg) {
-				done("error :"+msg.payload);
+				console.log("errorHelper "+msg.payload);
+				done("error  check log output");
 			});
-			inHelper.receive({
-				payload : data
+			JSON2ARVO.receive({
+				topic:"test",
+				payload : JSON.parse(testData)
 			});
 		});
 		
