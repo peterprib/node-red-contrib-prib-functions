@@ -74,7 +74,7 @@ Transformations:
 *	Array to HTML
 *	Array to ISO8385
 *	Array to Messages
-*	ARVO to JSON
+*	AVRO to JSON
 *	CSV to Array
 *	CSV to HTML
 *	CSV to Messages
@@ -85,7 +85,7 @@ Transformations:
 *	ISO8385 to JSON
 *	JSON to Array
 *	JSON to CSV
-*	JSON to ARVO
+*	JSON to AVRO
 *	JSON to ISO8385
 *	JSON to Messages
 *	JSON to String
@@ -102,9 +102,9 @@ Transformations:
 *	snappy compress
 *	snappy uncompress
 
-Example ARVO with schema
+Example AVRO with schema
 
-![Transform ARVO](documentation/transformArvo.JPG "Transform ARVO example")
+![Transform AVRO](documentation/transformArvo.JPG "Transform AVRO example")
 
 ------------------------------------------------------------
 
@@ -230,7 +230,9 @@ Test/example flow in test/generalTest.json
 # Version
 
 
-0.11.0 Transform for ARVO and snappy.  Add JSON to CSV 
+0.11.1 Fix spelling of AVRO. 
+
+0.11.0 Transform for AVRO and snappy.  Add JSON to CSV 
 
 0.10.2 Transform validate for array source, bug fixes on transform and add improvements to array to messages. Added node for levenshtein distance.
 

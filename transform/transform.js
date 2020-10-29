@@ -98,7 +98,7 @@ const functions={
 			node.send(newMsg);
 		});
 	},
-	ARVOToJSON: (RED,node,msg,data)=>node.avroTransformer.fromBuffer(data), // = {kind: 'CAT', name: 'Albert'}
+	AVROToJSON: (RED,node,msg,data)=>node.avroTransformer.fromBuffer(data), // = {kind: 'CAT', name: 'Albert'}
 	CSVToArray: (RED,node,msg,data)=>{
 		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
 		lines.forEach((value, idx) => {
@@ -157,7 +157,7 @@ const functions={
 		return data;
 	},
 	JSONToCSV: (RED,node,msg,data)=>functions.ArrayToCSV(RED,node,msg,functions.JSONToArray(RED,node,msg,data)),
-	JSONToARVO: (RED,node,msg,data)=>node.avroTransformer.toBuffer(data), // Encoded buffer.
+	JSONToAVRO: (RED,node,msg,data)=>node.avroTransformer.toBuffer(data), // Encoded buffer.
 	JSONToHTML: (RED,node,msg,data,level=0)=>{
 		if(Array.isArray(data)) {
 			return data.length?"<table><tr>"+data.map((r)=>functions.JSONToHTML(RED,node,msg,r,++level)).join("</tr><tr>")+"</tr><table>":"";
@@ -254,7 +254,7 @@ module.exports = function (RED) {
 			node.deleteSourceProperty=evalFunction("source delete",sourceDelete);
 			node.setData=evalFunction("target",targetMap);
 			node.topicFunction=evalFunction("topic",topicMap);
-			if(node.actionSource=="ARVO" ||node.actionTarget=="ARVO") {
+			if(node.actionSource=="AVRO" ||node.actionTarget=="AVRO") {
 				 node.avroTransformer=avsc.Type.forSchema(JSON.parse(node.schema));
 			}
 		} catch(ex) {

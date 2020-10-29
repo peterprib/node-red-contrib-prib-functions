@@ -59,7 +59,7 @@
 					options["ISO8385"]="ISO8385";
 					options["Messages"]="Messages";
 					break;
-				case 'ARVO':
+				case 'AVRO':
 					options["JSON"]="JSON";
 					$(".form-row-http-in-schema").show();
 					break;
@@ -78,7 +78,7 @@
 					break;
 				case 'JSON':
 					options["Array"]="Array";
-					options["ARVO"]="ARVO";
+					options["AVRO"]="AVRO";
 					options["CSVWithHeader"]="CSV with header";
 					options["CSV"]="CSV";
 					options["ISO8385"]="ISO 8583";
@@ -123,7 +123,7 @@
 			$("#node-input-actionTarget").change(function() {
 				const actionTarget=$(this).val();
 				const actionSource=$("#node-input-actionSource").val();
-				if(actionSource!=="ARVO") {
+				if(actionSource!=="AVRO") {
 					$(".form-row-http-in-schema").hide();
 				}
 				$(".form-row-http-in-maxMessages").hide();
@@ -131,7 +131,7 @@
 					$(".form-row-http-in-csv").hide();
 				}
 				switch (actionTarget) {
-				case 'ARVO':
+				case 'AVRO':
 					$(".form-row-http-in-schema").show();
 					break;
 				case 'CSV':
@@ -173,7 +173,7 @@
 		<label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
 		<select id="node-input-actionSource" placeholder="actionSource">
 			<option value="Array">Array</option>
-			<option value="ARVO">ARVO</option>
+			<option value="AVRO">AVRO</option>
 			<option value="CSVWithHeader">CSV with header</option>
 			<option value="CSV">CSV</option>
 			<option value="ISO8385">ISO 8583</option>

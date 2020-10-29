@@ -1,6 +1,6 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.11.0",
+	"version": "0.11.1",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"node-red-contrib-logger": "0.0.4",
@@ -36,7 +36,7 @@
 		"analysis",
 		"average",
 		"avg",
-		"ARVO",
+		"AVRO",
 		"arvo",
 		"compare",
 		"CMA",

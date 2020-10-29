@@ -78,22 +78,22 @@ describe('transform', function() {
 		});
 	}).timeout(2000);
 
-	it('ARVO', function(done) {
+	it('AVRO', function(done) {
 		const flow = [ 
-			{	id : "JSON2ARVO",
-				name : "JSON2ARVOname",
+			{	id : "JSON2AVRO",
+				name : "JSON2AVROname",
 				type : "transform",
 				actionSource: "JSON",
-				actionTarget: "ARVO",
+				actionTarget: "AVRO",
 				sourceProperty:"msg.payload",
 				targetProperty:"msg.payload",
 				schema: '{"type":"record","fields":[{"name":"name","type":"string"}]}',
-				wires : [ [ "ARVO2JSON" ],["errorHelper"] ]
+				wires : [ [ "AVRO2JSON" ],["errorHelper"] ]
 			}, 
-			{	id : "ARVO2JSON",
-				name : "ARVO2JSONname",
+			{	id : "AVRO2JSON",
+				name : "AVRO2JSONname",
 				type : "transform",
-				actionSource: "ARVO",
+				actionSource: "AVRO",
 				actionTarget: "JSON",
 				sourceProperty:"msg.payload",
 				targetProperty:"msg.payload",
@@ -104,7 +104,7 @@ describe('transform', function() {
 			{id :"errorHelper",	type : "helper"}
 		];
 		helper.load(transformNode, flow, function() {
-			const JSON2ARVO = helper.getNode("JSON2ARVO");
+			const JSON2AVRO = helper.getNode("JSON2AVRO");
 			const outHelper = helper.getNode("outHelper");
 			const errorHelper = helper.getNode("errorHelper");
 			const testData ='{"name":"testname"}';
@@ -122,7 +122,7 @@ describe('transform', function() {
 				console.log("errorHelper "+msg.payload);
 				done("error  check log output");
 			});
-			JSON2ARVO.receive({
+			JSON2AVRO.receive({
 				topic:"test",
 				payload : JSON.parse(testData)
 			});
