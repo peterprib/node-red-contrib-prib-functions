@@ -1,8 +1,44 @@
 [
     {
-        "id": "ed497dc0.0d342",
+        "id": "62b60e32.707be",
+        "type": "tab",
+        "label": "transform",
+        "disabled": false,
+        "info": ""
+    },
+    {
+        "id": "a24e374f.1a4d28",
+        "type": "inject",
+        "z": "62b60e32.707be",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"name\":\"testname\"}",
+        "payloadType": "json",
+        "x": 200,
+        "y": 100,
+        "wires": [
+            [
+                "5bcb0805.e110e8"
+            ]
+        ]
+    },
+    {
+        "id": "5c87b309.5bef3c",
         "type": "debug",
-        "z": "b68ee1.3f2d512",
+        "z": "62b60e32.707be",
         "name": "",
         "active": true,
         "tosidebar": true,
@@ -10,8 +46,149 @@
         "tostatus": false,
         "complete": "true",
         "targetType": "full",
-        "x": 470,
-        "y": 960,
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 660,
+        "y": 100,
         "wires": []
+    },
+    {
+        "id": "5bcb0805.e110e8",
+        "type": "transform",
+        "z": "62b60e32.707be",
+        "name": "",
+        "actionSource": "JSON",
+        "actionTarget": "ARVO",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 440,
+        "y": 100,
+        "wires": [
+            [
+                "5c87b309.5bef3c",
+                "f04e597a.5d8898"
+            ],
+            [
+                "5c87b309.5bef3c"
+            ]
+        ]
+    },
+    {
+        "id": "f04e597a.5d8898",
+        "type": "transform",
+        "z": "62b60e32.707be",
+        "name": "",
+        "actionSource": "ARVO",
+        "actionTarget": "JSON",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 440,
+        "y": 220,
+        "wires": [
+            [
+                "5c87b309.5bef3c"
+            ],
+            [
+                "5c87b309.5bef3c"
+            ]
+        ]
+    },
+    {
+        "id": "dcac5e32.3ffb8",
+        "type": "transform",
+        "z": "62b60e32.707be",
+        "name": "",
+        "actionSource": "snappy",
+        "actionTarget": "Compress",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 450,
+        "y": 340,
+        "wires": [
+            [
+                "5c87b309.5bef3c",
+                "f57f7744.c67fc8"
+            ],
+            [
+                "5c87b309.5bef3c"
+            ]
+        ]
+    },
+    {
+        "id": "1171c52.430ab3b",
+        "type": "inject",
+        "z": "62b60e32.707be",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "a test",
+        "payloadType": "str",
+        "x": 150,
+        "y": 340,
+        "wires": [
+            [
+                "dcac5e32.3ffb8"
+            ]
+        ]
+    },
+    {
+        "id": "f57f7744.c67fc8",
+        "type": "transform",
+        "z": "62b60e32.707be",
+        "name": "",
+        "actionSource": "snappy",
+        "actionTarget": "Uncompress",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 440,
+        "y": 400,
+        "wires": [
+            [
+                "5c87b309.5bef3c"
+            ],
+            [
+                "5c87b309.5bef3c"
+            ]
+        ]
     }
 ]

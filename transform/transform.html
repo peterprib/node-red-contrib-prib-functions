@@ -1,6 +1,20 @@
 
 <script type="text/javascript">
+	function setInput(t) {
+		$("#node-input-"+t+"Type").val(this[t+"Type"]);
+		$("#node-input-"+t).typedInput({
+			default: 'json',
+			typeField: $("#node-input-"+t+"Type"),
+			types:['str','json','env'],
+			validate: ()=>{
+			}
+		});
+		$("#node-input-"+t).typedInput('type',this[t+"Type"]);
+	}
+	const schemaExample='{"type":"record","fields":[{"name":"name","type":"string"}]}';
+
 	/*globals RED */
+	
 	RED.nodes.registerType('transform', {
 		category: 'function',
 		color: '#fdeea2',
@@ -12,13 +26,15 @@
 			targetProperty:{value:"msg.payload"},
 			topicProperty:{value:"msg.topic"},
 			maxMessages: {value:1000},
+			schema: {value:schemaExample, validate: RED.validators.typedInput("schemaType")},
+			schemaType: {value:"json"},
 			skipLeading: {value:0},
 			skipTrailing: {value:0},
 			delimiter: {value:",",required:true}
 		},
 		inputs: 1,
 		outputs: 2,
-		icon: "fontawesome/fa-random",
+		icon: "icons8-one-way-transition-80.png",
 		align: 'left',
 		paletteLabel: "transform",
 		inputLabels: "Message In",
@@ -29,17 +45,23 @@
 		oneditprepare: function() {
 			const actionTarget=this.actionTarget
 			$("#node-input-actionSource").change(function() {
+				const actionSource=$(this).val();
 				$(".form-row-http-in-skip").hide();
-				if(!['CSV','CSVWithHeader'].includes($("#node-input-actionSource").val())) {
+				$(".form-row-http-in-schema").hide();
+				if(!['CSV','CSVWithHeader'].includes(actionSource)) {
 					$(".form-row-http-in-csv").hide();
 				}
 				let options={};
-				switch ($(this).val()) {
+				switch (actionSource) {
 				case 'Array':
 					options["CSV"]="CSV";
 					options["HTML"]="HMTL";
 					options["ISO8385"]="ISO8385";
 					options["Messages"]="Messages";
+					break;
+				case 'ARVO':
+					options["JSON"]="JSON";
+					$(".form-row-http-in-schema").show();
 					break;
 				case 'CSVWithHeader':
 					options["JSON"]="JSON";
@@ -56,6 +78,7 @@
 					break;
 				case 'JSON':
 					options["Array"]="Array";
+					options["ARVO"]="ARVO";
 					options["CSVWithHeader"]="CSV with header";
 					options["CSV"]="CSV";
 					options["ISO8385"]="ISO 8583";
@@ -63,6 +86,7 @@
 					options["JSON"]="JSON";
 					options["Messages"]="Messages";
 					options["String"]="String";
+					options["XML"]="XML";
 					break;
 				case 'path':
 					options["Basename"]="basename";
@@ -72,6 +96,10 @@
 					options["Join"]="join";
 					options["Normalize"]="normalize";
 					options["Resolve"]="resolve";
+					break;
+				case 'snappy':
+					options["Uncompress"]="Uncompress";
+					options["Compress"]="Compress";
 					break;
 				case 'String':
 					options["JSON"]="JSON";
@@ -93,11 +121,19 @@
 				selectElement.val(actionTarget);
 			}).change();
 			$("#node-input-actionTarget").change(function() {
+				const actionTarget=$(this).val();
+				const actionSource=$("#node-input-actionSource").val();
+				if(actionSource!=="ARVO") {
+					$(".form-row-http-in-schema").hide();
+				}
 				$(".form-row-http-in-maxMessages").hide();
-				if(!['CSV','CSVWithHeader'].includes($("#node-input-actionTarget").val())) {
+				if(!['CSV','CSVWithHeader'].includes(actionTarget)) {
 					$(".form-row-http-in-csv").hide();
 				}
-				switch ($(this).val()) {
+				switch (actionTarget) {
+				case 'ARVO':
+					$(".form-row-http-in-schema").show();
+					break;
 				case 'CSV':
 					$(".form-row-http-in-csv").show();
 					break;
@@ -106,10 +142,9 @@
 					break;
 				}
 			}).change();
+			setInput.apply(this,["schema"]);
 		},
 		oneditsave: function() {
-		},
-		oneditresize: function() {
 		},
 		resizeRule : function(file,newWidth) {
 		}
@@ -118,9 +153,6 @@
 
 <script type="text/x-red" data-template-name="transform">
 
-	<div class="form-row">
-		<label for="node-input-beta" style="color:red"><i class="fa fa-tag"></i> EXPERIMENTIAL </label>
-	</div>
 	<div class="form-row">
 		<label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
 		<input type="text" id="node-input-name" placeholder="Name">
@@ -141,11 +173,13 @@
 		<label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
 		<select id="node-input-actionSource" placeholder="actionSource">
 			<option value="Array">Array</option>
+			<option value="ARVO">ARVO</option>
 			<option value="CSVWithHeader">CSV with header</option>
 			<option value="CSV">CSV</option>
 			<option value="ISO8385">ISO 8583</option>
  			<option value="JSON">JSON</option> 
 			<option value="String">String</option> 
+			<option value="snappy">snappy</option> 
 			<option value="path">Path</option> 
 		</select>
 	</div>
@@ -168,6 +202,12 @@
 		<label for="node-input-maxMessages"><i class="icon-bookmark"></i> Max Messages</label>
 		<input type="number" id="node-input-maxMessages" placeholder="maxMessages" min="1" max="10000" step="100">
 	</div>
+	<div class="form-row form-row-http-in-schema hide">
+		<label for="node-input-schema"><i class="fa fa-envelope"></i> <span data-i18n="common.label.schema"> Schema </span></label>
+		<input type="text" id="node-input-schema" style="width:70%">
+		<input type="hidden" id="node-input-schemaType">
+	</div>
+
 
 </script>
 

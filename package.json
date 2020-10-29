@@ -1,9 +1,11 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.10.2",
+	"version": "0.11.0",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
-		"node-red-contrib-logger": "0.0.4"
+		"node-red-contrib-logger": "0.0.4",
+		"avsc": "*",
+		"snappy": "*"
 	},
 	"devDependencies": {
 		"bl": ">=1.2.3",
@@ -34,6 +36,8 @@
 		"analysis",
 		"average",
 		"avg",
+		"ARVO",
+		"arvo",
 		"compare",
 		"CMA",
 		"cumulative",
@@ -68,6 +72,7 @@
 		"Simple Moving Average",
 		"skew",
 		"SMA",
+		"snappy",
 		"standard deviation",
 		"standardize",
 		"statistics",

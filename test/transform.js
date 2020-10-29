@@ -77,4 +77,48 @@ describe('transform', function() {
 			});
 		});
 	}).timeout(2000);
+
+	it('ARVO', function(done) {
+		const flow = [ 
+			{id :"inHelper",	type : "helper",wires : [ [ "JSON2ARVO" ] ]},
+			{	id : "JSON2ARVO",
+				type : "transform",
+				actionSource: "JSON",
+				actionTarget: "ARVO",
+				sourceProperty:"msg.payload",
+				targetProperty:"msg.payload",
+				topicProperty:"index",
+				schema: '{"type":"record","fields":[{"name":"name","type":"string"}]}',
+				wires : [ [ "ARVO2JSON" ],["errorHelper"] ]
+			}, 
+			{	id : "ARVO2JSON",
+				type : "transform",
+				actionSource: "ARVO",
+				actionTarget: "JSON",
+				sourceProperty:"msg.payload",
+				targetProperty:"msg.payload",
+				topicProperty:"index",
+				schema: '{"type":"record","fields":[{"name":"name","type":"string"}]}',
+				wires : [ [ "outHelper" ],["errorHelper"] ]
+			}, 
+			{id :"outHelper",	type : "helper"},
+			{id :"errorHelper",	type : "helper"}
+		];
+		helper.load(transformNode, flow, function() {
+			const inHelper = helper.getNode("inHelper");
+			const outHelper = helper.getNode("outHelper");
+			const errorHelper = helper.getNode("errorHelper");
+			const data ='{"name":"testname"}';
+			outHelper.on("input", function(msg) {
+				done(msg.payload==data?null:"mismatch  in:"+data +" returned: "+msg.payload);
+			});
+			errorHelper.on("input", function(msg) {
+				done("error :"+msg.payload);
+			});
+			inHelper.receive({
+				payload : data
+			});
+		});
+		
+	});
 });

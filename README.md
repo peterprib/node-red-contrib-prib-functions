@@ -3,6 +3,7 @@
 [Node-Red][1] nodes for various functions:
 
 *   Data Analysis  - statistical metrics that has real time option
+*	Transform
 *	Test
 *   Load Injector
 *	Monitor Flow
@@ -59,6 +60,51 @@ example:
 
 
 ![Data Analysis example](documentation/DataAnalysisTest.JPG "Data Analysis example")
+
+------------------------------------------------------------
+
+## Transform
+
+Translates a selected msg property to a target property.
+Messages generates a message for each row or record. 
+
+Transformations:
+
+*	Array to CSV
+*	Array to HTML
+*	Array to ISO8385
+*	Array to Messages
+*	ARVO to JSON
+*	CSV to Array
+*	CSV to HTML
+*	CSV to Messages
+*	CSVWithHeader to Array
+*	CSVWithHeader to HTML
+*	CSVWithHeader to JSON
+*	ISO8385 to Array
+*	ISO8385 to JSON
+*	JSON to Array
+*	JSON to CSV
+*	JSON to ARVO
+*	JSON to ISO8385
+*	JSON to Messages
+*	JSON to String
+*	String to JSON
+*	path to Basename
+*	path to Dirname
+*	path to Extname
+*	path to Format
+*	path to Is Absolute
+*	path to Join
+*	path to Parse
+*	path to Normalize
+*	path to Resolve
+*	snappy compress
+*	snappy uncompress
+
+Example ARVO with schema
+
+![Transform ARVO](documentation/transformArvo.JPG "Transform ARVO example")
 
 ------------------------------------------------------------
 
@@ -183,7 +229,10 @@ Test/example flow in test/generalTest.json
 
 # Version
 
-0.10.2 Transform validate for array source, bug fixes on transform and add improvems to array 2 messages. Added node for levenshtein Distance
+
+0.11.0 Transform for ARVO and snappy.  Add JSON to CSV 
+
+0.10.2 Transform validate for array source, bug fixes on transform and add improvements to array to messages. Added node for levenshtein distance.
 
 0.10.1 Real time weighted moving average, levenshtein Distance, for test allow testing of "infinity","-infinity" and "NaN" in JSON.
 
