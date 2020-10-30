@@ -5,11 +5,27 @@ const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
 	os=require('os'),
 	path=require('path'),
 	process=require('process');
-const avsc = require('avsc');
-const snappy = require('snappy');
+let  avsc,snappy,xmlParser,json2xmlParser;
 const {ISO8583BitMapId,ISO8583BitMapName}=require("./ISO8583BitMap");
 let ISO8583,ISO8583message;
-
+const XMLoptions = {
+//	    attributeNamePrefix : "@_",
+//	    attrNodeName: "attr", //default is 'false'
+//	    textNodeName : "#text",
+	    ignoreAttributes : false,
+	    ignoreNameSpace : false,
+	    allowBooleanAttributes : true,
+	    parseNodeValue : true,
+	    parseAttributeValue : false,
+//	    cdataTagName: "__cdata", //default is 'false'
+//	    cdataPositionChar: "\\c",
+//	    parseTrueNumberOnly: false,
+//	    arrayMode: false, //"strict"
+//	    attrValueProcessor: (val, attrName) => he.decode(val, {isAttributeValue: true}),//default is a=>a
+//	    tagValueProcessor : (val, tagName) => he.decode(val), //default is a=>a
+//	    stopNodes: ["parse-me-as-string"]
+	    trimValues: false
+	};
 function error(node,ex,shortMessage){
 	if(logger.active) logger.send({label:"transformNode catch",shortMessage:shortMessage,error:ex.message,stack:ex.stack});
 	node.error(ex.message);
@@ -190,6 +206,7 @@ const functions={
 		}
 	},
 	JSONToString: (RED,node,msg,data)=>JSON.stringify(data),
+	JSONToXML: (RED,node,msg,data)=>json2xmlParser.parse(data),
 	StringToJSON: (RED,node,msg,data)=>JSON.parse(data),  
 	pathToBasename: (RED,node,msg,data)=>path.basename(data),
 	pathToDirname: (RED,node,msg,data)=>path.dirname(data),
@@ -224,6 +241,7 @@ const functions={
 			node.send(msg);
 		})
 	},
+	XMLToJSON: (RED,node,msg,data)=>xmlParser.parse(data,XMLoptions,true),
 	invalidArray:(v=>!Array.isArray(v))
 };
 
@@ -234,11 +252,26 @@ function evalFunction(id,mapping){
 		throw Error(id+" "+ex.message);
 	}
 }
+function is(node,value){
+	return node.actionSource==value||node.actionTarget==value;
+}
 module.exports = function (RED) {
 	function transformNode(n) {
 		RED.nodes.createNode(this,n);
 		if(logger.active) logger.send({label:"transformNode",node:n});
 		let node=Object.assign(this,{maxMessages:1000,SendArray:SendArray},n,{RED:RED});
+		if(is(node,"AVRO")) {
+			if(avsc==null) avsc=require('avsc');
+		} else if(is(node,"snappy")) {
+			if(snappy==null) snappy=require('snappy');
+		} else if(is(node,"XML")) {
+			if(xmlParser==null) xmlParser=require('fast-xml-parser');
+			if(json2xmlParser==null) {
+				const j2xParser=xmlParser.j2xParser;
+				json2xmlParser=new j2xParser(XMLoptions);
+			}
+			if(logger.active) logger.send({label:"load xml",xmlParserKeys:Object.keys(xmlParser),json2xmlParser:Object.keys(json2xmlParser)});
+		}
 		node.sendInFunction=["snappy"].includes(node.actionSource)||["Messages"].includes(node.actionTarget);
 		node.hasNewTopic=![null,""].includes(node.topicProperty);
 		const sourceMap="(RED,node,msg)=>"+(node.sourceProperty||"msg.payload"),
@@ -277,7 +310,7 @@ module.exports = function (RED) {
 		node.invalidSourceType=typeValidate in functions?functions[typeValidate]:(()=>false);
 		try {
 			node.transform=functions[node.actionSource+"To"+node.actionTarget];
-			if(!node.transform) throw Error("transform routine not found");
+			if(!node.transform) throw Error("transform routine not found for "+node.actionSource+" to "+node.actionTarget);
 		} catch (ex) {
 			error(node,ex,node.actionSource+"\nto "+node.actionTarget + " not implemented")
 			return;

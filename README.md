@@ -74,7 +74,7 @@ Transformations:
 *	Array to HTML
 *	Array to ISO8385
 *	Array to Messages
-*	AVRO to JSON
+*	AVRO to JSON (uses [avsc][6]) 
 *	CSV to Array
 *	CSV to HTML
 *	CSV to Messages
@@ -85,10 +85,11 @@ Transformations:
 *	ISO8385 to JSON
 *	JSON to Array
 *	JSON to CSV
-*	JSON to AVRO
+*	JSON to AVRO (uses [avsc][6])
 *	JSON to ISO8385
 *	JSON to Messages
 *	JSON to String
+*	JSON to XML (uses [fast-xml-parser][4])
 *	String to JSON
 *	path to Basename
 *	path to Dirname
@@ -99,8 +100,11 @@ Transformations:
 *	path to Parse
 *	path to Normalize
 *	path to Resolve
-*	snappy compress
-*	snappy uncompress
+*	snappy compress (uses [snappy][5], must install separately)
+*	snappy uncompress (uses [snappy][5], must install separately)
+*	XML to JSON (uses [fast-xml-parser][4])
+
+Note, snappy needs to be installed separately as can have issues with auto install as build binaries.
 
 Example AVRO with schema
 
@@ -229,6 +233,7 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.12.0 added xml to json and json to xml.  Make snappy installed separately as can cause install issues 
 
 0.11.1 Fix spelling of AVRO. 
 
@@ -286,3 +291,9 @@ clear down timer on close for host available
 [2]: https://www.npmjs.com/package/node-red-contrib-prib-functions "source code"
 
 [3]: https://github.com/peterprib "base github"
+
+[4]: https://github.com/NaturalIntelligence/fast-xml-parser "fast-xml-parser"
+
+[5]: https://www.npmjs.com/package/snappy "snappy"
+
+[6]: https://www.npmjs.com/package/avsc "avsc"
