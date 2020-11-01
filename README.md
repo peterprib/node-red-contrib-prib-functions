@@ -75,6 +75,7 @@ Transformations:
 *	Array to ISO8385
 *	Array to Messages
 *	AVRO to JSON (uses [avsc][6]) 
+*	Confluence to JSON
 *	CSV to Array
 *	CSV to HTML
 *	CSV to Messages
@@ -84,6 +85,7 @@ Transformations:
 *	ISO8385 to Array
 *	ISO8385 to JSON
 *	JSON to Array
+*	JSON to Confluence
 *	JSON to CSV
 *	JSON to AVRO (uses [avsc][6])
 *	JSON to ISO8385
@@ -109,6 +111,8 @@ Note, snappy needs to be installed separately as can have issues with auto insta
 Example AVRO with schema
 
 ![Transform AVRO](documentation/transformArvo.JPG "Transform AVRO example")
+
+For Confluence schema contains a list of schemas in form {"<schema id>",<schema>}
 
 ------------------------------------------------------------
 
@@ -232,6 +236,8 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.13.0 Confluence AVRO message converter
 
 0.12.0 added xml to json and json to xml.  Make snappy installed separately as can cause install issues 
 

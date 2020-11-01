@@ -60,6 +60,7 @@
 					options["Messages"]="Messages";
 					break;
 				case 'AVRO':
+				case 'Confluence':
 					options["JSON"]="JSON";
 					$(".form-row-http-in-schema").show();
 					break;
@@ -79,6 +80,7 @@
 				case 'JSON':
 					options["Array"]="Array";
 					options["AVRO"]="AVRO";
+					options["Confluence"]="Confluence";
 					options["CSVWithHeader"]="CSV with header";
 					options["CSV"]="CSV";
 					options["ISO8385"]="ISO 8583";
@@ -126,7 +128,7 @@
 			$("#node-input-actionTarget").change(function() {
 				const actionTarget=$(this).val();
 				const actionSource=$("#node-input-actionSource").val();
-				if(actionSource!=="AVRO") {
+				if(!["Confluence","AVRO"].includes(actionSource)){
 					$(".form-row-http-in-schema").hide();
 				}
 				$(".form-row-http-in-maxMessages").hide();
@@ -135,6 +137,7 @@
 				}
 				switch (actionTarget) {
 				case 'AVRO':
+				case 'Confluence':
 					$(".form-row-http-in-schema").show();
 					break;
 				case 'CSV':
@@ -177,6 +180,7 @@
 		<select id="node-input-actionSource" placeholder="actionSource">
 			<option value="Array">Array</option>
 			<option value="AVRO">AVRO</option>
+			<option value="Confluence">Confluence</option>
 			<option value="CSVWithHeader">CSV with header</option>
 			<option value="CSV">CSV</option>
 			<option value="ISO8385">ISO 8583</option>
@@ -219,6 +223,10 @@
 	<p>
 	Source/Target/Topic allows the override of the property to an expression which can reference RED, node or msg variables.
 	Target and Topic have extra one called "data" which is the transformed data and if to messages "index" which is the sequence number of message cloned. 
+	</p>
+	<p>
+	If AVRO or Confluence then schema appears.  Schema must be detailed and for confluence it is an array of schemas with id.
+	If confluence the value has form {schema:<id>,data:<data>} where id must be a number as per confluence requirements. 
 	</p>
 	<h3>Inputs</h3>
 	<dl class="message-properties">

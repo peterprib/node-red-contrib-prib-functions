@@ -111,7 +111,6 @@ describe('transform', function() {
 			outHelper.on("input", function(msg) {
 				console.log("outHelper "+msg.payload);
 				if(JSON.stringify(msg.payload)==testData) {
-					console.log("mismatch  in: "+testData +" returned: "+JSON.stringify(msg.payload));
 					done();
 				} else {
 					console.log("mismatch  in: "+testData +" returned: "+JSON.stringify(msg.payload));

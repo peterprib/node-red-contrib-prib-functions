@@ -1,15 +1,15 @@
 [
     {
-        "id": "62b60e32.707be",
+        "id": "47f03d3d.36c1b4",
         "type": "tab",
         "label": "transform",
         "disabled": false,
         "info": ""
     },
     {
-        "id": "a24e374f.1a4d28",
+        "id": "8ec55f9e.dcfa9",
         "type": "inject",
-        "z": "62b60e32.707be",
+        "z": "47f03d3d.36c1b4",
         "name": "",
         "props": [
             {
@@ -27,18 +27,18 @@
         "topic": "",
         "payload": "{\"name\":\"testname\"}",
         "payloadType": "json",
-        "x": 200,
+        "x": 110,
         "y": 100,
         "wires": [
             [
-                "5bcb0805.e110e8"
+                "7ee97c55.b8e244"
             ]
         ]
     },
     {
-        "id": "5c87b309.5bef3c",
+        "id": "dab7ec27.2b1c8",
         "type": "debug",
-        "z": "62b60e32.707be",
+        "z": "47f03d3d.36c1b4",
         "name": "",
         "active": true,
         "tosidebar": true,
@@ -48,14 +48,14 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 660,
-        "y": 100,
+        "x": 810,
+        "y": 80,
         "wires": []
     },
     {
-        "id": "5bcb0805.e110e8",
+        "id": "7ee97c55.b8e244",
         "type": "transform",
-        "z": "62b60e32.707be",
+        "z": "47f03d3d.36c1b4",
         "name": "",
         "actionSource": "JSON",
         "actionTarget": "AVRO",
@@ -68,22 +68,22 @@
         "skipLeading": 0,
         "skipTrailing": 0,
         "delimiter": ",",
-        "x": 440,
+        "x": 520,
         "y": 100,
         "wires": [
             [
-                "5c87b309.5bef3c",
-                "f04e597a.5d8898"
+                "dab7ec27.2b1c8",
+                "f29832ad.9b49a"
             ],
             [
-                "5c87b309.5bef3c"
+                "dab7ec27.2b1c8"
             ]
         ]
     },
     {
-        "id": "f04e597a.5d8898",
+        "id": "f29832ad.9b49a",
         "type": "transform",
-        "z": "62b60e32.707be",
+        "z": "47f03d3d.36c1b4",
         "name": "",
         "actionSource": "AVRO",
         "actionTarget": "JSON",
@@ -96,21 +96,21 @@
         "skipLeading": 0,
         "skipTrailing": 0,
         "delimiter": ",",
-        "x": 440,
-        "y": 220,
+        "x": 520,
+        "y": 180,
         "wires": [
             [
-                "5c87b309.5bef3c"
+                "dab7ec27.2b1c8"
             ],
             [
-                "5c87b309.5bef3c"
+                "dab7ec27.2b1c8"
             ]
         ]
     },
     {
-        "id": "dcac5e32.3ffb8",
+        "id": "cd80e484.165808",
         "type": "transform",
-        "z": "62b60e32.707be",
+        "z": "47f03d3d.36c1b4",
         "name": "",
         "actionSource": "snappy",
         "actionTarget": "Compress",
@@ -123,22 +123,22 @@
         "skipLeading": 0,
         "skipTrailing": 0,
         "delimiter": ",",
-        "x": 450,
-        "y": 340,
+        "x": 520,
+        "y": 360,
         "wires": [
             [
-                "5c87b309.5bef3c",
-                "f57f7744.c67fc8"
+                "dab7ec27.2b1c8",
+                "36299843.a28b98"
             ],
             [
-                "5c87b309.5bef3c"
+                "dab7ec27.2b1c8"
             ]
         ]
     },
     {
-        "id": "1171c52.430ab3b",
+        "id": "dac52dcb.e1038",
         "type": "inject",
-        "z": "62b60e32.707be",
+        "z": "47f03d3d.36c1b4",
         "name": "",
         "props": [
             {
@@ -156,18 +156,18 @@
         "topic": "",
         "payload": "a test",
         "payloadType": "str",
-        "x": 150,
-        "y": 340,
+        "x": 70,
+        "y": 360,
         "wires": [
             [
-                "dcac5e32.3ffb8"
+                "cd80e484.165808"
             ]
         ]
     },
     {
-        "id": "f57f7744.c67fc8",
+        "id": "36299843.a28b98",
         "type": "transform",
-        "z": "62b60e32.707be",
+        "z": "47f03d3d.36c1b4",
         "name": "",
         "actionSource": "snappy",
         "actionTarget": "Uncompress",
@@ -180,15 +180,95 @@
         "skipLeading": 0,
         "skipTrailing": 0,
         "delimiter": ",",
-        "x": 440,
-        "y": 400,
+        "x": 500,
+        "y": 440,
         "wires": [
             [
-                "5c87b309.5bef3c"
+                "dab7ec27.2b1c8"
             ],
             [
-                "5c87b309.5bef3c"
+                "dab7ec27.2b1c8"
             ]
+        ]
+    },
+    {
+        "id": "236867e5.848bf8",
+        "type": "inject",
+        "z": "47f03d3d.36c1b4",
+        "name": "{\"schema\":1,\"data\":{\"name\":\"testname\"}}",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"schema\":1,\"data\":{\"name\":\"testname\"}}",
+        "payloadType": "json",
+        "x": 180,
+        "y": 240,
+        "wires": [
+            [
+                "f3f80604.ea20c8"
+            ]
+        ]
+    },
+    {
+        "id": "f3f80604.ea20c8",
+        "type": "transform",
+        "z": "47f03d3d.36c1b4",
+        "name": "",
+        "actionSource": "JSON",
+        "actionTarget": "Confluence",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"1\":{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 510,
+        "y": 240,
+        "wires": [
+            [
+                "c5459a2b.e5e1d8",
+                "dab7ec27.2b1c8"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "c5459a2b.e5e1d8",
+        "type": "transform",
+        "z": "47f03d3d.36c1b4",
+        "name": "",
+        "actionSource": "Confluence",
+        "actionTarget": "JSON",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"1\":{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 520,
+        "y": 300,
+        "wires": [
+            [
+                "dab7ec27.2b1c8"
+            ],
+            []
         ]
     }
 ]

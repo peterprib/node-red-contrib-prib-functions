@@ -2,6 +2,7 @@ const logger = new (require("node-red-contrib-logger"))("transform");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
+	Buffer=require('buffer').Buffer,
 	os=require('os'),
 	path=require('path'),
 	process=require('process');
@@ -29,8 +30,37 @@ const XMLoptions = {
 function error(node,ex,shortMessage){
 	if(logger.active) logger.send({label:"transformNode catch",shortMessage:shortMessage,error:ex.message,stack:ex.stack});
 	node.error(ex.message);
-	node.status({fill:"red",shape:"ring",text:shortMessage||ex.message});
+	node.status({fill:"red",shape:"ring",text:(shortMessage||ex.message).substr(0,50)});
 }
+function getAvroTransformer(node,schema) {
+	try{
+		return avsc.Type.forSchema(node.schemas[schema]);
+	} catch(ex){
+		if(node.schemas.hasOwnProperty(schema)) throw ex;
+		throw Error("schema not found for "+schema);
+	}
+}
+function ConfluenceToJSON(RED,node,msg,data){
+	if(!Buffer.isBuffer(data)) data=Buffer.from(data);
+	const magicByte=data.readUInt8();
+	if(magicByte!==0) throw Error("expected magic byte and not found, found "+magicByte);
+	if(data.length<5) throw Error("missing schema, data length "+data.length);
+	const schema=data.readInt32BE(1);
+	const avroTransformer=getAvroTransformer(node,schema);
+	return {schema:schema,data:avroTransformer.fromBuffer(data.subarray(5))};
+}
+
+function JSONToConfluence(RED,node,msg,data){
+		if(!data.schema) throw Error("property schema not defined");
+		if(!data.data) throw Error("property data not defined");
+		const header=Buffer.alloc(5);
+		header[0]=0;
+		header.writeInt32BE(data.schema, 1);
+		const transformer=getAvroTransformer(node,data.schema);
+		const avro=transformer.toBuffer(data.data);
+		return Buffer.concat([header,avro]);
+}
+
 function SendArray(RED,node,msg,array){
 	if(logger.active) logger.send({label:"SendArray",size:array.length});
 	this.index=0;
@@ -115,6 +145,7 @@ const functions={
 		});
 	},
 	AVROToJSON: (RED,node,msg,data)=>node.avroTransformer.fromBuffer(data), // = {kind: 'CAT', name: 'Albert'}
+	ConfluenceToJSON: ConfluenceToJSON,
 	CSVToArray: (RED,node,msg,data)=>{
 		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
 		lines.forEach((value, idx) => {
@@ -172,6 +203,7 @@ const functions={
 		}
 		return data;
 	},
+	JSONToConfluence:JSONToConfluence,
 	JSONToCSV: (RED,node,msg,data)=>functions.ArrayToCSV(RED,node,msg,functions.JSONToArray(RED,node,msg,data)),
 	JSONToAVRO: (RED,node,msg,data)=>node.avroTransformer.toBuffer(data), // Encoded buffer.
 	JSONToHTML: (RED,node,msg,data,level=0)=>{
@@ -260,35 +292,46 @@ module.exports = function (RED) {
 		RED.nodes.createNode(this,n);
 		if(logger.active) logger.send({label:"transformNode",node:n});
 		let node=Object.assign(this,{maxMessages:1000,SendArray:SendArray},n,{RED:RED});
-		if(is(node,"AVRO")) {
-			if(avsc==null) avsc=require('avsc');
-		} else if(is(node,"snappy")) {
-			if(snappy==null) snappy=require('snappy');
-		} else if(is(node,"XML")) {
-			if(xmlParser==null) xmlParser=require('fast-xml-parser');
-			if(json2xmlParser==null) {
-				const j2xParser=xmlParser.j2xParser;
-				json2xmlParser=new j2xParser(XMLoptions);
-			}
-			if(logger.active) logger.send({label:"load xml",xmlParserKeys:Object.keys(xmlParser),json2xmlParser:Object.keys(json2xmlParser)});
-		}
-		node.sendInFunction=["snappy"].includes(node.actionSource)||["Messages"].includes(node.actionTarget);
-		node.hasNewTopic=![null,""].includes(node.topicProperty);
-		const sourceMap="(RED,node,msg)=>"+(node.sourceProperty||"msg.payload"),
-			sourceDelete="(RED,node,msg)=>{delete "+(node.sourceProperty||"msg.payload")+";}",
-			targetMap="(RED,node,msg,data,index)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
-				(node.sendInFunction && node.hasNewTopic? "msg.topic=node.topicFunction(RED,node,msg,data,index);":"")+
-				(node.sendInFunction ? "" : "node.send(msg);" )+
-				"}",
-			topicMap="(RED,node,msg,data,index)=>"+(node.topicProperty||"msg.topic");
-		logger.sendInfo({label:"mappings",source:sourceMap,target:targetMap,topicMap:topicMap});
 		try{
+			if(is(node,"AVRO") || is(node,"Confluence")) {
+				if(avsc==null) avsc=require('avsc');
+				try{
+					node.schemaValid=eval("("+node.schema+")");
+				} catch(ex){
+					throw Error("schema "+ex.message);
+				}
+				if(!node.schemaValid) throw Error("invalid schema")
+			} else if(is(node,"snappy")) {
+				if(snappy==null) snappy=require('snappy');
+			} else if(is(node,"XML")) {
+				if(xmlParser==null) xmlParser=require('fast-xml-parser');
+				if(json2xmlParser==null) {
+					const j2xParser=xmlParser.j2xParser;
+					json2xmlParser=new j2xParser(XMLoptions);
+				}
+				if(logger.active) logger.send({label:"load xml",xmlParserKeys:Object.keys(xmlParser),json2xmlParser:Object.keys(json2xmlParser)});
+			}
+			node.sendInFunction=["snappy"].includes(node.actionSource)||["Messages"].includes(node.actionTarget);
+			node.hasNewTopic=![null,""].includes(node.topicProperty);
+			const sourceMap="(RED,node,msg)=>"+(node.sourceProperty||"msg.payload"),
+				sourceDelete="(RED,node,msg)=>{delete "+(node.sourceProperty||"msg.payload")+";}",
+					targetMap="(RED,node,msg,data,index)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
+					(node.sendInFunction && node.hasNewTopic? "msg.topic=node.topicFunction(RED,node,msg,data,index);":"")+
+					(node.sendInFunction ? "" : "node.send(msg);" )+
+					"}",
+				topicMap="(RED,node,msg,data,index)=>"+(node.topicProperty||"msg.topic");
+			logger.sendInfo({label:"mappings",source:sourceMap,target:targetMap,topicMap:topicMap});
 			node.getData=evalFunction("source",sourceMap);
 			node.deleteSourceProperty=evalFunction("source delete",sourceDelete);
 			node.setData=evalFunction("target",targetMap);
 			node.topicFunction=evalFunction("topic",topicMap);
-			if(node.actionSource=="AVRO" ||node.actionTarget=="AVRO") {
-				 node.avroTransformer=avsc.Type.forSchema(JSON.parse(node.schema));
+			if(is(node,"AVRO")) {
+				 node.avroTransformer=avsc.Type.forSchema(node.schemaValid);
+			} else 	if(is(node,"Confluence")) {
+				node.schemas={};
+				for(const schema in node.schemaValid )
+					node.schemas[schema]=avsc.Type.forSchema(node.schemaValid[schema]);
+				logger.info({label:"confluence",schemas:Object.keys(node.schemas)});
 			}
 		} catch(ex) {
 			error(node,ex,"Invalid setup "+ex.message);
@@ -332,4 +375,3 @@ module.exports = function (RED) {
 	}
 	RED.nodes.registerType(logger.label,transformNode);
 };
-
