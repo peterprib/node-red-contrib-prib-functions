@@ -237,6 +237,8 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.14.0 add xlsx transformer
+
 0.13.0 Confluence AVRO message converter
 
 0.12.0 added xml to json and json to xml.  Make snappy installed separately as can cause install issues 
@@ -303,3 +305,5 @@ clear down timer on close for host available
 [5]: https://www.npmjs.com/package/snappy "snappy"
 
 [6]: https://www.npmjs.com/package/avsc "avsc"
+
+[7]: https://www.npmjs.com/package/xlsx "xlsx"

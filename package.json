@@ -1,11 +1,12 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.13.0",
+	"version": "0.14.0",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"node-red-contrib-logger": "0.0.4",
 		"avsc": "*",
-		"fast-xml-parser": "*"
+		"fast-xml-parser": "*",
+		"xlsx": "*"
 	},
 	"devDependencies": {
 		"bl": ">=1.2.3",
@@ -84,9 +85,12 @@
 		"translate",
 		"transform",
 		"variance",
-		"weigthed",
+		"weighted",
 		"Weighted Moving Average",
 		"WMA",
+		"xlsx",
+		"XLSX",
+		"xcel",
 		"xml",
 		"XML",
 		"Z-score"

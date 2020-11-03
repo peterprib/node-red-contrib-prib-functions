@@ -58,6 +58,8 @@
 					options["HTML"]="HMTL";
 					options["ISO8385"]="ISO8385";
 					options["Messages"]="Messages";
+					options["XLSX"]="XLSX (excel)";
+					options["XLSXObject"]="XLSX object (excel)";
 					break;
 				case 'AVRO':
 				case 'Confluence':
@@ -88,6 +90,8 @@
 					options["JSON"]="JSON";
 					options["Messages"]="Messages";
 					options["String"]="String";
+					options["XLSX"]="XLSX";
+					options["XLSXObject"]="XLSX Object";
 					options["XML"]="XML";
 					break;
 				case 'path':
@@ -104,6 +108,12 @@
 					options["Compress"]="Compress";
 					break;
 				case 'String':
+					options["JSON"]="JSON";
+					break;
+				case 'XLSX':
+					options["XLSXObject"]="XLSX Object";
+				case 'XLSXObject':
+					options["Array"]="Array";
 					options["JSON"]="JSON";
 					break;
 				case 'XML':
@@ -188,6 +198,9 @@
 			<option value="String">String</option> 
 			<option value="snappy">snappy</option> 
 			<option value="path">Path</option> 
+			<option value="XLSX">XLSX (excel)</option> 
+			<option value="XLSXObject">XLSX object (excel)</option> 
+			<option value="XML">XML</option> 
 		</select>
 	</div>
 	<div class="form-row">

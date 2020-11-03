@@ -1,16 +1,16 @@
 [
     {
-        "id": "47f03d3d.36c1b4",
+        "id": "924bb2b7.03fd1",
         "type": "tab",
-        "label": "transform",
+        "label": "transform xlsx",
         "disabled": false,
         "info": ""
     },
     {
-        "id": "8ec55f9e.dcfa9",
+        "id": "2a9b4180.1b8ffe",
         "type": "inject",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
+        "z": "924bb2b7.03fd1",
+        "name": "json xcel worksheets",
         "props": [
             {
                 "p": "payload"
@@ -25,20 +25,144 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
-        "payload": "{\"name\":\"testname\"}",
+        "payload": "{\"worksheet1\":[[11,12],[21,22],[31,32]],\"worksheet2\":[[11,12],[21,22]]}",
         "payloadType": "json",
         "x": 110,
-        "y": 100,
+        "y": 60,
         "wires": [
             [
-                "7ee97c55.b8e244"
+                "b99caf39.d57c9"
             ]
         ]
     },
     {
-        "id": "dab7ec27.2b1c8",
+        "id": "b99caf39.d57c9",
+        "type": "transform",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "actionSource": "Array",
+        "actionTarget": "XLSX",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.xlsx",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 380,
+        "y": 60,
+        "wires": [
+            [
+                "e234842f.2946a8",
+                "7bde11d2.378e6"
+            ],
+            [
+                "3db2b919.ea68d6"
+            ]
+        ]
+    },
+    {
+        "id": "7bde11d2.378e6",
+        "type": "transform",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "actionSource": "Array",
+        "actionTarget": "XLSXObject",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.xlsxobject",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 360,
+        "y": 120,
+        "wires": [
+            [
+                "8e6f5298.ccab4"
+            ],
+            [
+                "3db2b919.ea68d6"
+            ]
+        ]
+    },
+    {
+        "id": "8e6f5298.ccab4",
+        "type": "transform",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "actionSource": "XLSX",
+        "actionTarget": "Array",
+        "sourceProperty": "msg.xlsx",
+        "targetProperty": "msg.array",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 380,
+        "y": 180,
+        "wires": [
+            [
+                "3db2b919.ea68d6"
+            ],
+            [
+                "3db2b919.ea68d6"
+            ]
+        ]
+    },
+    {
+        "id": "e234842f.2946a8",
+        "type": "transform",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "actionSource": "XLSX",
+        "actionTarget": "XLSXObject",
+        "sourceProperty": "msg.xlsx",
+        "targetProperty": "msg.xlsx2xlsxObject",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "x": 660,
+        "y": 60,
+        "wires": [
+            [
+                "5312687f.3fff48"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "5312687f.3fff48",
         "type": "debug",
-        "z": "47f03d3d.36c1b4",
+        "z": "924bb2b7.03fd1",
+        "name": "base",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "3db2b919.ea68d6",
+        "type": "debug",
+        "z": "924bb2b7.03fd1",
         "name": "",
         "active": true,
         "tosidebar": true,
@@ -48,227 +172,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 810,
-        "y": 80,
+        "x": 870,
+        "y": 160,
         "wires": []
-    },
-    {
-        "id": "7ee97c55.b8e244",
-        "type": "transform",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
-        "actionSource": "JSON",
-        "actionTarget": "AVRO",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 520,
-        "y": 100,
-        "wires": [
-            [
-                "dab7ec27.2b1c8",
-                "f29832ad.9b49a"
-            ],
-            [
-                "dab7ec27.2b1c8"
-            ]
-        ]
-    },
-    {
-        "id": "f29832ad.9b49a",
-        "type": "transform",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
-        "actionSource": "AVRO",
-        "actionTarget": "JSON",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 520,
-        "y": 180,
-        "wires": [
-            [
-                "dab7ec27.2b1c8"
-            ],
-            [
-                "dab7ec27.2b1c8"
-            ]
-        ]
-    },
-    {
-        "id": "cd80e484.165808",
-        "type": "transform",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
-        "actionSource": "snappy",
-        "actionTarget": "Compress",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 520,
-        "y": 360,
-        "wires": [
-            [
-                "dab7ec27.2b1c8",
-                "36299843.a28b98"
-            ],
-            [
-                "dab7ec27.2b1c8"
-            ]
-        ]
-    },
-    {
-        "id": "dac52dcb.e1038",
-        "type": "inject",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "a test",
-        "payloadType": "str",
-        "x": 70,
-        "y": 360,
-        "wires": [
-            [
-                "cd80e484.165808"
-            ]
-        ]
-    },
-    {
-        "id": "36299843.a28b98",
-        "type": "transform",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
-        "actionSource": "snappy",
-        "actionTarget": "Uncompress",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 500,
-        "y": 440,
-        "wires": [
-            [
-                "dab7ec27.2b1c8"
-            ],
-            [
-                "dab7ec27.2b1c8"
-            ]
-        ]
-    },
-    {
-        "id": "236867e5.848bf8",
-        "type": "inject",
-        "z": "47f03d3d.36c1b4",
-        "name": "{\"schema\":1,\"data\":{\"name\":\"testname\"}}",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{\"schema\":1,\"data\":{\"name\":\"testname\"}}",
-        "payloadType": "json",
-        "x": 180,
-        "y": 240,
-        "wires": [
-            [
-                "f3f80604.ea20c8"
-            ]
-        ]
-    },
-    {
-        "id": "f3f80604.ea20c8",
-        "type": "transform",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
-        "actionSource": "JSON",
-        "actionTarget": "Confluence",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"1\":{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 510,
-        "y": 240,
-        "wires": [
-            [
-                "c5459a2b.e5e1d8",
-                "dab7ec27.2b1c8"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "c5459a2b.e5e1d8",
-        "type": "transform",
-        "z": "47f03d3d.36c1b4",
-        "name": "",
-        "actionSource": "Confluence",
-        "actionTarget": "JSON",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"1\":{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 520,
-        "y": 300,
-        "wires": [
-            [
-                "dab7ec27.2b1c8"
-            ],
-            []
-        ]
     }
 ]

@@ -6,7 +6,7 @@ const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
 	os=require('os'),
 	path=require('path'),
 	process=require('process');
-let  avsc,snappy,xmlParser,json2xmlParser;
+let  avsc,snappy,xmlParser,json2xmlParser,XLSX;
 const {ISO8583BitMapId,ISO8583BitMapName}=require("./ISO8583BitMap");
 let ISO8583,ISO8583message;
 const XMLoptions = {
@@ -39,6 +39,57 @@ function getAvroTransformer(node,schema) {
 		if(node.schemas.hasOwnProperty(schema)) throw ex;
 		throw Error("schema not found for "+schema);
 	}
+}
+
+function addWorksheet2JSON(object,worksheet,workbook,options){
+	object[worksheet]=XLSX.utils.sheet_to_json(workbook.Sheets[worksheet],options);
+	if(options.header) object[worksheet].shift();
+	if(logger.active) logger.send({label:"addWorksheet2JSON",object:object,worksheet:worksheet})
+	return object;
+}
+function XLSXObjectToJSON(RED,node,msg,data){
+	return data.SheetNames.reduce((a,worksheet)=>addWorksheet2JSON(a,worksheet,data),{})
+}
+function XLSXToArray(RED,node,msg,data){
+	return XLSXObjectToArray(RED,node,msg,XLSXToXLSXObject(RED,node,msg,data));
+}
+function XLSXToJSON(RED,node,msg,data){
+	return XLSXObjectToJSON(RED,node,msg,XLSXToXLSXObject(RED,node,msg,data));
+}
+function XLSXToXLSXObject(RED,node,msg,data){
+	return XLSX.read(data, {raw:true,type: 'buffer' });
+}
+function XLSXObjectToArray(RED,node,msg,data){
+	return data.SheetNames.reduce((a,worksheet)=>addWorksheet2JSON(a,worksheet,data,{header:1,raw:true}),{})
+}
+function JSONToXLSX(RED,node,msg,data){
+	const workbook=JSONToXLSXObject(RED,node,msg,data);
+	return XLSX.write(workbook, {bookType:"xlsx", type:'buffer'}); 
+}
+function JSONToXLSXObject(RED,node,msg,data){
+	const workbook = XLSX.utils.book_new();
+	for(const worksheet in data) {
+		const  ws=XLSX.utils.json_to_sheet(data[worksheet]);
+		XLSX.utils.book_append_sheet(workbook, ws, worksheet);
+	}
+	return workbook;
+}
+function ArrayToXLSX(RED,node,msg,data){
+	const workbook=ArrayToXLSXObject(RED,node,msg,data);
+	return XLSX.write(workbook, {bookType:"xlsx", type:'buffer'}); 
+}
+function ArrayToXLSXObject(RED,node,msg,data){
+	const workbook = XLSX.utils.book_new();
+	if(Array.isArray(data)) {
+		const  ws=XLSX.utils.aoa_to_sheet(data);
+		XLSX.utils.book_append_sheet(workbook, ws,"worksheet 1");
+		return workbook;
+	} 
+	for(const worksheet in data) {
+		const  ws=XLSX.utils.aoa_to_sheet(data[worksheet]);
+		XLSX.utils.book_append_sheet(workbook, ws, worksheet);
+	}
+	return workbook;
 }
 function ConfluenceToJSON(RED,node,msg,data){
 	if(!Buffer.isBuffer(data)) data=Buffer.from(data);
@@ -144,6 +195,8 @@ const functions={
 			node.send(newMsg);
 		});
 	},
+	ArrayToXLSX:ArrayToXLSX,
+	ArrayToXLSXObject:ArrayToXLSXObject,
 	AVROToJSON: (RED,node,msg,data)=>node.avroTransformer.fromBuffer(data), // = {kind: 'CAT', name: 'Albert'}
 	ConfluenceToJSON: ConfluenceToJSON,
 	CSVToArray: (RED,node,msg,data)=>{
@@ -238,6 +291,8 @@ const functions={
 		}
 	},
 	JSONToString: (RED,node,msg,data)=>JSON.stringify(data),
+	JSONToXLSX:JSONToXLSX,
+	JSONToXLSXObject:JSONToXLSXObject,
 	JSONToXML: (RED,node,msg,data)=>json2xmlParser.parse(data),
 	StringToJSON: (RED,node,msg,data)=>JSON.parse(data),  
 	pathToBasename: (RED,node,msg,data)=>path.basename(data),
@@ -273,6 +328,11 @@ const functions={
 			node.send(msg);
 		})
 	},
+	XLSXToArray:XLSXToArray,
+	XLSXObjectToArray:XLSXObjectToArray,
+	XLSXToJSON:XLSXToJSON,
+	XLSXObjectToJSON:XLSXObjectToJSON,
+	XLSXToXLSXObject:XLSXToXLSXObject,
 	XMLToJSON: (RED,node,msg,data)=>xmlParser.parse(data,XMLoptions,true),
 	invalidArray:(v=>!Array.isArray(v))
 };
@@ -293,7 +353,9 @@ module.exports = function (RED) {
 		if(logger.active) logger.send({label:"transformNode",node:n});
 		let node=Object.assign(this,{maxMessages:1000,SendArray:SendArray},n,{RED:RED});
 		try{
-			if(is(node,"AVRO") || is(node,"Confluence")) {
+			if(is(node,"XLSX")||is(node,"XLSXObject") ) {
+				if(!XLSX) XLSX=require('xlsx');
+			} else if(is(node,"AVRO") || is(node,"Confluence")) {
 				if(avsc==null) avsc=require('avsc');
 				try{
 					node.schemaValid=eval("("+node.schema+")");
@@ -350,7 +412,7 @@ module.exports = function (RED) {
 			}
 		}
 		const typeValidate="invalid"+node.actionSource;
-		node.invalidSourceType=typeValidate in functions?functions[typeValidate]:(()=>false);
+		node.invalidSourceType=typeValidate in functions &! ["XLSX","XLSXObject"].includes(node.actionTarget)?functions[typeValidate]:(()=>false);
 		try {
 			node.transform=functions[node.actionSource+"To"+node.actionTarget];
 			if(!node.transform) throw Error("transform routine not found for "+node.actionSource+" to "+node.actionTarget);
