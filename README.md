@@ -74,6 +74,7 @@ Transformations:
 *	Array to HTML
 *	Array to ISO8385
 *	Array to Messages
+*	Array to xlsx / xlsx object (excel uses [xlsx][7])  
 *	AVRO to JSON (uses [avsc][6]) 
 *	Confluence to JSON
 *	CSV to Array
@@ -91,6 +92,7 @@ Transformations:
 *	JSON to ISO8385
 *	JSON to Messages
 *	JSON to String
+*	JSON to xlsx / xlsx object (excel uses [xlsx][7])  
 *	JSON to XML (uses [fast-xml-parser][4])
 *	String to JSON
 *	path to Basename
@@ -104,9 +106,12 @@ Transformations:
 *	path to Resolve
 *	snappy compress (uses [snappy][5], must install separately)
 *	snappy uncompress (uses [snappy][5], must install separately)
+*	xlsx / xlsx object to array/JSON (excel uses [xlsx][7])  
 *	XML to JSON (uses [fast-xml-parser][4])
 
 Note, snappy needs to be installed separately as can have issues with auto install as build binaries.
+
+With xlsx object one can use the function in [xlsx][7] against the object in functions node.
 
 Example AVRO with schema
 
