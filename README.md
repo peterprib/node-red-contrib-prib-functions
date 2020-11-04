@@ -242,6 +242,8 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.14.1 fix capitalization issue with levenshtein Distance
+
 0.14.0 add xlsx transformer
 
 0.13.0 Confluence AVRO message converter
