@@ -1,0 +1,68 @@
+<script type="text/javascript">
+	/*globals RED */
+	RED.nodes.registerType('Levenshtein Distance', {
+		category: 'function',
+		color: '#fdeea2',
+		defaults: {
+			name: {value: ""},
+			source1Property:{value:"msg.payload"},
+			source2Property:{value:"msg.payload"},
+			targetProperty:{value:"msg.payload"}
+		},
+		inputs: 1,
+		outputs: 2,
+		icon: "Tape-Measure-icon.png",
+		align: 'left',
+		paletteLabel: "Levenshtein Distance",
+		inputLabels: "Message In",
+		outputLabels: ["Message Out","Error"],
+		label: function () {
+			return this.name || "Levenshtein Distance";
+		},
+		oneditprepare: function() {
+		},
+		oneditsave: function() {
+		},
+		oneditresize: function() {
+		},
+		resizeRule: function(file,newWidth) {
+		}
+	});
+</script>
+
+<script type="text/x-red" data-template-name="Levenshtein Distance">
+
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row form-row-http-in-source1Property show">
+		<label for="node-input-source1Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument 1</label>
+		<input type="text" id="node-input-source1Property" placeholder="msg.payload">
+	</div>
+	<div class="form-row form-row-http-in-source1Property show">
+		<label for="node-input-source2Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument 2</label>
+		<input type="text" id="node-input-source2Property" placeholder="msg.payload">
+	</div>
+	<div class="form-row form-row-http-in-targetProperty show">
+		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
+		<input type="text" id="node-input-targetProperty" placeholder="msg.payload">
+	</div>
+
+</script>
+
+<script type="text/x-red" data-help-name="Levenshtein Distance">
+	<p>
+	Levenshtein Distance for two strings
+	</p>
+	<p>
+	Source/Target/Topic/Columns allows the override of the property to an expression which can reference RED, node or msg variables.
+	</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>msg <span class="property-type">topic</span></dt>
+		<dd>incoming message with topic</dd>
+		<dt>msg <span class="property-type">payload</span></dt>
+		<dd></dd>
+	</dl>
+</script>
