@@ -242,6 +242,8 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.14.2 fix general test flows. Add icon for data analysis
+
 0.14.1 fix capitalization issue with levenshtein Distance
 
 0.14.0 add xlsx transformer
@@ -264,24 +266,16 @@ Improved test to allow for escape to put special characters into a string.
 0.9.6 Enhance transform with csv ignore lead or trailing lines.
 Add Array and CSV to Messages. Add in topic override
 
-0.9.5 Enhance transform with path and setting source and target
+0.9.5 Enhance transform with path and setting source and target.
+Outlier allowed to set number of deviations if median and reset or set stats
+Add outlier detection and Pearson R realtime metrics.
 
-0.9.4 Outlier allowed to set number of deviations if median and reset or set stats
-
-0.9.1 Add outlier detection
-
-0.9.0 Add Pearson R realtime metrics
-
-0.8.1 Add the tests for realtime metrics
-
-0.8.0 Add realtime metrics to data analysis
+0.8.1 Add realtime metrics to data analysis. 
 
 0.7.1
 * fix json to table html and minor code improvements.
 turn off debug mode on spawn process.
 clear down timer on close for host available
-
-0.7.0
 * add Host Available
 
 0.6.0

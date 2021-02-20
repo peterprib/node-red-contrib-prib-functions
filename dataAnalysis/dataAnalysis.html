@@ -6,7 +6,7 @@
         defaults: {
             name: {value:"",required:false},
 		    action: {value:"avg",required:true},
-		    outputs: {value:"2",required:true},
+		    outputs: {value:(["realtime","realtimePredict"].includes(this.action)?3:2),required:true},
 		    outliersBase: {value:"avg",required:false},
 		    outliersStdDevs: {value:"3",required:false},
 		    term: {value:"10",required:false},
@@ -17,7 +17,7 @@
 	    inputs:1,
         inputLabels: "in",
         outputLabels: ["Results","Details","Outliers"],
-        icon: "function.png",
+        icon: "graphmagnifier.png",
         label: function() {
             return this.name||(this.action+" " +this.dataProperty)||this._("Data Analysis");
         },
