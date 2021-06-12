@@ -266,11 +266,23 @@ functions={
 		}
 		return dp;
 	},
+	sampleVariance:(d)=>{
+		const mean=functions.avg(d);
+		const sum=functions.sumWithFunction(d,(v)=>v-mean)
+		return sum/(d.length-1)
+	},
 	sum:(d)=>d.reduce((p,c)=>p+c),
 	sumWithFunction:(d,f)=>d.reduce((p,c)=>p+f.apply(this,[c]),0),
 	variance:(d)=>{  //Var(X) = E (X − E(X))2 = E(X2) − (E(X))2
-		return functions.sumWithFunction(d,(v)=>Math.pow(v,2))
-			- Math.pow(functions.avg(d),2);
+		const n=d.length;
+		return functions.sumWithFunction(d,(v)=>Math.pow(v,2))/n - Math.pow(functions.avg(d),2);
+	},
+	sampleStdDev:(d)=>Math.sqrt(functions.sampleVariance(d)),
+	sampleVariance:(d)=>{
+		if(d.length<2)return 0
+		const mean=functions.avg(d);
+		const sum=d.reduce((a,e)=>a+Math.pow(e-mean,2),0);
+		return sum/(d.length-1)
 	}
 }
 functions.mean=functions.avg;
@@ -361,7 +373,8 @@ module.exports = function (RED) {
 	 			return;
 			} 
 			try{
-				msg.result=node.actionfunction.apply(node,[node.getData(msg,node),node.term,node]);
+				const data=node.getData(msg,node);
+				if(data) msg.result=node.actionfunction.apply(node,[data,node.term,node]);
 				switch(node.action) {
 				case "realtime":
 					if(msg.result.outlier) {

@@ -1,0 +1,226 @@
+const assert=require("assert");
+const should=require("should");
+const asn1=require("../transform/asn1.js"); 
+const request=require('request');
+/*
+ function stringFromArrayBuffer (arrayBuffer, onSuccess, onFail) {
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    onSuccess(event.target.result);
+  };
+  reader.onerror = function (event) {
+    onFail(event.target.error);
+  };
+  reader.readAsBinaryString(new Blob([ arrayBuffer ],
+    { type: 'application/octet-stream' }));
+}
+
+ */
+/*
+ * as per https://www.w3.org/Protocols/HTTP-NG/asn1.html
+ *
+*/
+ const asn1eg = new Uint8Array([
+0x60, // [0110|0000], [APPLICATION 0, Compound] - GetRequest
+0x80, // [1000|0000], Indefinite length
+
+0x01, // [0000|0001], [BOOLEAN] GetRequest.headerOnly
+0x01, // [0000|0001], length 1
+0x01, // [0000|0001], value TRUE
+
+0x01, // [0000|0001], [BOOLEAN] GetRequest.lock
+0x01, // [0000|0001], length 1
+0x00, // [0000|0000] value FALSE
+
+0x61, // [0110|0001], [APPLICATION 1, Compound] - GetRequest.types
+0x80, // indefinite length
+
+0xa0, // [1010|0000], [CONTEXT 0, Compound] types.standardTypes
+0x80, // indefinite length
+
+0x03, // [0000|0011] [BIT STRING]
+0x02, // length 2
+0x04, // Four bits unused
+0x80, //[1000|0000] {html}
+
+0x03, // [0000|0011] [BIT STRING]
+0x02, // length 2
+0x04, // Four bits unused
+0x40, //  [0100|0000] {plain-text}
+
+0x00,
+0x00, // End of list of standard Types
+0x00,
+0x00, // End of Accept Types
+0x04, // [0000|0100], [OCTET STRING] GetRequest.url
+0x16, // [0001|0110], length 22
+"/ses/magic/moxen.html",  // value
+0x00, 
+0x00 // End of get request
+]);
+
+describe('asn1', function() {
+	it("decode ans1 eg.",(done)=>{
+		const result=asn1.decodeBER(asn1eg);
+		console.log({label:"asn1eg",data:asn1eg,result:result.toString()});
+		done();
+	});
+	
+	it("decode",(done)=>{
+		const certB64 = "MIIDLjCCAhagAwIBAgIBATANBgkqhkiG9w0BAQsFADA6MRkwFwYDVQQDExBUZXN0IGNlcnRpZmljYXRlMR0wGwYJKoZIhvcNAQkBFg5zb21lQGVtYWlsLm5ldDAeFw0yMTAzMTYwMDAwMDBaFw0yMTA0MTYwMDAwMDBaMDoxGTAXBgNVBAMTEFRlc3QgY2VydGlmaWNhdGUxHTAbBgkqhkiG9w0BCQEWDnNvbWVAZW1haWwubmV0MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3N6J0GUJ8URj2fduC26mjCzWf75jM3QSLQYiXSTAMqJA9apf09GMmT+UC6jq2J1U49mXGezE64uXv2tyys9S07xgRkNAWPJXz0opKYud4XPEpdxKfQkD2XklK+8R3BPhAOOxSpfR+SFkLxTMiDHsOt+Xbb98DZ8F3QkzHLvX42jEfAR0StIRLgFYEtf4vX9q4OsYTeJ4xk61lTJc3d0ep/JTp55fxWRaQdzhg+fkv9XwJxxhW9pJRekZORnRb4Q1Zyw+uecuIffsmhLzang45npfzAKXuPaE6lnRMHauLQ1rGGqYA/Vaq4UU6yZUTVLpsKON7b1xogMQrqIkbqtTuQIDAQABoz8wPTAMBgNVHRMBAf8EAjAAMA4GA1UdDwEB/wQEAwIEkDAdBgNVHQ4EFgQUl4hohjz9Xxb4lYhsOiq9wVqKv8YwDQYJKoZIhvcNAQELBQADggEBAIKH86qkFJV3FZyblAMWDSEbEi4MV2Epb5ty7wpSatHvz8NKtmB/hVFGwWFBj5OfS9wfaX6Uw24DyBSBOOqEzonUeqFTDo54zqQ4fQ+UlC/79aq7awGpEuXFnUF3xiLFqHNz5zUeKEYY0W5XKFg/TiW6hAmxlDg5ybAoHDROpwT4u6TuOK6OxMneQRBESmZlO43DYwCG950fXEDJT2gXVLbbSSTln8JBHfTAwOgmsDtaZOCieTS6KYwscWy3u/8xxMyX8NS3A1Zeh0jtk/irKzfsNAdcl8aQwdckGAkPWT/9EqawC33Ep3+2br41+K1jjGT8LeYDlMYSJycWo9tltKc=";
+//		const result=asn1.decodeBER(new Uint8Array(Buffer.from(certB64, "base64")).buffer);
+		const data=asn1.base64(certB64);
+		const result=asn1.decodeBER(data);
+		console.log({label:"certB64",data:data,result:result.toString()});
+		done();
+	});
+
+	it("encode",(done)=>{
+		const value=new Uint8Array([0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01]);
+		console.log({hex:asn1.hex(value)})
+		const berData = new asn1.encode({
+			value: (value.buffer),
+			identifier: {
+				"class": 1,
+				tag: 1,
+				iconstructed: false
+			},
+			length: {
+				indefiniteForm: false,
+				longForm: false,
+				length: 10
+			}
+		});
+		assert.equal(berData.length, 10, "Incorrect value for blockLength");
+		done();
+	});
+	
+	const wikiExample=new Uint8Array([0x30,0x13,0x02,0x01,0x05,0x16,0x0e,0x41,0x6e,0x79,0x62,0x6f,0x64,0x79,0x20,0x74,0x68,0x65,0x72,0x65,0x3f]);
+	const wikiDecoded=asn1.decode(wikiExample);
+/*
+ 30 — type tag indicating SEQUENCE
+13 — length in octets of value that follows
+  02 — type tag indicating INTEGER
+  01 — length in octets of value that follows
+    05 — value (5)
+  16 — type tag indicating IA5String 
+     (IA5 means the full 7-bit ISO 646 set, including variants, 
+      but is generally US-ASCII)
+  0e — length in octets of value that follows
+    41 6e 79 62 6f 64 79 20 74 68 65 72 65 3f — value ("Anybody there?")
+ */
+	console.log(wikiDecoded.toString())
+});
+
+describe("ASN.1:2008",()=> {
+	function getCase(content,callback){
+		const testURL="https://raw.githubusercontent.com/YuryStrozhevsky/ASN1-2008-free-test-suite/master/suite/"+content;
+		request(testURL, function (error, response, body) {
+//			console.log({url:testURL,error:error,response:response,body:body}); 
+			callback(body)
+		});
+		
+	}
+	function caseDecodeThrowsError(testCase,error,errorType='TypeError'){
+		it(testCase,(done)=>{
+			assert.throws(()=>{
+				getCase(testCase,(data)=>{
+					try{
+						const dataArray=new TextEncoder().encode(data);
+						const results=asn1.decode(dataArray).toString();
+						console.log("caseDecodeThrowsError no error for "+testCase+" results: "+results)
+						done()
+					} catch(ex){
+						console.log("caseDecodeThrowsError error:"+ex.message)
+						throw ex;
+					}
+				})
+			},
+			{name: errorType ,message:error}
+			);
+		});
+	}
+	function caseDecodeOK(testCase,result){
+		it(testCase,(done)=>{
+			getCase(testCase,(data)=>{
+				console.log()
+				const result=asn1.decode(data);
+				done();
+			});
+		});
+	}
+	caseDecodeThrowsError("tc1.ber","tag > 0x24");
+/*	caseDecodeThrowsError("tc2.ber","???");
+	caseDecodeThrowsError("tc3.ber","???");
+	caseDecodeThrowsError("tc4.ber","???");
+	caseDecodeOK("tc5.ber");
+	caseDecodeOK("tc6.ber");
+	caseDecodeOK("tc7.ber");
+	caseDecodeOK("tc8.ber");
+	caseDecodeOK("tc9.ber");
+	caseDecodeOK("tc10.ber");
+	caseDecodeOK("tc11.ber");
+	caseDecodeOK("tc12.ber");
+	caseDecodeOK("tc13.ber");
+	caseDecodeOK("tc14.ber");
+	caseDecodeOK("tc15.ber");
+	caseDecodeOK("tc16.ber");
+	caseDecodeOK("tc17.ber");
+	caseDecodeThrowsError("tc18.ber","Value block value must be equal to -4095");
+	caseDecodeThrowsError("tc19.ber","End of input reached before message was fully decoded (inconsistent offset and length values)", "Error message inside value block does not match");
+	caseDecodeThrowsError("tc20.ber","Value block value must be equal to -4095");
+	caseDecodeThrowsError("tc21.ber","Value block value must be equal to -4095");
+	caseDecodeThrowsError("tc22.ber","Value block value must be equal to -4095");
+	caseDecodeOK("tc23.ber");
+	caseDecodeOK("tc24.ber");
+	caseDecodeOK("tc25.ber");
+	caseDecodeOK("tc26.ber");
+	caseDecodeOK("tc27.ber");
+	caseDecodeOK("tc28.ber");
+	caseDecodeOK("tc29.ber");
+	caseDecodeOK("tc30.ber");
+	caseDecodeOK("tc31.ber");
+	caseDecodeOK("tc32.ber");
+	caseDecodeOK("tc33.ber");
+	caseDecodeOK("tc34.ber");
+	caseDecodeOK("tc35.ber");
+	caseDecodeOK("tc36.ber");
+	caseDecodeOK("tc37.ber");
+	caseDecodeOK("tc38.ber");
+	caseDecodeOK("tc39.ber");
+	caseDecodeOK("tc40.ber");
+	caseDecodeOK("tc41.ber");
+	caseDecodeOK("tc42.ber");
+	caseDecodeOK("tc43.ber");
+	caseDecodeOK("tc44.ber");
+	caseDecodeOK("tc45.ber");
+	caseDecodeOK("tc46.ber");
+	caseDecodeOK("tc47.ber");
+	caseDecodeOK("tc48.ber");
+*/
+});
+
+/*
+
+ECN -  Encoding Control Notation (ECN)
+
+FooProtocol DEFINITIONS ::= BEGIN
+
+    FooQuestion ::= SEQUENCE {
+        trackingNumber INTEGER(0..199),
+        question       IA5String
+    }
+
+    FooAnswer ::= SEQUENCE {
+        questionNumber INTEGER(10..20),
+        answer         BOOLEAN
+    }
+
+    FooHistory ::= SEQUENCE {
+        questions SEQUENCE(SIZE(0..10)) OF FooQuestion,
+        answers   SEQUENCE(SIZE(1..10)) OF FooAnswer,
+        anArray   SEQUENCE(SIZE(100))  OF INTEGER(0..1000),
+        ...
+    }
+END
+*/

@@ -29,17 +29,19 @@ function setError(msg,node,err) {
 	node.send([null,msg]);
 }
 
-function equalObjects(obj1,obj2) {
+function equalObjects(obj1,obj2,errorFactor) {
 	if( obj1 === obj2 ) return true;
 	if( obj1 === Number.POSITIVE_INFINITY && obj2==="Infinity") return true;
 	if( obj1 === Number.NEGATIVE_INFINITY && obj2==="-Infinity") return true;
 	if( Number.isNaN(obj1) && obj2==="NaN") return true;
-	if( typeof obj1 != typeof obj2 ) return false;
+	const obj1type=typeof obj1;
+	if(  obj1type != typeof obj2 ) return false;
+	if(errorFactor &&  obj1type=="number") return (Math.abs(obj2-obj1)/obj2)<errorFactor; 
 	if( !(obj1 instanceof Object) ) return false; 
 	if( Object.keys(obj1).length !== Object.keys(obj2).length ) return false;
 	try{
 		for(let key in obj1) {
-			if( !equalObjects(obj1[key],obj2[key]) ) return false;
+			if( !equalObjects(obj1[key],obj2[key],errorFactor) ) return false;
 		}
 	} catch(e) {
 		return false;
@@ -69,7 +71,7 @@ module.exports = function(RED) {
 				try{
 					if(msg._test.id!==node.id) {
 						setError(msg,node,"Sent by another test "+msg._test.id);
-					} else if(!equalObjects(node.getData(msg,node),msg._test.result)) {
+					} else if(!equalObjects(node.getData(msg,node),msg._test.result,node.errorFactor)) {
 						msg._test.testedValue=node.getData(msg,node);
 						setError(msg,node,"Test failed");
 					} else {

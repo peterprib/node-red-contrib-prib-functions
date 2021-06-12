@@ -6,9 +6,13 @@
 		Can select location of property for result on return message.
 		For json test positive infinity by property value "Infinity",negative infinity by "-Infinity" and not a number by "NaN".
 	</p>
+	Error factor allows for numbers to be out by being less than factor abs(expected-result)/expected 
 	<p>
 	A message sent on first port should go thru other nodes and return to test is payload 
 	is has the expected results.  Several test can be arranged. 
+	</p>
+	<p>
+	
 	</p>
 	<h3>Inputs</h3>
 	If message genrated by this node, then payload checked against expected result 
@@ -37,6 +41,17 @@
 		</label>
 	</div>
 
+	<div class="form-row form-row-http-in-errorFactor show">
+		<label for="node-input-errorFactor" style="white-space: nowrap"><i class="icon-bookmark"></i> Error factor</label>
+		<input type="number" id="node-input-errorFactor" list="defaultErrorFactors" >
+		<datalist id="defaultErrorFactors">
+			<option value="0">
+			<option value="0.001">
+			<option value="0.000001">
+			<option value="0.000000001">
+		</datalist>
+	</div>
+
 	<div class="form-row form-row-http-in-resultProperty show">
 		<label for="node-input-resultProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Property </label>
 		<input type="text" id="node-input-resultProperty" placeholder="msg.payload">
@@ -61,6 +76,7 @@
 		color:"#a6bbcf",
 		defaults: {
 			name: {value:""},
+			errorFactor: {value:0,required:false},
 			escapeString: {value:false,required:false},
 			infiniteIsNull: {value:false,required:false},
 			payload: {value:"", validate: RED.validators.typedInput("payloadType")},

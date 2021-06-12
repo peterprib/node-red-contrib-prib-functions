@@ -242,6 +242,8 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.16.0 fix data analysis variance and stddev, add sample, add tests
+
 0.14.2 fix general test flows. Add icon for data analysis
 
 0.14.1 fix capitalization issue with levenshtein Distance

@@ -1,31 +1,24 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.14.2",
+	"version": "0.16.0",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
-		"node-red-contrib-logger": "0.0.4",
-		"avsc": "*",
-		"fast-xml-parser": "*",
-		"xlsx": "*"
+		"avsc": "^5.6.1",
+		"fast-xml-parser": "^3.19.0",
+		"node-red-contrib-logger": "^0.0.6",
+		"xlsx": "^0.16.9"
 	},
 	"devDependencies": {
-		"bl": ">=1.2.3",
-		"bcrypt": ">=5.0.0",
-		"eslint": "^6.8.0",
-		"eslint-config-standard": "^14.1.0",
-		"eslint-plugin-import": "^2.19.1",
-		"eslint-plugin-mocha": "^8.0.0",
-		"eslint-plugin-node": "^11.0.0",
-		"eslint-plugin-promise": "^4.2.1",
-		"eslint-plugin-standard": "^4.0.1",
-		"mocha": "^8.1.3",
-		"node-red": "^1.1.3",
-		"node-red-node-test-helper": "*"
+		"@node-red/runtime": ">=1.2.8",
+		"axios": ">=0.21.1",
+		"bcrypt": "^5.0.1",
+		"bl": "^5.0.0",
+		"mocha": "^8.3.2",
+		"node-red": "^1.3.1",
+		"node-red-node-test-helper": "^0.2.7"
 	},
 	"scripts": {
-		"test": "mocha \"test/**/*.js\"",
-		"lint": "eslint --ext .js ./",
-		"lint-fix": "eslint --fix --ext .js ./"
+		"test": "mocha \"test/**/*.js\""
 	},
 	"repository": {
 		"type": "git",
@@ -61,6 +54,7 @@
 		"mean",
 		"median",
 		"minimun",
+		"model",
 		"monitor",
 		"moving",
 		"Moving Average",
@@ -70,6 +64,8 @@
 		"Process",
 		"range",
 		"realtime",
+		"sample variance",
+		"sample stddev",
 		"Simple Moving Average",
 		"skew",
 		"SMA",
