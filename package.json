@@ -6,7 +6,7 @@
 		"avsc": "^5.6.1",
 		"fast-xml-parser": "^3.19.0",
 		"node-red-contrib-logger": "^0.0.6",
-		"xlsx": "^0.16.9"
+		"xlsx": "^0.17.0"
 	},
 	"devDependencies": {
 		"@node-red/runtime": ">=1.2.8",
