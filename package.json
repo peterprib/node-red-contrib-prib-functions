@@ -1,6 +1,6 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.16.0",
+	"version": "0.16.1",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"avsc": "^5.6.1",
@@ -18,7 +18,7 @@
 		"node-red-node-test-helper": "^0.2.7"
 	},
 	"scripts": {
-		"test": "mocha \"test/**/*.js\""
+		"test": "mocha \"test/**/e*.js\""
 	},
 	"repository": {
 		"type": "git",
@@ -39,6 +39,8 @@
 		"data",
 		"data analysis",
 		"delta",
+		"distance",
+		"euclidian distance",
 		"EMA",
 		"EWMA",
 		"Exponential Moving Average",

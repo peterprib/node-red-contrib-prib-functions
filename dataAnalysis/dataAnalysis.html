@@ -6,6 +6,7 @@
         defaults: {
             name: {value:"",required:false},
 		    action: {value:"avg",required:true},
+		    columns:{value:"",required:false},
 		    outputs: {value:(["realtime","realtimePredict"].includes(this.action)?3:2),required:true},
 		    outliersBase: {value:"avg",required:false},
 		    outliersStdDevs: {value:"3",required:false},
@@ -44,6 +45,11 @@
         		}
            	});
 	       	$("#node-input-action").change(function() {
+        		 if(["distances","distancesMax","distancesMin"].includes( $(this).val() )) {
+        			$(".form-row-http-in-columns").show(); 
+        		 } else {
+        			$(".form-row-http-in-columns").hide();
+        		 }
         		 if(["movingAvgSimple","movingAvgWeighted","movingAvgExponential","realtime","realtimePredict"].includes( $(this).val() )) {
         			$(".form-row-http-in-term").show(); 
         		 } else {
@@ -142,6 +148,9 @@
             <option value="corelationship">Corelationship</option>
             <option value="deltas">Deltas</option>
             <option value="deltaNormalised">Deltas Normalised</option>
+            <option value="distances">Euclidean Distances</option>
+            <option value="distancesMax">Euclidean Distances Max</option>
+            <option value="distancesMin">Euclidean Distances Min</option>
             <option value="pearsonR">Linear Correlation Coefficient</option>
             <option value="max">Maximum</option>
             <option value="avg">Mean</option>
@@ -164,6 +173,11 @@
             <option value="variance">Variance</option>
             <option value="sampleVariance">Variance (Sample)</option>
         </select>
+    </div>
+
+    <div class="form-row form-row-http-in-columns hide">
+        <label for="node-input-columns"><i class="icon-bookmark"></i> Columns</label>
+        <input type="text" id="node-input-columns" placeholder="columns">
     </div>
 
     <div class="form-row form-row-http-in-term hide">
@@ -230,5 +244,9 @@ If real-time stats then a message can send directive instruction in topic:
 			<li>2 standard deviation of the mean (or median), around 95%
 			<li>3 standard deviations of the mean (or median), around 99.7%
 		</ul>	
+	</p>
+	<p>
+	Distance functions take in an array of points in an array and calculates the euclidean distance.
+	e.g. max input [ [1,1],[2,2],[3,3],[4,5]]), has output [{distance:5,points:[[1,1],[4,5]],index:[0,3]}]
 	</p>
 </script>

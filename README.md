@@ -50,6 +50,11 @@ Array metrics:
 * Normalise
 * Standardization (Z-score Normalization)
 
+Array data
+* distances 
+* minimum distance(s) between points
+* maximum distance(s) between points
+
 ![Data Analysis](documentation/DataAnalysis.JPG "Data Analysis")
 
 example:
@@ -241,6 +246,8 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.16.10 data analysis add eulcidean distance functions. Add array pairs
 
 0.16.0 fix data analysis variance and stddev, add sample, add tests
 

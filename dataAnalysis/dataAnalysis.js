@@ -1,13 +1,9 @@
 const logger = new (require("node-red-contrib-logger"))("Data Analysis");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
-Object.defineProperty(Array.prototype, "last", {
-	value() {
-		return this[this.length-1];
-	},
-	writable: true,
-	configurable: true
-});
+require("./arrayLast");
+const ed=require("./euclideanDistance.js");
+require("./forNestedEach");
 
 function crossNormalisedDeltas() {
 	const dataPoints=this.dataPoint;
@@ -120,8 +116,18 @@ function setDataPoint(value,term,node,dp) {
 	dp.weightedMovingAvg=(dp.weightedMovingAvg*2/count)/(count+1);
 	dp.exponentialWeightedMoving.forEach(c=>c.sample(value));
 }
+function getColumns(node) {
+	if(node.columns) {
+		if(node.columns instanceof Array) return node.columns
+		return eval("["+node.columns+"]");
+	}
+}
 functions={
 	avg:(d)=>functions.sum(d)/d.length,
+	arrayMax:(d)=>{  // not tested
+		let max=[],indices
+		a.forNestedEach((e,f,l)=>{const i=l[l.length-1];if(max[l]<e) {max=e,indices=l}})
+	},
 	covariance: (d)=>{
 		const means=[],covars=[],dl=d.length,dlminus1=dl-1,N=d[0].length;
 		d.forEach((e,i)=>{
@@ -141,11 +147,16 @@ functions={
 	corelationship:(d)=>{
 		const covars=functions.covariance(d);
 		const stdDev=d.map(c=>functions.stdDev(c));
-		logger.send({label:"test",d:d,covars:covars,stdDev:stdDev});
-		return 1//covars.map((a)=>a.map((c,i)=>c==null?null:c/(stdDev[i+1]*stdDev[i])));
+		return covars.map((a)=>a.map((c,i)=>c==null?null:c/(stdDev[i+1]*stdDev[i])));
 	},
 	deltas :(d)=>d.map( (c,i)=>c-(d[i-1]||0) ),
 	deltaNormalised :(d)=>d.map( (c,i)=>(c-(d[i-1]||0)) / (d[i-1]||0) ),
+	distances: (d,term,node)=>{
+		if(node.columns) return ed.distances(d,getColumns(node))
+		return ed.distances(d);
+	},
+	distancesMin: (d,term,node)=>ed.minDistances(d,getColumns(node)),
+	distancesMax: (d,term,node)=>ed.maxDistances(d,getColumns(node)),
 	max: (d)=> Math.max(...d),
 	median:(d)=>{
 		const i=Math.floor(d.length/2);
@@ -384,6 +395,7 @@ module.exports = function (RED) {
 					break;
 				}
 			} catch(ex) {
+				if(logger.active) logger.send({label:"error input",action:node.action,message:ex.message,stack:ex.stack});
 				msg.error=ex.message;
 				if(node.maxErrorDisplay) {
 					--node.maxErrorDisplay;
