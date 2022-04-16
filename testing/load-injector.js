@@ -8,8 +8,9 @@ function thinkTimeTime() {
 }
 function nextMessageInjection() {
 	if (this.runtimeTimer) {
+		this.count++;
 		this.receive();
-		var node=this;
+		const node=this;
 		this.nextMessageInjectTimer=setTimeout(function(node){nextMessageInjection.apply(node);},thinkTimeTime.apply(node),node);
 	}
 }
@@ -22,11 +23,15 @@ function runtimeStop() {
 		clearTimeout(this.nextMessageInjectTimer);
 		this.nextMessageInjectTimer=null;
 	}
+	this.stopped=Date.now();
+	this.send([null,{payload:{count:this.count,started:this.started,stopped:this.stopped}}])
     this.status({fill:"red",shape:"ring",text:"Stopped"});
 	this.error("Stopped injector");
 }
 function runtimeStart() {
-	var node=this;
+	const node=this;
+	this.started=Date.now();
+	this.count=0;
 	this.runtimeTimer=true;
 	this.runtimeTimer=setTimeout(function(){runtimeStop.apply(node);},this.runtime*1000);
 	this.status({fill:"green",shape:"ring",text:"Started"});
@@ -37,7 +42,7 @@ function runtimeStart() {
 module.exports = function (RED) {
     function LoadInjectorNode(n) {
         RED.nodes.createNode(this, n);
-        var node=Object.assign(this,n);
+        const node=Object.assign(this,n);
         this.thinktimemin=Number(this.thinktimemin);
         this.thinktimemax=Number(this.thinktimemax);
         if(this.thinktimemax<this.thinktimemin) { 
@@ -96,7 +101,7 @@ module.exports = function (RED) {
 
 //  RED.httpAdmin.post("/loadinjector/:id", RED.auth.needsPermission("inject.write"), function(req,res) {
     RED.httpAdmin.get("/loadinjector/:id",  function(req,res) {
-    	var node = RED.nodes.getNode(req.params.id);
+    	const node = RED.nodes.getNode(req.params.id);
     	if (node && node.type==="Load Injector") {
     	    try {
     	    	node.warn("Request to "+(node.runtimeTimer?"stop":"start")+" injector");

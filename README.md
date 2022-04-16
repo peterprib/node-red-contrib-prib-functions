@@ -159,7 +159,7 @@ Test example:
 
 The levenshtein distance between two character strings.
 
-![Levenshtein Distance](documentation/levenshteinDistance.JPG "Levenshtein Distance")
+![Levenshtein Distance](documentation/levenshteinDistance.jpg "Levenshtein Distance")
 
 ------------------------------------------------------------
 
@@ -247,6 +247,8 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.17.0 Add finished wire to load injector
+
 0.16.10 data analysis add eulcidean distance functions. Add array pairs
 
 0.16.0 fix data analysis variance and stddev, add sample, add tests
@@ -265,40 +267,6 @@ Test/example flow in test/generalTest.json
 
 0.11.0 Transform for AVRO and snappy.  Add JSON to CSV 
 
-0.10.2 Transform validate for array source, bug fixes on transform and add improvements to array to messages. Added node for levenshtein distance.
-
-0.10.1 Real time weighted moving average, levenshtein Distance, for test allow testing of "infinity","-infinity" and "NaN" in JSON.
-
-0.10.0 Many fixes to transform.  Array and csv to various forms work.  Added test to validate.
-Improved test to allow for escape to put special characters into a string.
-
-0.9.6 Enhance transform with csv ignore lead or trailing lines.
-Add Array and CSV to Messages. Add in topic override
-
-0.9.5 Enhance transform with path and setting source and target.
-Outlier allowed to set number of deviations if median and reset or set stats
-Add outlier detection and Pearson R realtime metrics.
-
-0.8.1 Add realtime metrics to data analysis. 
-
-0.7.1
-* fix json to table html and minor code improvements.
-turn off debug mode on spawn process.
-clear down timer on close for host available
-* add Host Available
-
-0.6.0
-* add Spawn Process
-* improve experimental transform with json to table html
-
-0.5.0
-* test node add select property tested for result
-* dataAnalysis add property analysed 
-* add experimental transform
-
-0.4.0 Add test, monitor flow, data analysis
-
-0.0.1 base
 
 # Author
 
