@@ -18,7 +18,7 @@
 		"node-red-node-test-helper": "^0.2.7"
 	},
 	"scripts": {
-		"test": "mocha \"test/**/e*.js\""
+		"test": "mocha \"test/matrix/**/*.js\""
 	},
 	"repository": {
 		"type": "git",

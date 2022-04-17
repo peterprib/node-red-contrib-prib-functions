@@ -71,7 +71,7 @@ function test(label,action,data,expected) {
 	}).timeout(4000);
 }
 
-describe('Data Anaysis', function() {
+describe('Data Anaylsis', function() {
 	beforeEach(function(done) {
 		helper.startServer(done);
 	});
