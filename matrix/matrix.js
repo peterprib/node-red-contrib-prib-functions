@@ -113,6 +113,27 @@ Matrix.prototype.getIndex=function(row, column){
 	const start=row*this.columns;
 	return row*this.columns+column;
 }
+Matrix.prototype.reduceRow=function(row,call,value=0){
+	const start=row*this.columns;
+	const end=start+this.columns;
+	for(let column=0,index=start;index<end;index++){
+		value=call.apply(this,[value,this.vector[index],row,column++]);
+	}
+	return value;
+}
+Matrix.prototype.sumRow=function(row){
+	return this.reduceRow(row,(value,cell)=>value+cell);
+}
+
+Matrix.prototype.multiple=function(rightMatrix){
+	const leftMatrix=this;
+	if(leftMatrix.columns!= rightMatrix.rows) throw Error("columns != rows of argument");
+	const result=new matrix({rows:leftMatrix.rows,column:rightMatrix.columns})
+	result.forEachCell(row,column=>{
+		result.set(row,column,)
+	})
+	return result;
+}
 Matrix.prototype.setRow=function(vector,row){
 	this.vector.set(vector, row*this.columns);
 	return this;

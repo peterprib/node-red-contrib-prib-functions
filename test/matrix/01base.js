@@ -88,4 +88,10 @@ describe("matrix 01base", function() {
 		assert.doesNotThrow(()=>m.equalsNearlyVector(new Float32Array([00,01,02,10,11,12])));
 		done();
 	});
+	it('reduceRow + sumRow', function(done) {
+		const m=new Matrix([[00,01,02],[10,11,12]]);
+		assert.strictEqual(m.sumRow(0),3);
+		assert.strictEqual(m.sumRow(1),33);
+		done();
+	});
 });
