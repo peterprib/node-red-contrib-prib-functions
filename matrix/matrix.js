@@ -157,6 +157,15 @@ Matrix.prototype.setRow=function(vector,row){
 Matrix.prototype.sumRow=function(row){
 	return this.reduceRow(row,(value,cell)=>value+cell);
 }
+Matrix.prototype.swapRows=function(rowA,rowB){
+	this.determinate=-this.determinate;
+	const startRowA=rowA*this.columns;
+	const rowAVector=this.vector.slice(startRowA,startRowA+this.columns);
+	const startRowB=rowB*this.columns
+	this.vector.copyWithin(startRowA,startRowB,startRowB+this.columns);
+	this.vector.set(rowAVector,startRowB);
+	return this;
+}
 Matrix.prototype.toArray=function(precision=6){
 	const result=[];
 	this.forEachRow((row,index)=>{

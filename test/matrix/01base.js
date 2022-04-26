@@ -130,5 +130,10 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m.transpose().toArray(),[[00,10],[01,11],[02,12]])
 		done();
 	});
+	it('swapRows', function(done) {
+		const m=new Matrix([[00,01],[10,11],[20,21],[30,31]]);
+		assert.deepEqual(m.swapRows(1,2).toArray(),[[00,01],[20,21],[10,11],[30,31]])
+		done();
+	});
 
 });
