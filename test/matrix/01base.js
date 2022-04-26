@@ -60,6 +60,16 @@ describe("matrix 01base", function() {
 		assert.doesNotThrow(()=>m.equalsNearlyVector([0,0,0,1,2,3]));
 		done();
 	});
+	it('forEachCell', function(done) {
+		const m=new Matrix([[00,01,02],[10,11,12]]); 
+		m.forEachCell((v,r,c)=>assert.strictEqual(v,r*10+c));
+		done();
+	});
+	it('getRow', function(done) {
+		const m=new Matrix([[00,01,02],[10,11,12],[20,21,22]]);
+		assert.deepEqual(m.getRow(1),new Float32Array([10,11,12]));
+		done();
+	});
 	it('addRow', function(done) {
 		const m=new Matrix({rows:2,columns:3}); //create a full zeroed
 		m.addRow([00,01,02]);
@@ -94,4 +104,26 @@ describe("matrix 01base", function() {
 		assert.strictEqual(m.sumRow(1),33);
 		done();
 	});
+	it('set', function(done) {
+		const m=new Matrix([[00,01,02],[10,11,12],[20,21,22]]);
+		m.set(0,0,-1);
+		m.set(1,1,-11);
+		m.set(2,2,-22);
+		assert.doesNotThrow(()=>m.equalsNearly([[-1,01,02],[10,-11,12],[20,21,-22]]));
+		done();
+	});
+	it('toArray', function(done) {
+		const a=[[0,1,2],[10,11,12]];
+		const m=new Matrix(a);
+		assert.deepEqual(m.toArray(),a);
+		done();
+	});
+	it('multiple', function(done) {
+		const left=new Matrix([[1,0,1],[2,1,1],[0,1,1],[1,1,2]]);
+		const right=new Matrix([[1,2,1],[2,3,1],[4,2,2]]);
+		const result=left.multiple(right);
+		assert.deepEqual(result.toArray(),[[5,4,3],[8,9,5],[6,5,3],[11,9,6]])
+		done();
+	});
+
 });

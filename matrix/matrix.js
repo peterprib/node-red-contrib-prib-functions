@@ -56,17 +56,19 @@ Matrix.prototype.createVector=function(){
 	return this;
 }
 Matrix.prototype.equalsNearly=function(matrix,precision=6){
-	if(matrix instanceof Array) {
-		if(this.rows!=matrix.length) throw Error("rows counts not equal")
-		if(this.columns!=matrix[0].length) throw Error("columns counts not equal")
-		this.forEachRow((row,index)=>{
-			row.forEach(v,column=>matrix.equalsNearlyVector(v,get(row,column)))
+	const thisObject=this;
+	if(matrix instanceof Matrix){
+		if(this.rows!=matrix.rows) throw Error("rows counts not equal actual: "+this.rows+" expected: "+matrix.rows)
+		if(this.columns!=matrix.columns) throw Error("columns counts not equal actual: "+this.columns+" expected: "+matrix.columns)
+	} else {
+		if(this.rows!=matrix.length) throw Error("rows counts not equal actual: "+this.rows+" expected: "+matrix.length)
+		if(this.columns!=matrix[0].length) throw Error("columns counts not equal actual: "+this.columns+" expected: "+matrix[0].length)
+		this.forEachCell((value,row,column)=>{
+			thisObject.equalsNearlyValues(value,matrix[row][column])
 		})
 		return this;
 	}
-	if(this.rows!=matrix.rows) throw Error("rows counts not equal")
-	if(this.columns!=matrix.columns) throw Error("columns counts not equal")
-return this;
+	return this;
 }
 Matrix.prototype.equalsNearlyValues=function(x,y,precision=6){
 		if(x==0){
@@ -74,7 +76,7 @@ Matrix.prototype.equalsNearlyValues=function(x,y,precision=6){
 		} else {
 			if((y/x).toFixed(precision)==1) return this;
 		}
-		throw Error("not equal");
+		throw Error(x+" != "+y);
 	return this;
 }
 Matrix.prototype.equalsNearlyVector=function(vector,precision=6){
@@ -96,22 +98,45 @@ Matrix.prototype.fillArray=function(a){
 	a.forEach((columns)=>matrix.addRow(columns))
 	return this;
 }
-Matrix.prototype.forEachRow=call=>{
-	for(let index=0;index<this.rows;index++) {
-		call.apply(this,[this.getRow(index),index,this])
+Matrix.prototype.forEachCell=function(call){
+	for(let offset=0,row=0;row<this.rows;row++) {
+		for(let column=0;column<this.columns;column++) {
+			call.apply(this,[this.vector[offset],row,column,this]);
+			offset++
+		}
+	}
+	return this;
+}
+Matrix.prototype.forEachRow=function(call){
+	for(let row=0;row<this.rows;row++) {
+		const rowVector=this.getRow(row);
+		call.apply(this,[rowVector,row,this])
 	}
 	return this;
 }
 Matrix.prototype.get=function(row, column){
 	return this.vector[row*this.columns+column];
 }
-Matrix.prototype.getRow=row=>{
-	const start=rows*this.columns;
+Matrix.prototype.getRow=function(row){
+	const start=row*this.columns;
 	return this.vector.subarray(start,start+this.columns);
 }
 Matrix.prototype.getIndex=function(row, column){
 	const start=row*this.columns;
 	return row*this.columns+column;
+}
+Matrix.prototype.multiple=function(rightMatrix){
+	const leftMatrix=this;
+	if(leftMatrix.columns!=rightMatrix.rows) throw Error(leftMatrix.columns+ "columns != "+rightMatrix.rows+" rows of argument");
+	const result=new Matrix({rows:leftMatrix.rows,columns:rightMatrix.columns})
+	result.forEachCell((cell,row,column)=>{
+		const value=leftMatrix.reduceRow(row,
+			(value,rowCell,leftRow,leftColumn)=>
+				value+rowCell*rightMatrix.get(leftColumn,column)
+		);
+		result.set(row,column,value);
+	})
+	return result;
 }
 Matrix.prototype.reduceRow=function(row,call,value=0){
 	const start=row*this.columns;
@@ -121,22 +146,24 @@ Matrix.prototype.reduceRow=function(row,call,value=0){
 	}
 	return value;
 }
-Matrix.prototype.sumRow=function(row){
-	return this.reduceRow(row,(value,cell)=>value+cell);
-}
-
-Matrix.prototype.multiple=function(rightMatrix){
-	const leftMatrix=this;
-	if(leftMatrix.columns!= rightMatrix.rows) throw Error("columns != rows of argument");
-	const result=new matrix({rows:leftMatrix.rows,column:rightMatrix.columns})
-	result.forEachCell(row,column=>{
-		result.set(row,column,)
-	})
-	return result;
+Matrix.prototype.set=function(row,column,value){
+	this.vector[this.getIndex(row,column)]=value;
+	return this;
 }
 Matrix.prototype.setRow=function(vector,row){
 	this.vector.set(vector, row*this.columns);
 	return this;
 }
-
+Matrix.prototype.sumRow=function(row){
+	return this.reduceRow(row,(value,cell)=>value+cell);
+}
+Matrix.prototype.toArray=function(precision=6){
+	const result=[];
+	this.forEachRow((row,index)=>{
+		const columns=[];
+		row.forEach(value=>columns.push(value.toFixed(precision)))
+		result.push(columns)
+	})
+	return result;
+}
 module.exports=Matrix;
