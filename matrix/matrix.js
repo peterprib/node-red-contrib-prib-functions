@@ -166,4 +166,9 @@ Matrix.prototype.toArray=function(precision=6){
 	})
 	return result;
 }
+Matrix.prototype.transpose=function(){
+	const matrix=new Matrix({rows:this.columns,columns:this.rows})
+	this.forEachCell((cell,row,column)=>matrix.set(column,row,cell))
+	return matrix;
+}
 module.exports=Matrix;

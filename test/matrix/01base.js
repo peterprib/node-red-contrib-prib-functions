@@ -125,5 +125,10 @@ describe("matrix 01base", function() {
 		assert.deepEqual(result.toArray(),[[5,4,3],[8,9,5],[6,5,3],[11,9,6]])
 		done();
 	});
+	it('transpose', function(done) {
+		const m=new Matrix([[00,01,02],[10,11,12]]);
+		assert.deepEqual(m.transpose().toArray(),[[00,10],[01,11],[02,12]])
+		done();
+	});
 
 });
