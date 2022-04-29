@@ -118,10 +118,10 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m.toArray(),a);
 		done();
 	});
-	it('multiple', function(done) {
+	it('multiply', function(done) {
 		const left=new Matrix([[1,0,1],[2,1,1],[0,1,1],[1,1,2]]);
 		const right=new Matrix([[1,2,1],[2,3,1],[4,2,2]]);
-		const result=left.multiple(right);
+		const result=left.multiply(right);
 		assert.deepEqual(result.toArray(),[[5,4,3],[8,9,5],[6,5,3],[11,9,6]])
 		done();
 	});
@@ -135,5 +135,29 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m.swapRows(1,2).toArray(),[[00,01],[20,21],[10,11],[30,31]])
 		done();
 	});
-
+	it('multiplyRow', function(done) {
+		const m=new Matrix([[00,01],[10,11],[20,21],[30,31]]);
+		assert.deepEqual(m.multiplyRow(1,2).toArray(),[[00,01],[20,22],[20,21],[30,31]])
+		done();
+	});
+	it('addRow2Row', function(done) {
+		const m=new Matrix([[00,01],[10,11],[20,21],[30,31]]);
+		assert.deepEqual(m.addRow2Row(1,2,2).toArray(),[[00,01],[10,11],[40,43],[30,31]])
+		done();
+	});
+	it('add', function(done) {
+		const expect=[[00,02],[20,22],[40,42],[60,62]];
+		const m=new Matrix([[00,01],[10,11],[20,21],[30,31]]);
+		assert.deepEqual(m.add([[00,01],[10,11],[20,21],[30,31]]).toArray(),expect)
+		const m1=new Matrix([[00,01],[10,11],[20,21],[30,31]]);
+		assert.deepEqual(m1.add(m1).toArray(),expect)
+		done();
+	});
+	it('substract', function(done) {
+		const m=new Matrix([[00,01],[10,11],[20,21],[30,31]]);
+		assert.deepEqual(m.substract([[00,01],[10,11],[20,21],[30,31]]).toArray(),[[0,0],[0,0],[0,0],[0,0]])
+		const m1=new Matrix([[00,01],[10,11],[20,21],[30,31]]);
+		assert.deepEqual(m1.substract(m1).toArray(),[[0,0],[0,0],[0,0],[0,0]])
+		done();
+	});
 });
