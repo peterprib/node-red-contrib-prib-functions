@@ -13,7 +13,7 @@ function Matrix(rows,columns,fill) {
 		return this;
 	} 
 	if(rows instanceof Object) {
-			Object.assign(this,rows)
+			Object.assign(this,rows);
 	} else {
 		this.rows=rows;
 		this.columns=columns;
@@ -46,7 +46,7 @@ Matrix.prototype.consoleLog=function(label){
 	return this;
 }
 Matrix.prototype.createLike=function(matrix){
-	return new Matrix({rows:this,rows,columns:this.columns,size:this.size,sizeMax:this.sizeMax})
+	return new Matrix({rows:this.rows,columns:this.columns,size:this.size,sizeMax:this.sizeMax})
 }
 Matrix.prototype.createForEachCellPairSet=function(matrix,call){
 	const result=this.createLike();
@@ -85,6 +85,60 @@ Matrix.prototype.createVector=function(){
 	}
 	this.vector=new Float32Array(this.sizeMax);
 	return this;
+}
+
+Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
+	const matrix = new Matrix(this.rows-1,this.columns-1);
+	for(let row=0,column=0,sourceRow=0; sourceRow<this.rows; sourceRow++) {
+		if(sourceRow==cellRow) continue;
+		for(let sourceColumn=0; sourceColumn<this.columns; sourceColum++) {
+			if(sourceColum==cellColumn) continue; // In the first sourceRow Data ellipsis of column
+            matrix.set(row,column,this.get(sourceRow, sourceColumn));
+			column++;
+			if(column >= matrix.columns ) {
+				column=0;
+				row++;
+			}
+		}
+	}
+	return matrix;
+}
+Matrix.prototype.getGaussJordanInverse=function(){
+	this.testIsSquare();
+    const tmp = new Matrix(this.rows, this.columns * 2);
+    for (let row=0,offset=this.columns; row<this.rows; ++row) {
+		tmp.setRow(this.getRow(row),row);
+        tmp.vector[offset+row]=1;
+		offset+=tmp.columns
+    }
+	tmp.reducedRowEchelonForm();
+	return tmp.matrix.getMatrix(0,this.columns,this.rows,this.columns);
+}
+Matrix.prototype.reducedRowEchelonForm=function(){
+	for(let row=0, leadColumn=0; row<this.rows && leadColumn<this.columns; ++row, ++leadleadColumn) {
+		let iRowOffset=row*this.columns
+        while(this.vector[iRowOffset+leadColumn] == 0) {
+			iRowOffset+=this.columns;
+        	if(iRowOffset>=this.size){
+				iRowOffset=row*this.columns
+                if(++leadColumn==this.columns) return;
+        	}
+        }
+        this.swapRows(iRowOffset/this.columns, row);
+		const rowOffset=row*this.columns
+		const leadCell=this.vector[rowOffset+leadColumn]
+        if(leadCell != 0) {
+            const factor = leadCell;
+            for (let column=0; column<this.columns; ++column)
+                this.vector[rowOffset+column] /= factor;
+        }
+        for(let jRowOffset=0; jRowOffset<this.size; jRowOffset+this.columns) {
+            if(jRowOffset==rowOffset) continue;
+            const factor=this.vector[jRowOffset+lead];
+            for (let column=0; column<this.columns; ++column)
+                this.vector[jRowOffset+column] -= factor*this.vector[rowOffset+column];
+        }
+    }
 }
 Matrix.prototype.equalsNearly=function(matrix,precision=6){
 	const thisObject=this;
@@ -174,16 +228,40 @@ Matrix.prototype.forRowCells=function(row,call){
 Matrix.prototype.get=function(row, column){
 	return this.vector[row*this.columns+column];
 }
-Matrix.prototype.getRow=function(row){
-	const start=row*this.columns;
-	return this.vector.subarray(start,start+this.columns);
+Matrix.prototype.getIdentity=function(){
+	const identity=this.createLike();
+	for(let offset=0;offset<identity.size;offset+=identity.columns+1) identity.vector[offset]=1;
+	return identity;
 }
 Matrix.prototype.getIndex=function(row, column){
 	const start=row*this.columns;
 	return row*this.columns+column;
 }
-Matrix.prototype.isSquareIndex=function(){
-	return this.rows==this.columns;
+Matrix.prototype.getInverse=function(){
+	this.testIsSquare();
+	const inverse=this.getIdentity();
+	for(let row=0;row<this.rows;row++){
+		const leadOffset=row*this.columns+row;
+		if(this.vector[leadOffset]==0) {
+			for(let offset=leadOffset;offset<this.size;offset+=this.columns) {
+				if(this.vector[offset]!=0) break;
+			}
+		}
+//		const factor;
+//		multiplyRow
+	}
+	return inverse;
+}
+Matrix.prototype.getMatrix=function(row,column,rows,columns){
+    const matrix = new Matrix(rows,columns);
+    for(let matrixOffset=0,thisOffset=row*this.columns+column; row<this.rows; ++row,thisOffset+=this.columns,matrixOffset+=rows) {
+		matrix.vector.set(this.vector.subarray(thisOffset,thisOffset+columns),matrixOffset)
+	}
+	return matrix;
+}
+Matrix.prototype.getRow=function(row){
+	const start=row*this.columns;
+	return this.vector.subarray(start,start+this.columns);
 }
 Matrix.prototype.multiply=function(rightMatrix){
 	const leftMatrix=this;
@@ -231,6 +309,10 @@ Matrix.prototype.swapRows=function(rowA,rowB){
 	const startRowB=rowB*this.columns
 	this.vector.copyWithin(startRowA,startRowB,startRowB+this.columns);
 	this.vector.set(rowAVector,startRowB);
+	return this;
+}
+Matrix.prototype.testIsSquare=function(){
+	if(this.rows!=this.columns) throw Error("not square matrix");
 	return this;
 }
 Matrix.prototype.toArray=function(precision=6){

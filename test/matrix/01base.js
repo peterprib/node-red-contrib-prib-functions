@@ -160,4 +160,19 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m1.substract(m1).toArray(),[[0,0],[0,0],[0,0],[0,0]])
 		done();
 	});
+	it('identity', function(done) {
+		const m=new Matrix([[00,01,02],[10,11,12],[20,21,22]]);
+		assert.deepEqual(m.getIdentity().toArray(),[[1,0,0],[0,1,0],[0,0,1]]);
+		done();
+	});
+	it('getMatrix', function(done) {
+		const m=new Matrix([[00,01,02],[10,11,12],[20,21,22]]);
+		assert.deepEqual(m.getMatrix(1,1,2,2).toArray(),[[11,12],[21,22]]);
+		done();
+	});
+	it('getGaussJordanInverse', function(done) {
+		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]);
+		assert.deepEqual(m.getGaussJordanInverse().toArray(),[[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]);
+		done();
+	});
 });
