@@ -170,9 +170,35 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m.getMatrix(1,1,2,2).toArray(),[[11,12],[21,22]]);
 		done();
 	});
-	it('getGaussJordanInverse', function(done) {
+	it('getInverseGaussJordan', function(done) {
 		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]);
-		assert.deepEqual(m.getGaussJordanInverse().toArray(),[[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]);
+		assert.deepEqual(m.getInverseGaussJordan().toArray(),[[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]);
+		done();
+	});
+	it('getDeterminant', function(done) {
+		const m=new Matrix([
+			[ 1, 0, 2, -1 ],
+			[ 3, 0, 0, 5 ],
+			[ 2, 1, 4, -3 ],
+			[ 1, 0, 5, 0 ]]);
+		assert.deepEqual(m.getDeterminant(),30);
+		done();
+	});
+	it('getInverseAdjointMethod', function(done) {
+		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]);
+		assert.deepEqual(m.getInverseAdjointMethod().toArray(),[[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]);
+		done();
+	});
+	it('gaussianElimination', function(done) {
+		const m=new Matrix([[3.0, 2.0, -4.0, 3.0],
+							[2.0, 3.0, 3.0, 15.0],
+							[5.0, -3, 1.0, 14.0]]);
+		assert.deepEqual(m.clone().forwardElimination().toArray(2),
+							[[5.00,-3.00,1.00,14.00],
+							[0.00,4.20,2.60,9.40],
+							[0.00,0.00,-6.95,-13.90]]);
+
+		assert.doesNotThrow(()=>m.equalsNearlyVector(m.gaussianElimination(),6,[3,1,2]));
 		done();
 	});
 });

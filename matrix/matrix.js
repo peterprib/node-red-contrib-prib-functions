@@ -41,6 +41,11 @@ Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1){
 	this.forRowCells(rowB,(value,column,offset,vector)=>vector[offset]+=factor*vector[offset+diff]);
 	return this;
 }
+Matrix.prototype.clone=function(){
+	const matrix= new Matrix({rows:this.rows,columns:this.columns,size:this.size,sizeMax:this.sizeMax})
+	matrix.vector.set(this.vector,0);
+	return matrix
+}
 Matrix.prototype.consoleLog=function(label){
 	console.log({label:label,rows:this.rows,columns:this.columns,size:this.size,sizeMax:this.sizeMax})
 	return this;
@@ -86,7 +91,6 @@ Matrix.prototype.createVector=function(){
 	this.vector=new Float32Array(this.sizeMax);
 	return this;
 }
-
 Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
 	const matrix = new Matrix(this.rows-1,this.columns-1);
 	for(let row=0,column=0,sourceRow=0; sourceRow<this.rows; sourceRow++) {
@@ -103,43 +107,6 @@ Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
 	}
 	return matrix;
 }
-Matrix.prototype.getGaussJordanInverse=function(){
-	this.testIsSquare();
-    const tmp = new Matrix(this.rows, this.columns * 2);
-    for (let row=0,offset=this.columns; row<this.rows; ++row) {
-		tmp.setRow(this.getRow(row),row);
-        tmp.vector[offset+row]=1;
-		offset+=tmp.columns
-    }
-	tmp.reducedRowEchelonForm();
-	return tmp.matrix.getMatrix(0,this.columns,this.rows,this.columns);
-}
-Matrix.prototype.reducedRowEchelonForm=function(){
-	for(let row=0, leadColumn=0; row<this.rows && leadColumn<this.columns; ++row, ++leadleadColumn) {
-		let iRowOffset=row*this.columns
-        while(this.vector[iRowOffset+leadColumn] == 0) {
-			iRowOffset+=this.columns;
-        	if(iRowOffset>=this.size){
-				iRowOffset=row*this.columns
-                if(++leadColumn==this.columns) return;
-        	}
-        }
-        this.swapRows(iRowOffset/this.columns, row);
-		const rowOffset=row*this.columns
-		const leadCell=this.vector[rowOffset+leadColumn]
-        if(leadCell != 0) {
-            const factor = leadCell;
-            for (let column=0; column<this.columns; ++column)
-                this.vector[rowOffset+column] /= factor;
-        }
-        for(let jRowOffset=0; jRowOffset<this.size; jRowOffset+this.columns) {
-            if(jRowOffset==rowOffset) continue;
-            const factor=this.vector[jRowOffset+lead];
-            for (let column=0; column<this.columns; ++column)
-                this.vector[jRowOffset+column] -= factor*this.vector[rowOffset+column];
-        }
-    }
-}
 Matrix.prototype.equalsNearly=function(matrix,precision=6){
 	const thisObject=this;
 	if(matrix instanceof Matrix){
@@ -150,8 +117,7 @@ Matrix.prototype.equalsNearly=function(matrix,precision=6){
 		if(this.columns!=matrix[0].length) throw Error("columns counts not equal actual: "+this.columns+" expected: "+matrix[0].length)
 		this.forEachCell((value,row,column)=>{
 			thisObject.equalsNearlyValues(value,matrix[row][column])
-		})
-		return this;
+		});
 	}
 	return this;
 }
@@ -164,8 +130,8 @@ Matrix.prototype.equalsNearlyValues=function(x,y,precision=6){
 		throw Error(x+" != "+y);
 	return this;
 }
-Matrix.prototype.equalsNearlyVector=function(vector,precision=6){
-	this.vector.forEach((v,i,a)=>{
+Matrix.prototype.equalsNearlyVector=function(vector,precision=6,baseVector=this.vector){
+	baseVector.forEach((v,i,a)=>{
 		try{
 			this.equalsNearlyValues(v,vector[i],precision)
 		} catch(ex) {
@@ -228,6 +194,46 @@ Matrix.prototype.forRowCells=function(row,call){
 Matrix.prototype.get=function(row, column){
 	return this.vector[row*this.columns+column];
 }
+Matrix.prototype.getAdjoint=function(){
+	if(this.columns==1) return new Matrix([[1]]);
+	const adjoint=this.createLike();
+	for(let offset=0,row=0;row<adjoint.rows;row++) {
+		for(let column=0;column<adjoint.columns;column++) {
+			const temp=this.getCofactor(column,rows); // get reverse
+			adjoint.vector[offset]=((row+column)%2== 0)?temp.getDeterminant():-temp.getDeterminant();
+			offset++
+		}
+	}
+}
+Matrix.prototype.getCofactor=function(cellRow,cellColumn){
+	const matrixSize=this.rows-1;
+	const matrix=new Matrix(matrixSize,matrixSize)
+	const startLength=cellColumn;
+	const endLength=matrixSize-cellColumn;
+	const columnOffsetPart2=cellColumn+1;
+	let thisRowOffset=0;matrixRowOffset=0;
+	for(let row=0;row<this.rows;row++) {
+		if(row==cellRow) continue;
+		const vectorStart=this.vector.slice(thisRowOffset,thisRowOffset+startLength);
+		const thisRowOffsetPart2=thisRowOffset+columnOffsetPart2;
+		const vectorEnd=this.vector.slice(thisRowOffsetPart2,thisRowOffsetPart2+endLength);
+		matrix.vector.set(vectorStart,matrixRowOffset);
+		matrix.vector.set(vectorEnd,matrixRowOffset+cellColumn)
+		matrixROwOffset=matrixRowOffset+matrixSize; //next row
+	}
+	return matrix;
+}
+Matrix.prototype.getInverseGaussJordan=function(){
+	this.testIsSquare();
+    const matrix = new Matrix(this.rows, this.columns * 2);
+    for (let row=0,offset=this.columns; row<this.rows; ++row) {
+		matrix.setRow(this.getRow(row),row);
+        matrix.vector[offset+row]=1;
+		offset+=matrix.columns
+    }
+	matrix.reducedRowEchelonForm();
+	return matrix.getMatrix(0,this.columns,this.rows,this.columns);
+}
 Matrix.prototype.getIdentity=function(){
 	const identity=this.createLike();
 	for(let offset=0;offset<identity.size;offset+=identity.columns+1) identity.vector[offset]=1;
@@ -237,21 +243,7 @@ Matrix.prototype.getIndex=function(row, column){
 	const start=row*this.columns;
 	return row*this.columns+column;
 }
-Matrix.prototype.getInverse=function(){
-	this.testIsSquare();
-	const inverse=this.getIdentity();
-	for(let row=0;row<this.rows;row++){
-		const leadOffset=row*this.columns+row;
-		if(this.vector[leadOffset]==0) {
-			for(let offset=leadOffset;offset<this.size;offset+=this.columns) {
-				if(this.vector[offset]!=0) break;
-			}
-		}
-//		const factor;
-//		multiplyRow
-	}
-	return inverse;
-}
+Matrix.prototype.getInverse=Matrix.prototype.getInverseGaussJordan;
 Matrix.prototype.getMatrix=function(row,column,rows,columns){
     const matrix = new Matrix(rows,columns);
     for(let matrixOffset=0,thisOffset=row*this.columns+column; row<this.rows; ++row,thisOffset+=this.columns,matrixOffset+=rows) {
@@ -277,9 +269,35 @@ Matrix.prototype.multiply=function(rightMatrix){
 	return result;
 }
 Matrix.prototype.multiplyRow=function(row,factor){
-	this.determinate*=factor;
+	this.determinant*=factor;
 	this.forRowCells(row,(cell,column,offset,vector)=>vector[offset]*=factor)
 	return this;
+}
+Matrix.prototype.reducedRowEchelonForm=function(){
+	for(let row=0, leadColumn=0; row<this.rows && leadColumn<this.columns; ++row, ++leadColumn) {
+		let rowOffset=row*this.columns
+        while(this.vector[rowOffset+leadColumn] == 0) {
+			rowOffset+=this.columns;
+        	if(rowOffset>=this.size){
+				rowOffset=row*this.columns
+                if(++leadColumn==this.columns) return;
+        	}
+        }
+        this.swapRows(rowOffset/this.columns, row);
+		rowOffset=row*this.columns
+		const leadCell=this.vector[rowOffset+leadColumn]
+        if(leadCell != 0) {
+            const factor=leadCell;
+            for(let column=leadColumn; column<this.columns; ++column)
+                this.vector[rowOffset+column] /= factor;
+        }
+        for(let jRowOffset=0; jRowOffset<this.size; jRowOffset=jRowOffset+this.columns) {
+            if(jRowOffset==rowOffset) continue;
+            const factor=this.vector[jRowOffset+leadColumn];
+            for (let column=leadColumn; column<this.columns; ++column)
+                this.vector[jRowOffset+column] -= factor*this.vector[rowOffset+column];
+        }
+    }
 }
 Matrix.prototype.reduceRow=function(row,call,value=0){
 	this.forRowCells(row,(cell,column,offset,vector)=>{
@@ -299,11 +317,15 @@ Matrix.prototype.substract=function(matrix){
 	this.forEachCellPairSet(matrix,(cellA,cellB)=>cellA-cellB)
 	return this;
 }
+Matrix.prototype.subtractCell=function(row,column,value){
+	this.vector[this.getIndex(row,column)]-=value;
+	return this;
+}
 Matrix.prototype.sumRow=function(row){
 	return this.reduceRow(row,(value,cell)=>value+cell);
 }
 Matrix.prototype.swapRows=function(rowA,rowB){
-	this.determinate=-this.determinate;
+	this.determinant=-this.determinant;
 	const startRowA=rowA*this.columns;
 	const rowAVector=this.vector.slice(startRowA,startRowA+this.columns);
 	const startRowB=rowB*this.columns
@@ -329,4 +351,120 @@ Matrix.prototype.transpose=function(){
 	this.forEachCell((cell,row,column)=>matrix.set(column,row,cell))
 	return matrix;
 }
+Matrix.prototype.getDeterminant=function(){
+	if(this.determinant) return this.determinant
+	this.testIsSquare();
+	return this.setDeterminant();
+}
+Matrix.prototype.setDeterminant=function(){
+	if(this.rows==1) return this.vector[0];
+	this.determinant=0;
+	let	sign=1;
+	for(let column=0; column<this.columns; column++) {
+		temp=(this.rows>2?this.getCofactor(0,column).getDeterminant():this.vector[1-column]);
+		this.determinant += sign*this.vector[column]*temp;
+		sign=-sign;
+	}
+	return this.determinant;
+}
+
+Matrix.prototype.getInverseAdjointMethod=function(){
+    const determinant=this.getDeterminant();
+	if(determinant==0) throw Error("Singular matrix, can't find its inverse");
+	const adjoint=this.getAdjoint();
+
+	for(let offset=0;offset<adjoint.size;offset++) {
+		adjoint.vector[offset]/=determinant;
+	}
+	return adjoint;
+}
+
 module.exports=Matrix;
+
+/*
+
+function setDataPoint(value,term,node,dp) {
+		Object.assign(dp,{
+			avg:0,
+			count:0, =rows
+			movingSum:0,
+			movingSumSquared:0,
+			movingSumCubed:0,
+			outlier:false,
+			sum:0,
+			sumSquared:0,
+			sumCubed:0,
+			term:term,
+			weightedMovingSum:0,
+			exponentialWeightedMoving:[new EMA(0.25),new EMA(0.5),new EMA(0.75)]
+		});
+	};
+	dp.max=Math.max(dp.max||value,value);
+	dp.min=Math.min(dp.min||value,value);
+	dp.range=dp.max-dp.min;
+	dp.sum+=value;
+	dp.sumSquared+=Math.pow(value,2);
+	dp.sumCubed+=Math.pow(value,3);
+	dp.movingSum+=value-removedValue;
+	dp.movingSumSquared+=Math.pow(value,2)-Math.pow(removedValue,2);
+	dp.movingSumCubed+=Math.pow(value,3)-Math.pow(removedValue,3);
+//	dp.avg=dp.sum/this.rows;
+	const avg=dp.avg;
+	dp.normalised=dp.range ? (value-avg)/dp.range : 0;
+//	dp.movingAvg=dp.movingSum/values.length;
+//	dp.variance=dp.sumSquared/count - Math.pow(avg,2);
+//	dp.stdDev=Math.sqrt(dp.variance);
+	dp.movingVariance=dp.movingSumSquared/values.length - Math.pow(dp.movingAvg,2);
+	dp.movingStdDev=Math.sqrt(dp.movingVariance);
+	dp.median=functions.median(values);
+	dp.standardized=( (value-avg)/dp.stdDev )||0;
+	dp.movingStandardized=( (value-dp.movingAvg)/dp.movingStdDev )||0;
+	dp.skewness=(dp.sumCubed-3*avg*dp.variance-Math.pow(avg,3))/dp.variance*dp.stdDev;
+	dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
+	dp.outlier=node.outliersFunction(node,dp,value);
+	dp.weightedMovingSum+=count*value;
+	dp.weightedMovingAvg=(dp.weightedMovingAvg*2/count)/(count+1);
+	dp.exponentialWeightedMoving.forEach(c=>c.sample(value));
+}
+*/
+Matrix.prototype.gaussianElimination=function(){
+	return this.forwardElimination().backwardSubstitution();
+}
+Matrix.prototype.forwardElimination=function(){
+	let maxValue,maxRow;
+	for(let pivotRowColumn=0; pivotRowColumn<this.rows; pivotRowColumn++) {
+		maxRow=pivotRowColumn; 	// Initialize maximum value and index for pivot
+		maxValue=this.get(maxRow,pivotRowColumn);
+		for(let row=pivotRowColumn+1; row<this.rows; row++){
+			const value=Math.abs(this.get(row,pivotRowColumn))
+			if(value>maxValue) {
+				maxValue=value;
+				maxRow=row;
+			}
+		}
+		// if a principal diagonal element is zero then matrix is singular + division-by-zero later
+		if(this.get(pivotRowColumn,maxRow)==0) {
+			throw Error("Singular matrix, "+(this.get(pivotRowColumn,this.columns)==0?"may have infinitely many solutions":"inconsistent system"))
+		} 
+		if(maxRow!=pivotRowColumn) this.swapRows(pivotRowColumn, maxRow);
+		for(let row=pivotRowColumn+1; row<this.rows; row++){
+			const factor=this.get(row,pivotRowColumn)/maxValue;
+			for(let column=pivotRowColumn+1; column<this.columns; column++){
+				this.subtractCell(row,column,this.get(pivotRowColumn,column)*factor);
+			}
+			this.set(row,pivotRowColumn,0);
+		}
+	}
+	return this;
+}
+Matrix.prototype.backwardSubstitution=function(){
+	const vector=new Float32Array(this.rows);
+	for(let row=this.rows-1; row>=0; row--) {
+		vector[row] = this.get(row,this.rows);
+		for(let column=row+1; column<this.rows; column++)	{
+			vector[row] -= this.get(row,column)*vector[column];
+		}
+		vector[row] /= this.get(row,row);
+	}
+	return vector;
+}
