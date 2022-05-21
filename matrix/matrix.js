@@ -25,6 +25,10 @@ Matrix.prototype.add=function(matrix){
 	this.forEachCellPairSet(matrix,(cellA,cellB)=>cellA+cellB)
 	return this;
 }
+Matrix.prototype.addCell=function(row,column,value){
+	this.vector[this.getIndex(row,column)]+=value;
+	return this;
+}
 Matrix.prototype.addRow=function(vector){
 	if(this.size==this.sizeMax){
 		this.vector.copyWithin(0,this.columns,this.sizeMax);
@@ -40,6 +44,17 @@ Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1){
 	const diff=(rowA-rowB)*this.columns
 	this.forRowCells(rowB,(value,column,offset,vector)=>vector[offset]+=factor*vector[offset+diff]);
 	return this;
+}
+Matrix.prototype.backwardSubstitution=function(){
+	const vector=new Float32Array(this.rows);
+	for(let row=this.rows-1; row>=0; row--) {
+		vector[row] = this.get(row,this.rows);
+		for(let column=row+1; column<this.rows; column++)	{
+			vector[row] -= this.get(row,column)*vector[column];
+		}
+		vector[row] /= this.get(row,row);
+	}
+	return vector;
 }
 Matrix.prototype.clone=function(){
 	const matrix= new Matrix({rows:this.rows,columns:this.columns,size:this.size,sizeMax:this.sizeMax})
@@ -91,21 +106,9 @@ Matrix.prototype.createVector=function(){
 	this.vector=new Float32Array(this.sizeMax);
 	return this;
 }
-Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
-	const matrix = new Matrix(this.rows-1,this.columns-1);
-	for(let row=0,column=0,sourceRow=0; sourceRow<this.rows; sourceRow++) {
-		if(sourceRow==cellRow) continue;
-		for(let sourceColumn=0; sourceColumn<this.columns; sourceColum++) {
-			if(sourceColum==cellColumn) continue; // In the first sourceRow Data ellipsis of column
-            matrix.set(row,column,this.get(sourceRow, sourceColumn));
-			column++;
-			if(column >= matrix.columns ) {
-				column=0;
-				row++;
-			}
-		}
-	}
-	return matrix;
+Matrix.prototype.divideCell=function(row,column,value){
+	this.vector[this.getIndex(row,column)]/=value;
+	return this;
 }
 Matrix.prototype.equalsNearly=function(matrix,precision=6){
 	const thisObject=this;
@@ -191,6 +194,65 @@ Matrix.prototype.forRowCells=function(row,call){
 	}
 	return this;
 }
+Matrix.prototype.maxAbsColumn=function(column,maxRow=0){
+	let rowColumnOffset=maxRow*this.columns+column;
+	let maxValue=Math.abs(this.vector[rowColumnOffset]);
+	rowColumnOffset+=this.columns;
+	while (rowColumnOffset<this.size) {
+		const value=Math.abs(this.vector[rowColumnOffset])
+		if(value>maxValue) {
+			maxValue=value;
+			maxRowColumnOffset=rowColumnOffset;
+		};
+		rowColumnOffset+=this.columns;
+	}
+	return {row:(maxRowColumnOffset-column)/this.columns,value:this.vector[maxRowColumnOffset]}
+}
+Matrix.prototype.maxColumn=function(column,maxRow=0){
+	let rowColumnOffset=maxRow*this.columns+column;
+	let maxValue=this.vector[rowColumnOffset];
+	rowColumnOffset+=this.columns;
+	while (rowColumnOffset<this.size) {
+		const value=this.vector[rowColumnOffset];
+		if(value>maxValue) {
+			maxValue=value;
+			maxRowColumnOffset=rowColumnOffset;
+		};
+		rowColumnOffset+=this.columns;
+	}
+	return {row:(maxRowColumnOffset-column)/this.columns,value:this.vector[maxRowColumnOffset]}
+}
+Matrix.prototype.forwardElimination=function(){
+	let maxValue,maxRow;
+	for(let pivotRowColumn=0; pivotRowColumn<this.rows; pivotRowColumn++) {
+		maxRow=pivotRowColumn; 	// Initialize maximum value and index for pivot
+		maxValue=Math.abs(this.get(maxRow,pivotRowColumn));
+		for(let row=pivotRowColumn+1; row<this.rows; row++){
+			const value=Math.abs(this.get(row,pivotRowColumn))
+			if(value>maxValue) {
+				maxValue=value;
+				maxRow=row;
+			}
+		}
+		// if a principal diagonal element is zero then matrix is singular + division-by-zero later
+		if(this.get(pivotRowColumn,maxRow)==0) {
+			throw Error("Singular matrix, "+(this.get(pivotRowColumn,this.columns)==0?"may have infinitely many solutions":"inconsistent system"))
+		} 
+		if(maxRow!=pivotRowColumn) this.swapRows(pivotRowColumn, maxRow);
+		pivotValue=this.get(pivotRowColumn,pivotRowColumn);
+		for(let row=pivotRowColumn+1; row<this.rows; row++){
+			const factor=this.get(row,pivotRowColumn)/pivotValue;
+			for(let column=pivotRowColumn+1; column<this.columns; column++){
+				this.subtractCell(row,column,this.get(pivotRowColumn,column)*factor);
+			}
+			this.set(row,pivotRowColumn,0);
+		}
+	}
+	return this;
+}
+Matrix.prototype.gaussianElimination=function(){
+	return this.forwardElimination().backwardSubstitution();
+}
 Matrix.prototype.get=function(row, column){
 	return this.vector[row*this.columns+column];
 }
@@ -223,6 +285,22 @@ Matrix.prototype.getCofactor=function(cellRow,cellColumn){
 	}
 	return matrix;
 }
+Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
+	const matrix = new Matrix(this.rows-1,this.columns-1);
+	for(let row=0,column=0,sourceRow=0; sourceRow<this.rows; sourceRow++) {
+		if(sourceRow==cellRow) continue;
+		for(let sourceColumn=0; sourceColumn<this.columns; sourceColum++) {
+			if(sourceColum==cellColumn) continue; // In the first sourceRow Data ellipsis of column
+            matrix.set(row,column,this.get(sourceRow, sourceColumn));
+			column++;
+			if(column >= matrix.columns ) {
+				column=0;
+				row++;
+			}
+		}
+	}
+	return matrix;
+}
 Matrix.prototype.getInverseGaussJordan=function(){
 	this.testIsSquare();
     const matrix = new Matrix(this.rows, this.columns * 2);
@@ -240,7 +318,6 @@ Matrix.prototype.getIdentity=function(){
 	return identity;
 }
 Matrix.prototype.getIndex=function(row, column){
-	const start=row*this.columns;
 	return row*this.columns+column;
 }
 Matrix.prototype.getInverse=Matrix.prototype.getInverseGaussJordan;
@@ -274,30 +351,75 @@ Matrix.prototype.multiplyRow=function(row,factor){
 	return this;
 }
 Matrix.prototype.reducedRowEchelonForm=function(){
-	for(let row=0, leadColumn=0; row<this.rows && leadColumn<this.columns; ++row, ++leadColumn) {
-		let rowOffset=row*this.columns
-        while(this.vector[rowOffset+leadColumn] == 0) {
-			rowOffset+=this.columns;
-        	if(rowOffset>=this.size){
-				rowOffset=row*this.columns
-                if(++leadColumn==this.columns) return;
-        	}
-        }
-        this.swapRows(rowOffset/this.columns, row);
-		rowOffset=row*this.columns
-		const leadCell=this.vector[rowOffset+leadColumn]
-        if(leadCell != 0) {
-            const factor=leadCell;
-            for(let column=leadColumn; column<this.columns; ++column)
-                this.vector[rowOffset+column] /= factor;
-        }
-        for(let jRowOffset=0; jRowOffset<this.size; jRowOffset=jRowOffset+this.columns) {
-            if(jRowOffset==rowOffset) continue;
-            const factor=this.vector[jRowOffset+leadColumn];
-            for (let column=leadColumn; column<this.columns; ++column)
-                this.vector[jRowOffset+column] -= factor*this.vector[rowOffset+column];
-        }
+    for(let pivotColumn=0,pivotRow=0;pivotRow<this.rows;pivotRow++){
+        if(this.rows<=pivotRow) throw Error("logic error")
+        let row=pivotRow
+        while(this.get(row,pivotColumn)==0){
+            row++
+            if(this.rows==row){
+                row=pivotRow;
+                pivotColumn++
+                if(this.columns==pivotColumn) throw Error("row all zeroes")
+			}
+		}
+        if(row!==pivotRow) this.swapRows(row,pivotRow)
+		const factor=this.get(pivotRow,pivotColumn)
+		for(let column=pivotColumn;column<this.columns;column++)
+        	this.divideCell(pivotRow,column,factor)
+		for(let row=pivotRow+1;row<this.rows;row++){
+			const factor=-this.get(row,pivotColumn);
+			if(factor==0) continue
+			for(let column=pivotColumn;column<this.columns;column++){
+				const value=this.get(pivotRow,column);
+				if(value)
+					this.addCell(row,column,factor*this.get(pivotRow,column))
+			}
+		}
+  		if(++pivotColumn>this.columns) break;
+	}
+	return this;
+}
+Matrix.prototype.rowEchelonForm=function(){
+    let rows=this.rows;
+//    let nc=this.columns;
+	for(let row=0;row<rows;row++) {
+        let allZeros=true;
+		for(let column=0;column<columns;column++) {
+            if(this.get(row,column)!== 0){
+                allZeros=false
+                break;
+			}
+		}
+        if(allZeros==true){
+			this.swapRows(r,rows)
+            rows--
+		}
     }
+    let pivot=0;
+    nextPivot: while(pivot<rows & pivot<columns){
+        let row=1;
+        while(this.get(pivot,pivot)==0){ 
+        	if((pivot + row) <= rows){
+                pivot++
+        	    continue nextPivot
+			}
+        	this.swapRows(pivot,pivot+row)
+            row++
+		}
+		const pivotValue=this.get(pivot, pivot);
+		const rowsLeft=rows-pivot-1
+        for(let row=0; row <rowsLeft; row++){
+			const r=pivot+row;
+			const value=this.get(r,pivot)
+            if(value !== 0){
+                const factor= -value/pivotValue;
+                for(let column=pivot;column < columns;column++){
+                    this.addCell(r, column, this.get(pivot,column)*factor);
+				}
+			}
+		}
+        pivot++
+	}
 }
 Matrix.prototype.reduceRow=function(row,call,value=0){
 	this.forRowCells(row,(cell,column,offset,vector)=>{
@@ -382,7 +504,6 @@ Matrix.prototype.getInverseAdjointMethod=function(){
 module.exports=Matrix;
 
 /*
-
 function setDataPoint(value,term,node,dp) {
 		Object.assign(dp,{
 			avg:0,
@@ -427,44 +548,24 @@ function setDataPoint(value,term,node,dp) {
 	dp.exponentialWeightedMoving.forEach(c=>c.sample(value));
 }
 */
-Matrix.prototype.gaussianElimination=function(){
-	return this.forwardElimination().backwardSubstitution();
-}
-Matrix.prototype.forwardElimination=function(){
-	let maxValue,maxRow;
-	for(let pivotRowColumn=0; pivotRowColumn<this.rows; pivotRowColumn++) {
-		maxRow=pivotRowColumn; 	// Initialize maximum value and index for pivot
-		maxValue=this.get(maxRow,pivotRowColumn);
-		for(let row=pivotRowColumn+1; row<this.rows; row++){
-			const value=Math.abs(this.get(row,pivotRowColumn))
-			if(value>maxValue) {
-				maxValue=value;
-				maxRow=row;
-			}
-		}
-		// if a principal diagonal element is zero then matrix is singular + division-by-zero later
-		if(this.get(pivotRowColumn,maxRow)==0) {
-			throw Error("Singular matrix, "+(this.get(pivotRowColumn,this.columns)==0?"may have infinitely many solutions":"inconsistent system"))
-		} 
-		if(maxRow!=pivotRowColumn) this.swapRows(pivotRowColumn, maxRow);
-		for(let row=pivotRowColumn+1; row<this.rows; row++){
-			const factor=this.get(row,pivotRowColumn)/maxValue;
-			for(let column=pivotRowColumn+1; column<this.columns; column++){
-				this.subtractCell(row,column,this.get(pivotRowColumn,column)*factor);
-			}
-			this.set(row,pivotRowColumn,0);
-		}
+
+/*
+let pivotRow=0, pivotColumn=0;
+while (pivotRow<this.rows & pivotColumn<this.columns){
+    // Find the k-th pivot: 
+    rowMax := argmax (i = pivotRow ... this.rows, abs(A[i, pivotColumn]))
+    if( A[maxRow, pivotColumn] == 0){
+        pivotColumn++;
+	} else {
+         this.swapRows(pivotRow, maxRow);
+         for(let row=pivotRow+1;row<this.rows;row++){
+            const factor = A[row, pivotColumn] / A[pivotRow, pivotColumn]
+             A[row, pivotColumn]=0
+             for(column= pivotColumn+1;columns<this.columns;column++){
+                A[row, column]-=A[pivotRow, column]*factor
+			 }
 	}
-	return this;
+    pivotRow++;
+    pivotColumn++
 }
-Matrix.prototype.backwardSubstitution=function(){
-	const vector=new Float32Array(this.rows);
-	for(let row=this.rows-1; row>=0; row--) {
-		vector[row] = this.get(row,this.rows);
-		for(let column=row+1; column<this.rows; column++)	{
-			vector[row] -= this.get(row,column)*vector[column];
-		}
-		vector[row] /= this.get(row,row);
-	}
-	return vector;
-}
+*/

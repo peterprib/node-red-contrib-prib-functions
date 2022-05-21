@@ -170,6 +170,11 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m.getMatrix(1,1,2,2).toArray(),[[11,12],[21,22]]);
 		done();
 	});
+	it('reducedRowEchelonForm', function(done) {
+		const m=new Matrix([[0,1],[0,0],[5,9]]);
+		assert.deepEqual(m.reducedRowEchelonForm().toArray(),[[1,9/5],[0,1],[0,0]]);
+		done();
+	});
 	it('getInverseGaussJordan', function(done) {
 		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]);
 		assert.deepEqual(m.getInverseGaussJordan().toArray(),[[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]);
