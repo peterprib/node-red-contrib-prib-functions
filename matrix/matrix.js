@@ -1,6 +1,7 @@
 const logger = new (require("node-red-contrib-logger"))("Matrix");
 logger.sendInfo("Copyright 2022 Jaroslav Peter Prib");
 
+const zeroFloat32Value=1e-6;
 function Matrix(rows,columns,fill) {
 	if(rows instanceof Array) {
 		this.rows=rows.length;
@@ -40,9 +41,9 @@ Matrix.prototype.addRow=function(vector){
 	this.size+=this.columns;
 	return this;
 }
-Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1){
-	const diff=(rowA-rowB)*this.columns
-	this.forRowCells(rowB,(value,column,offset,vector)=>vector[offset]+=factor*vector[offset+diff]);
+Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1,startColumn=0,endColumn=this.columns-1){
+	const diff=(rowA-rowB)*this.columns;
+	this.forRowCells(rowB,(value,column,offset,vector)=>vector[offset]+=vector[offset+diff]*factor,startColumn,endColumn);
 	return this;
 }
 Matrix.prototype.backwardSubstitution=function(){
@@ -110,6 +111,10 @@ Matrix.prototype.divideCell=function(row,column,value){
 	this.vector[this.getIndex(row,column)]/=value;
 	return this;
 }
+Matrix.prototype.divideRow=function(row,factor,startColumn=0,endColumn=this.columns-1){
+	this.forRowCells(row,(value,column,offset,vector)=>vector[offset]/=factor,startColumn,endColumn);
+	return this;
+}
 Matrix.prototype.equalsNearly=function(matrix,precision=6){
 	const thisObject=this;
 	if(matrix instanceof Matrix){
@@ -119,7 +124,11 @@ Matrix.prototype.equalsNearly=function(matrix,precision=6){
 		if(this.rows!=matrix.length) throw Error("rows counts not equal actual: "+this.rows+" expected: "+matrix.length)
 		if(this.columns!=matrix[0].length) throw Error("columns counts not equal actual: "+this.columns+" expected: "+matrix[0].length)
 		this.forEachCell((value,row,column)=>{
-			thisObject.equalsNearlyValues(value,matrix[row][column])
+			try{
+				thisObject.equalsNearlyValues(value,matrix[row][column],precision)
+			} catch(ex) {
+				throw Error("row: "+row+" column: "+column+", cell values "+ex.message)
+			}
 		});
 	}
 	return this;
@@ -186,11 +195,11 @@ Matrix.prototype.forEachRow=function(call){
 	}
 	return this;
 }
-Matrix.prototype.forRowCells=function(row,call){
-	const start=row*this.columns;
-	const end=start+this.columns;
-	for(let column=0,offset=start;offset<end;offset++){
-		call.apply(this,[this.vector[offset],column++,offset,this.vector]);
+Matrix.prototype.forRowCells=function(row,call,startColumn=0,endColumn=this.columns-1){
+	let offset=row*this.columns+startColumn;
+	for(let column=startColumn;column<=endColumn;column++){
+		call.apply(this,[this.vector[offset],column,offset,this.vector]);
+		offset++;
 	}
 	return this;
 }
@@ -255,6 +264,13 @@ Matrix.prototype.gaussianElimination=function(){
 }
 Matrix.prototype.get=function(row, column){
 	return this.vector[row*this.columns+column];
+}
+Matrix.prototype.getZeroed=function(row, column){
+	const offset=row*this.columns+column;
+	const value=this.vector[offset];
+	if(value==0 || Math.abs(value)>zeroFloat32Value) return value; 
+	this.vector[offset]=0;
+	return 0;
 }
 Matrix.prototype.getAdjoint=function(){
 	if(this.columns==1) return new Matrix([[1]]);
@@ -353,26 +369,61 @@ Matrix.prototype.multiplyRow=function(row,factor){
 Matrix.prototype.reducedRowEchelonForm=function(){
     for(let pivotColumn=0,pivotRow=0;pivotRow<this.rows;pivotRow++){
         if(this.rows<=pivotRow) throw Error("logic error")
-        let row=pivotRow
-        while(this.get(row,pivotColumn)==0){
+        let row=pivotRow;
+        while(this.getZeroed(row,pivotColumn)==0){
             row++
             if(this.rows==row){
                 row=pivotRow;
                 pivotColumn++
-                if(this.columns==pivotColumn) throw Error("row all zeroes")
+                if(pivotColumn>=this.columns) {
+					if(row==this.rows-1) return this;
+					throw Error("row all zeroes which is not last row")
+				}
 			}
 		}
-        if(row!==pivotRow) this.swapRows(row,pivotRow)
+/*
+function ToReducedRowEchelonForm(Matrix M) is
+    lead := 0
+    rowCount := the number of rows in M
+    columnCount := the number of columns in M
+    for 0 ≤ r < rowCount do
+        if columnCount ≤ lead then
+            stop function
+        end if
+        i = r
+        while M[i, lead] = 0 do
+            i = i + 1
+            if rowCount = i then
+                i = r
+                lead = lead + 1
+                if columnCount = lead then
+                    stop function
+                end if
+            end if
+        end while
+ //       if i ≠ r then Swap rows i and r
+        Divide row r by M[r, lead]
+        for 0 ≤ j < rowCount do
+            if j ≠ r do
+                Subtract M[j, lead] multiplied by row r from row j
+            end if
+        end for
+        lead = lead + 1
+    end for
+end function
+*/
+		if(row!==pivotRow) this.swapRows(row,pivotRow)
 		const factor=this.get(pivotRow,pivotColumn)
 		for(let column=pivotColumn;column<this.columns;column++)
         	this.divideCell(pivotRow,column,factor)
-		for(let row=pivotRow+1;row<this.rows;row++){
-			const factor=-this.get(row,pivotColumn);
-			if(factor==0) continue
+		for(let row=0;row<this.rows;row++){
+			if(row==pivotRow) continue;
+			const factor=-this.getZeroed(row,pivotColumn);
+			if(factor==0) continue;
 			for(let column=pivotColumn;column<this.columns;column++){
 				const value=this.get(pivotRow,column);
 				if(value)
-					this.addCell(row,column,factor*this.get(pivotRow,column))
+					this.addCell(row,column,factor*value)
 			}
 		}
   		if(++pivotColumn>this.columns) break;
@@ -381,12 +432,12 @@ Matrix.prototype.reducedRowEchelonForm=function(){
 }
 Matrix.prototype.rowEchelonForm=function(){
     let rows=this.rows;
-//    let nc=this.columns;
+	const columns=this.columns;
 	for(let row=0;row<rows;row++) {
         let allZeros=true;
 		for(let column=0;column<columns;column++) {
-            if(this.get(row,column)!== 0){
-                allZeros=false
+            if(this.getZeroed(row,column)!== 0){
+                allZeros=false;
                 break;
 			}
 		}
@@ -398,28 +449,24 @@ Matrix.prototype.rowEchelonForm=function(){
     let pivot=0;
     nextPivot: while(pivot<rows & pivot<columns){
         let row=1;
-        while(this.get(pivot,pivot)==0){ 
-        	if((pivot + row) <= rows){
+		let pivotValue=this.getZeroed(pivot, pivot);
+       	while(pivotValue==0){
+        	if((pivot+row) <= rows){
                 pivot++
         	    continue nextPivot
 			}
         	this.swapRows(pivot,pivot+row)
             row++
+			pivotValue=this.getZeroed(pivot, pivot);
 		}
-		const pivotValue=this.get(pivot, pivot);
-		const rowsLeft=rows-pivot-1
-        for(let row=0; row <rowsLeft; row++){
-			const r=pivot+row;
-			const value=this.get(r,pivot)
-            if(value !== 0){
-                const factor= -value/pivotValue;
-                for(let column=pivot;column < columns;column++){
-                    this.addCell(r, column, this.get(pivot,column)*factor);
-				}
-			}
+		this.divideRow(pivot,pivotValue);
+		for(let row=pivot+1; row<rows; row++) {
+			const factor=-this.get(row, pivot);
+			this.addRow2Row(pivot,row,factor,pivot);
 		}
         pivot++
 	}
+	return this;
 }
 Matrix.prototype.reduceRow=function(row,call,value=0){
 	this.forRowCells(row,(cell,column,offset,vector)=>{
@@ -463,7 +510,7 @@ Matrix.prototype.toArray=function(precision=6){
 	const result=[];
 	this.forEachRow((row,index)=>{
 		const columns=[];
-		row.forEach(value=>columns.push(value.toFixed(precision)))
+		row.forEach(value=>columns.push(value))
 		result.push(columns)
 	})
 	return result;

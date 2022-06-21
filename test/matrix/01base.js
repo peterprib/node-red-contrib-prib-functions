@@ -170,14 +170,56 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m.getMatrix(1,1,2,2).toArray(),[[11,12],[21,22]]);
 		done();
 	});
-	it('reducedRowEchelonForm', function(done) {
-		const m=new Matrix([[0,1],[0,0],[5,9]]);
-		assert.deepEqual(m.reducedRowEchelonForm().toArray(),[[1,9/5],[0,1],[0,0]]);
+	it('divideRow', function(done) {
+		const m=new Matrix([[00,01,02,03],[10,11,12,13],[20,21,22,23]]);
+		const r=new Matrix([[00,01,02,03],[10/2,11/2/2,12/2/2,13/2],[20,21,22,23]]);
+		const p=new Matrix([[00,01,02,03],[10,11/2,12/2,13],[20,21,22,23]]);
+		assert.deepEqual(m.divideRow(1,2,1,2).toArray(),p.toArray());
+		assert.deepEqual(m.divideRow(1,2).toArray(),r.toArray());
+		done();
+	});
+	it('rowEchelonForm 4x', function(done) {
+		const m4=new Matrix([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]);
+		const a4=new Matrix([[1,2,3,4],[0,1,2,3],[0,0,0,0],[0,0,0,0]]);
+		assert.doesNotThrow(()=>m4.equalsNearly(a4));
+		done();
+	});
+	it('rowEchelonForm 1', function(done) {
+		const m=new Matrix([[3,4,-3],[2,5,5],[-2,-3,1]]).rowEchelonForm();
+		assert.doesNotThrow(()=>m.equalsNearly([[3/3,4/3,-3/3],[0,1,3],[0,0,0]]));
+		done();
+	});
+	it('rowEchelonForm 2', function(done) {
+		const m=new Matrix([[0,3,-6,6,4,-5],
+							[3,-7,8,-5,8,9],
+							[3,-9,12,-9,6,15]]);
+		const echelonForm =new Matrix(
+							[[3,-9,12,-9,6,15],
+							[0,1,-2,2,1,-3],
+							[0,0,0,0,1,4]]);
+		assert.doesNotThrow(()=>m.rowEchelonForm().equalsNearly(echelonForm));
+		done();
+	});
+	it('reducedRowEchelonForm 1', function(done) {
+		const m=new Matrix([[0,1],[0,0],[5,9]]).reducedRowEchelonForm();
+//		console.log(m.toArray());
+		assert.doesNotThrow(()=>m.equalsNearly([[1,9/5],[0,1],[0,0]]));
+		done();
+	});
+	it('reducedRowEchelonForm 2', function(done) {
+		const m=new Matrix([[0,3,-6,6,4,-5],
+							[3,-7,8,-5,8,9],
+							[3,-9,12,-9,6,15]]).reducedRowEchelonForm();
+		const reducedForm =[[1,0,-2,3,0,-24],
+							[0,1,-2,2,0,-7],
+							[0,0,0,0,1,4]];
+//		console.log(m.toArray());
+		assert.doesNotThrow(()=>m.equalsNearly(reducedForm));
 		done();
 	});
 	it('getInverseGaussJordan', function(done) {
-		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]);
-		assert.deepEqual(m.getInverseGaussJordan().toArray(),[[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]);
+		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]).getInverseGaussJordan();
+		assert.doesNotThrow(()=>m.equalsNearly([[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]));
 		done();
 	});
 	it('getDeterminant', function(done) {
@@ -190,20 +232,26 @@ describe("matrix 01base", function() {
 		done();
 	});
 	it('getInverseAdjointMethod', function(done) {
-		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]);
-		assert.deepEqual(m.getInverseAdjointMethod().toArray(),[[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]);
+		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]).getInverseAdjointMethod();
+		assert.doesNotThrow(()=>m.equalsNearly([[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]));
+		done();
+	});
+	it('forwardElimination', function(done) {
+		const m=new Matrix([[3.0, 2.0, -4.0, 3.0],
+							[2.0, 3.0, 3.0, 15.0],
+							[5.0, -3, 1.0, 14.0]]).forwardElimination();
+		assert.doesNotThrow(()=>m.equalsNearly(
+							[[5.00,-3.00,1.00,14.00],
+							[0.00,4.20,2.60,9.40],
+							[0.00,0.00,-6.95,-13.90]],2));
 		done();
 	});
 	it('gaussianElimination', function(done) {
 		const m=new Matrix([[3.0, 2.0, -4.0, 3.0],
 							[2.0, 3.0, 3.0, 15.0],
 							[5.0, -3, 1.0, 14.0]]);
-		assert.deepEqual(m.clone().forwardElimination().toArray(2),
-							[[5.00,-3.00,1.00,14.00],
-							[0.00,4.20,2.60,9.40],
-							[0.00,0.00,-6.95,-13.90]]);
-
-		assert.doesNotThrow(()=>m.equalsNearlyVector(m.gaussianElimination(),6,[3,1,2]));
+		const v=m.gaussianElimination();
+		assert.doesNotThrow(()=>m.equalsNearlyVector(v,6,[3,1,2]));
 		done();
 	});
 });
