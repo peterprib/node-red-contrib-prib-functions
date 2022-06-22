@@ -367,6 +367,7 @@ Matrix.prototype.multiplyRow=function(row,factor){
 	return this;
 }
 Matrix.prototype.reducedRowEchelonForm=function(){
+	const lastColumn=this.columns-1;
     for(let pivotColumn=0,pivotRow=0;pivotRow<this.rows;pivotRow++){
         if(this.rows<=pivotRow) throw Error("logic error")
         let row=pivotRow;
@@ -381,41 +382,11 @@ Matrix.prototype.reducedRowEchelonForm=function(){
 				}
 			}
 		}
-/*
-function ToReducedRowEchelonForm(Matrix M) is
-    lead := 0
-    rowCount := the number of rows in M
-    columnCount := the number of columns in M
-    for 0 ≤ r < rowCount do
-        if columnCount ≤ lead then
-            stop function
-        end if
-        i = r
-        while M[i, lead] = 0 do
-            i = i + 1
-            if rowCount = i then
-                i = r
-                lead = lead + 1
-                if columnCount = lead then
-                    stop function
-                end if
-            end if
-        end while
- //       if i ≠ r then Swap rows i and r
-        Divide row r by M[r, lead]
-        for 0 ≤ j < rowCount do
-            if j ≠ r do
-                Subtract M[j, lead] multiplied by row r from row j
-            end if
-        end for
-        lead = lead + 1
-    end for
-end function
-*/
 		if(row!==pivotRow) this.swapRows(row,pivotRow)
 		const factor=this.get(pivotRow,pivotColumn)
 		for(let column=pivotColumn;column<this.columns;column++)
         	this.divideCell(pivotRow,column,factor)
+		if(pivotColumn==lastColumn) break;
 		for(let row=0;row<this.rows;row++){
 			if(row==pivotRow) continue;
 			const factor=-this.getZeroed(row,pivotColumn);
