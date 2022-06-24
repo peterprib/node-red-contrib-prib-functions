@@ -1,5 +1,13 @@
 const assert=require('assert');
 const Matrix=require("../../matrix/matrix");
+
+const m22=new Matrix([[1,2],[3,4]]);
+const m44=new Matrix([
+	[ 1, 0, 2, -1 ],
+	[ 3, 0, 0, 5 ],
+	[ 2, 1, 4, -3 ],
+	[ 1, 0, 5, 0 ]]);
+
 describe("matrix 01base", function() {
 	it('create no rows', function(done) {
 		assert.throws(()=>new Matrix(),Error)
@@ -42,8 +50,18 @@ describe("matrix 01base", function() {
 		assert.doesNotThrow(()=>m.equalsNearlyValues(1,1.00001,2));
 		assert.throws(()=>m.equalsNearlyValues(1.000001,1));
 		assert.doesNotThrow(()=>m.equalsNearlyValues(1.000001,1,2));
+		done();
+	});
+	it('equalsNearlyVector', function(done) {
+		const m=new Matrix({rows:2,columns:3});
 		assert.doesNotThrow(()=>m.equalsNearlyVector([0,0,0,0,0,0]));
 		assert.throws(()=>m.equalsNearlyVector([1,2,3,4,5,6]));
+		done();
+	});
+	it('equalsNearly', function(done) {
+		assert.doesNotThrow(()=>m22.equalsNearly(m22));
+		assert.doesNotThrow(()=>m22.equalsNearly([[1,2],[3,4]]));
+		assert.throws(()=>m.equalsNearly([1,1],[1,1]));
 		done();
 	});
 	it('fill', function(done) {
@@ -178,12 +196,6 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m.divideRow(1,2).toArray(),r.toArray());
 		done();
 	});
-	it('rowEchelonForm 4x', function(done) {
-		const m4=new Matrix([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]);
-		const a4=new Matrix([[1,2,3,4],[0,1,2,3],[0,0,0,0],[0,0,0,0]]);
-		assert.doesNotThrow(()=>m4.equalsNearly(a4));
-		done();
-	});
 	it('rowEchelonForm 1', function(done) {
 		const m=new Matrix([[3,4,-3],[2,5,5],[-2,-3,1]]).rowEchelonForm();
 		assert.doesNotThrow(()=>m.equalsNearly([[3/3,4/3,-3/3],[0,1,3],[0,0,0]]));
@@ -198,6 +210,12 @@ describe("matrix 01base", function() {
 							[0,1,-2,2,1,-3],
 							[0,0,0,0,1,4]]);
 		assert.doesNotThrow(()=>m.rowEchelonForm().equalsNearly(echelonForm));
+		done();
+	});
+	it('rowEchelonForm 4x', function(done) {
+		const m=new Matrix([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]);
+		const a=new Matrix([[1,2,3,4],[0,1,2,3],[0,0,0,0],[0,0,0,0]]);
+		assert.doesNotThrow(()=>m.rowEchelonForm().equalsNearly(a));
 		done();
 	});
 	it('reducedRowEchelonForm 1', function(done) {
@@ -244,12 +262,7 @@ describe("matrix 01base", function() {
 		assert.doesNotThrow(()=>m33.getCofactor(1,1).equalsNearly([[1,3],[7,9]]));
 		done();
 	});
-	const m22=new Matrix([[1,2],[3,4]]);
-	const m44=new Matrix([
-		[ 1, 0, 2, -1 ],
-		[ 3, 0, 0, 5 ],
-		[ 2, 1, 4, -3 ],
-		[ 1, 0, 5, 0 ]]);
+
 	it('getDeterminantUsingCofactor22', function(done) {
 		assert.deepEqual(m22.clone().getDeterminantUsingCofactor(),1*4-2*3);
 		done();
@@ -257,6 +270,10 @@ describe("matrix 01base", function() {
 	
 	it('getDeterminantUsingCofactor44', function(done) {
 		assert.deepEqual(m44.clone().getDeterminantUsingCofactor(),30);
+		done();
+	});
+	it('getDeterminantUsingRowEchelonForm22', function(done) {
+		assert.deepEqual(m22.clone().getDeterminantUsingRowEchelonForm(),1*4-2*3);
 		done();
 	});
 	it('getDeterminantUsingRowEchelonForm44', function(done) {

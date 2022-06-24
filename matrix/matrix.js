@@ -121,6 +121,13 @@ Matrix.prototype.equalsNearly=function(matrix,precision=6){
 	if(matrix instanceof Matrix){
 		if(this.rows!=matrix.rows) throw Error("rows counts not equal actual: "+this.rows+" expected: "+matrix.rows)
 		if(this.columns!=matrix.columns) throw Error("columns counts not equal actual: "+this.columns+" expected: "+matrix.columns)
+		this.forEachCell((value,row,column,vector,offset)=>{
+			try{
+				thisObject.equalsNearlyValues(value,matrix.vector[offset],precision)
+			} catch(ex) {
+				throw Error("row: "+row+" column: "+column+", cell values "+ex.message)
+			}
+		});
 	} else {
 		if(this.rows!=matrix.length) throw Error("rows counts not equal actual: "+this.rows+" expected: "+matrix.length)
 		if(this.columns!=matrix[0].length) throw Error("columns counts not equal actual: "+this.columns+" expected: "+matrix[0].length)
@@ -204,34 +211,6 @@ Matrix.prototype.forRowCells=function(row,call,startColumn=0,endColumn=this.colu
 	}
 	return this;
 }
-Matrix.prototype.maxAbsColumn=function(column,maxRow=0){
-	let rowColumnOffset=maxRow*this.columns+column;
-	let maxValue=Math.abs(this.vector[rowColumnOffset]);
-	rowColumnOffset+=this.columns;
-	while (rowColumnOffset<this.size) {
-		const value=Math.abs(this.vector[rowColumnOffset])
-		if(value>maxValue) {
-			maxValue=value;
-			maxRowColumnOffset=rowColumnOffset;
-		};
-		rowColumnOffset+=this.columns;
-	}
-	return {row:(maxRowColumnOffset-column)/this.columns,value:this.vector[maxRowColumnOffset]}
-}
-Matrix.prototype.maxColumn=function(column,maxRow=0){
-	let rowColumnOffset=maxRow*this.columns+column;
-	let maxValue=this.vector[rowColumnOffset];
-	rowColumnOffset+=this.columns;
-	while (rowColumnOffset<this.size) {
-		const value=this.vector[rowColumnOffset];
-		if(value>maxValue) {
-			maxValue=value;
-			maxRowColumnOffset=rowColumnOffset;
-		};
-		rowColumnOffset+=this.columns;
-	}
-	return {row:(maxRowColumnOffset-column)/this.columns,value:this.vector[maxRowColumnOffset]}
-}
 Matrix.prototype.forwardElimination=function(){
 	let maxValue,maxRow;
 	for(let pivotRowColumn=0; pivotRowColumn<this.rows; pivotRowColumn++) {
@@ -265,13 +244,6 @@ Matrix.prototype.gaussianElimination=function(){
 }
 Matrix.prototype.get=function(row, column){
 	return this.vector[row*this.columns+column];
-}
-Matrix.prototype.getZeroed=function(row, column){
-	const offset=row*this.columns+column;
-	const value=this.vector[offset];
-	if(value==0 || Math.abs(value)>zeroFloat32Value) return value; 
-	this.vector[offset]=0;
-	return 0;
 }
 Matrix.prototype.getAdjoint=function(){
 	if(this.columns==1) return new Matrix([[1]]);
@@ -321,6 +293,19 @@ Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
 	}
 	return matrix;
 }
+Matrix.prototype.getDeterminantUsingCofactor=function(){
+	this.determinant=0;
+	if(this.rows>2) {
+		let	sign=1;
+		for(let column=0; column<this.columns; column++) {
+			this.determinant += sign*this.vector[column]*this.getCofactor(0,column).getDeterminantUsingCofactor();
+			sign=-sign;
+		}
+	} else {
+		this.determinant=this.vector[0]*this.vector[3]- this.vector[1]*this.vector[2];
+	}
+	return this.determinant;
+}
 Matrix.prototype.getInverseGaussJordan=function(){
 	this.testIsSquare();
     const matrix = new Matrix(this.rows, this.columns * 2);
@@ -351,6 +336,41 @@ Matrix.prototype.getMatrix=function(row,column,rows,columns){
 Matrix.prototype.getRow=function(row){
 	const start=row*this.columns;
 	return this.vector.subarray(start,start+this.columns);
+}
+Matrix.prototype.getZeroed=function(row, column){
+	const offset=row*this.columns+column;
+	const value=this.vector[offset];
+	if(value==0 || Math.abs(value)>zeroFloat32Value) return value; 
+	this.vector[offset]=0;
+	return 0;
+}
+Matrix.prototype.maxAbsColumn=function(column,maxRow=0){
+	let rowColumnOffset=maxRow*this.columns+column;
+	let maxValue=Math.abs(this.vector[rowColumnOffset]);
+	rowColumnOffset+=this.columns;
+	while (rowColumnOffset<this.size) {
+		const value=Math.abs(this.vector[rowColumnOffset])
+		if(value>maxValue) {
+			maxValue=value;
+			maxRowColumnOffset=rowColumnOffset;
+		};
+		rowColumnOffset+=this.columns;
+	}
+	return {row:(maxRowColumnOffset-column)/this.columns,value:this.vector[maxRowColumnOffset]}
+}
+Matrix.prototype.maxColumn=function(column,maxRow=0){
+	let rowColumnOffset=maxRow*this.columns+column;
+	let maxValue=this.vector[rowColumnOffset];
+	rowColumnOffset+=this.columns;
+	while (rowColumnOffset<this.size) {
+		const value=this.vector[rowColumnOffset];
+		if(value>maxValue) {
+			maxValue=value;
+			maxRowColumnOffset=rowColumnOffset;
+		};
+		rowColumnOffset+=this.columns;
+	}
+	return {row:(maxRowColumnOffset-column)/this.columns,value:this.vector[maxRowColumnOffset]}
 }
 Matrix.prototype.multiply=function(rightMatrix){
 	const leftMatrix=this;
@@ -418,19 +438,20 @@ Matrix.prototype.rowEchelonForm=function(){
 		}
         if(allZeros==true){
 			if(row==lastRowAdj) return this;
-			this.swapRows(row--,lastRowAdj--)	}
+			this.swapRows(row--,lastRowAdj--)	
+		}
     }
     let pivot=0;
     nextPivot: while(pivot<rows & pivot<columns){
-        let row=1;
+        let rowOffset=1;
 		let pivotValue=this.getZeroed(pivot, pivot);
        	while(pivotValue==0){
-        	if((pivot+row) <= rows){
+        	if((pivot+rowOffset) <= rows){
                 pivot++
         	    continue nextPivot
 			}
-        	this.swapRows(pivot,pivot+row)
-            row++
+        	this.swapRows(pivot,pivot+rowOffset)
+            rowOffset++
 			pivotValue=this.getZeroed(pivot, pivot);
 		}
 		this.divideRow(pivot,pivotValue);
@@ -511,20 +532,6 @@ Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
 	this.determinant=1/matrix.determinant;
 	return this.determinant;
 }
-Matrix.prototype.getDeterminantUsingCofactor=function(){
-	this.determinant=0;
-	if(this.rows>2) {
-		let	sign=1;
-		for(let column=0; column<this.columns; column++) {
-			this.determinant += sign*this.vector[column]*this.getCofactor(0,column).getDeterminantUsingCofactor();
-			sign=-sign;
-		}
-	} else {
-		this.determinant=this.vector[0]*this.vector[3]- this.vector[1]*this.vector[2];
-	}
-	return this.determinant;
-}
-
 Matrix.prototype.getInverseAdjointMethod=function(){
     const determinant=this.getDeterminant();
 	if(determinant==0) throw Error("Singular matrix, can't find its inverse");
