@@ -218,17 +218,53 @@ describe("matrix 01base", function() {
 		done();
 	});
 	it('getInverseGaussJordan', function(done) {
-		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]).getInverseGaussJordan();
-		assert.doesNotThrow(()=>m.equalsNearly([[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]));
+		const m=new Matrix([[1,2,-2],
+							[1,-1,2],
+							[3,2,1]]).getInverseGaussJordan();
+//		console.log(m.toArray());
+		assert.doesNotThrow(()=>m.equalsNearly([[1,6/5,-2/5],[-1,-7/5,4/5],[-1,-4/5,3/5]]));
 		done();
 	});
-	it('getDeterminant', function(done) {
-		const m=new Matrix([
-			[ 1, 0, 2, -1 ],
-			[ 3, 0, 0, 5 ],
-			[ 2, 1, 4, -3 ],
-			[ 1, 0, 5, 0 ]]);
-		assert.deepEqual(m.getDeterminant(),30);
+	const m33=new Matrix([[1,2,3],
+						  [4,5,6],
+						  [7,8,9]]);
+	it('getCofactor33 0 0', function(done) {
+		assert.doesNotThrow(()=>m33.getCofactor(0,0).equalsNearly([[5,6],[8,9]]));
+		done();
+	});
+	it('getCofactor33 0 1', function(done) {
+		assert.doesNotThrow(()=>m33.getCofactor(0,1).equalsNearly([[4,6],[7,9]]));
+		done();
+	});
+	it('getCofactor33 0 2', function(done) {
+		assert.doesNotThrow(()=>m33.getCofactor(0,2).equalsNearly([[4,5],[7,8]]));
+		done();
+	});
+	it('getCofactor33 1 1', function(done) {
+		assert.doesNotThrow(()=>m33.getCofactor(1,1).equalsNearly([[1,3],[7,9]]));
+		done();
+	});
+	const m22=new Matrix([[1,2],[3,4]]);
+	const m44=new Matrix([
+		[ 1, 0, 2, -1 ],
+		[ 3, 0, 0, 5 ],
+		[ 2, 1, 4, -3 ],
+		[ 1, 0, 5, 0 ]]);
+	it('getDeterminantUsingCofactor22', function(done) {
+		assert.deepEqual(m22.clone().getDeterminantUsingCofactor(),1*4-2*3);
+		done();
+	});
+	
+	it('getDeterminantUsingCofactor44', function(done) {
+		assert.deepEqual(m44.clone().getDeterminantUsingCofactor(),30);
+		done();
+	});
+	it('getDeterminantUsingRowEchelonForm44', function(done) {
+		assert.deepEqual(m44.clone().getDeterminantUsingRowEchelonForm(),30);
+		done();
+	});
+	it('getDeterminant44', function(done) {
+		assert.deepEqual(m44.clone().getDeterminant(),30);
 		done();
 	});
 	it('getInverseAdjointMethod', function(done) {

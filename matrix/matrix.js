@@ -112,6 +112,7 @@ Matrix.prototype.divideCell=function(row,column,value){
 	return this;
 }
 Matrix.prototype.divideRow=function(row,factor,startColumn=0,endColumn=this.columns-1){
+	this.determinant/=factor;
 	this.forRowCells(row,(value,column,offset,vector)=>vector[offset]/=factor,startColumn,endColumn);
 	return this;
 }
@@ -277,11 +278,12 @@ Matrix.prototype.getAdjoint=function(){
 	const adjoint=this.createLike();
 	for(let offset=0,row=0;row<adjoint.rows;row++) {
 		for(let column=0;column<adjoint.columns;column++) {
-			const temp=this.getCofactor(column,rows); // get reverse
+			const temp=this.getCofactor(column,row); // get reverse
 			adjoint.vector[offset]=((row+column)%2== 0)?temp.getDeterminant():-temp.getDeterminant();
 			offset++
 		}
 	}
+	return adjoint;
 }
 Matrix.prototype.getCofactor=function(cellRow,cellColumn){
 	const matrixSize=this.rows-1;
@@ -291,13 +293,15 @@ Matrix.prototype.getCofactor=function(cellRow,cellColumn){
 	const columnOffsetPart2=cellColumn+1;
 	let thisRowOffset=0;matrixRowOffset=0;
 	for(let row=0;row<this.rows;row++) {
-		if(row==cellRow) continue;
-		const vectorStart=this.vector.slice(thisRowOffset,thisRowOffset+startLength);
-		const thisRowOffsetPart2=thisRowOffset+columnOffsetPart2;
-		const vectorEnd=this.vector.slice(thisRowOffsetPart2,thisRowOffsetPart2+endLength);
-		matrix.vector.set(vectorStart,matrixRowOffset);
-		matrix.vector.set(vectorEnd,matrixRowOffset+cellColumn)
-		matrixROwOffset=matrixRowOffset+matrixSize; //next row
+		if(row!==cellRow){
+			const vectorStart=this.vector.slice(thisRowOffset,thisRowOffset+startLength);
+			const thisRowOffsetPart2=thisRowOffset+columnOffsetPart2;
+			const vectorEnd=this.vector.slice(thisRowOffsetPart2,thisRowOffsetPart2+endLength);
+			matrix.vector.set(vectorStart,matrixRowOffset);
+			matrix.vector.set(vectorEnd,matrixRowOffset+cellColumn)
+			matrixRowOffset+=matrixSize; //next rows
+		}
+		thisRowOffset+=this.rows
 	}
 	return matrix;
 }
@@ -402,7 +406,7 @@ Matrix.prototype.reducedRowEchelonForm=function(){
 	return this;
 }
 Matrix.prototype.rowEchelonForm=function(){
-    let rows=this.rows;
+    let rows=this.rows,lastRowAdj=rows-1;
 	const columns=this.columns;
 	for(let row=0;row<rows;row++) {
         let allZeros=true;
@@ -413,9 +417,8 @@ Matrix.prototype.rowEchelonForm=function(){
 			}
 		}
         if(allZeros==true){
-			this.swapRows(r,rows)
-            rows--
-		}
+			if(row==lastRowAdj) return this;
+			this.swapRows(row--,lastRowAdj--)	}
     }
     let pivot=0;
     nextPivot: while(pivot<rows & pivot<columns){
@@ -497,13 +500,27 @@ Matrix.prototype.getDeterminant=function(){
 	return this.setDeterminant();
 }
 Matrix.prototype.setDeterminant=function(){
+	this.determinant=1/this.getDeterminantUsingRowEchelonForm();
+	return this.determinant;
+}
+Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
 	if(this.rows==1) return this.vector[0];
+	const matrix=this.clone();
+	matrix.determinant=parseFloat(1); //force use of float
+	matrix.rowEchelonForm();
+	this.determinant=1/matrix.determinant;
+	return this.determinant;
+}
+Matrix.prototype.getDeterminantUsingCofactor=function(){
 	this.determinant=0;
-	let	sign=1;
-	for(let column=0; column<this.columns; column++) {
-		temp=(this.rows>2?this.getCofactor(0,column).getDeterminant():this.vector[1-column]);
-		this.determinant += sign*this.vector[column]*temp;
-		sign=-sign;
+	if(this.rows>2) {
+		let	sign=1;
+		for(let column=0; column<this.columns; column++) {
+			this.determinant += sign*this.vector[column]*this.getCofactor(0,column).getDeterminantUsingCofactor();
+			sign=-sign;
+		}
+	} else {
+		this.determinant=this.vector[0]*this.vector[3]- this.vector[1]*this.vector[2];
 	}
 	return this.determinant;
 }
@@ -564,26 +581,5 @@ function setDataPoint(value,term,node,dp) {
 	dp.weightedMovingSum+=count*value;
 	dp.weightedMovingAvg=(dp.weightedMovingAvg*2/count)/(count+1);
 	dp.exponentialWeightedMoving.forEach(c=>c.sample(value));
-}
-*/
-
-/*
-let pivotRow=0, pivotColumn=0;
-while (pivotRow<this.rows & pivotColumn<this.columns){
-    // Find the k-th pivot: 
-    rowMax := argmax (i = pivotRow ... this.rows, abs(A[i, pivotColumn]))
-    if( A[maxRow, pivotColumn] == 0){
-        pivotColumn++;
-	} else {
-         this.swapRows(pivotRow, maxRow);
-         for(let row=pivotRow+1;row<this.rows;row++){
-            const factor = A[row, pivotColumn] / A[pivotRow, pivotColumn]
-             A[row, pivotColumn]=0
-             for(column= pivotColumn+1;columns<this.columns;column++){
-                A[row, column]-=A[pivotRow, column]*factor
-			 }
-	}
-    pivotRow++;
-    pivotColumn++
 }
 */
