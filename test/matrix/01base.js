@@ -328,8 +328,11 @@ describe("matrix 01base", function() {
 		done();
 	});
 	it('getInverseAdjointMethod', function(done) {
-		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]).getInverseAdjointMethod();
-		assert.doesNotThrow(()=>m.equalsNearly([[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]));
+		const m=new Matrix([
+			[1,2,-2],
+			[1,-1,2],
+			[3,2,1]]).getInverseAdjointMethod();
+		assert.doesNotThrow(()=>m.equalsNearly([[1,6/5,-2/5],[-1,-7/5,4/5],[-1,-4/5,3/5]]));
 		done();
 	});
 });

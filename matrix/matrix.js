@@ -320,6 +320,11 @@ Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
 	}
 	return matrix;
 }
+Matrix.prototype.getDeterminant=function(){
+	if(this.determinant) return this.determinant
+	this.testIsSquare();
+	return this.setDeterminant();
+}
 Matrix.prototype.getDeterminantUsingCofactor=function(){
 	this.determinant=0;
 	if(this.rows>2) {
@@ -333,6 +338,32 @@ Matrix.prototype.getDeterminantUsingCofactor=function(){
 	}
 	return this.determinant;
 }
+Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
+	if(this.rows==1) return this.vector[0];
+	const matrix=this.clone();
+	matrix.determinant=parseFloat(1); //force use of float
+	matrix.rowEchelonForm();
+	this.determinant=1/matrix.determinant;
+	return this.determinant;
+}
+Matrix.prototype.getIdentity=function(){
+	const identity=this.createLike();
+	for(let offset=0;offset<identity.size;offset+=identity.columns+1) identity.vector[offset]=1;
+	return identity;
+}
+Matrix.prototype.getIndex=function(row, column){
+	return row*this.columns+column;
+}
+Matrix.prototype.getInverse=Matrix.prototype.getInverseGaussJordan;
+Matrix.prototype.getInverseAdjointMethod=function(){
+    const determinant=this.getDeterminant();
+	if(determinant==0) throw Error("Singular matrix, can't find its inverse");
+	const adjoint=this.getAdjoint();
+	for(let offset=0;offset<adjoint.size;offset++) {
+		adjoint.vector[offset]/=determinant;
+	}
+	return adjoint;
+}
 Matrix.prototype.getInverseGaussJordan=function(){
 	this.testIsSquare();
     const matrix = new Matrix(this.rows, this.columns * 2);
@@ -344,15 +375,6 @@ Matrix.prototype.getInverseGaussJordan=function(){
 	matrix.reducedRowEchelonForm();
 	return matrix.getMatrix(0,this.columns,this.rows,this.columns);
 }
-Matrix.prototype.getIdentity=function(){
-	const identity=this.createLike();
-	for(let offset=0;offset<identity.size;offset+=identity.columns+1) identity.vector[offset]=1;
-	return identity;
-}
-Matrix.prototype.getIndex=function(row, column){
-	return row*this.columns+column;
-}
-Matrix.prototype.getInverse=Matrix.prototype.getInverseGaussJordan;
 Matrix.prototype.getMatrix=function(row,column,rows,columns){
     const matrix = new Matrix(rows,columns);
     for(let matrixOffset=0,thisOffset=row*this.columns+column; row<this.rows; ++row,thisOffset+=this.columns,matrixOffset+=rows) {
@@ -453,16 +475,8 @@ Matrix.prototype.reducedRowEchelonForm=function(){
 	return this;
 }
 Matrix.prototype.rowEchelonForm=function(){
-    let lastRowAdj=this.rows-1;
 	const columns=this.columns;
-/*
-	for(let row=0;row<=lastRowAdj;row++) { //placed all zeroed rows at end
-		const i=this.findRowColumn(row,value=>Math.abs(value)>zeroFloat32Value,row,lastRowAdj)  //none zeroe?
-		if(i==-1)this.swapRows(row--,lastRowAdj--)
-    }
-	if(lastRowAdj<=1) return this;
-*/
-    let pivotRow=0,pivotColumn=0;
+    let pivotRow=0,pivotColumn=0,lastRowAdj=this.rows-1;
     nextPivot: while(pivotRow<=lastRowAdj & pivotColumn<columns){
 		let pivotValue=this.getZeroed(pivotRow, pivotColumn);
 		if(pivotValue==0) {
@@ -503,6 +517,10 @@ Matrix.prototype.reduceRow=function(row,call,value=0){
 Matrix.prototype.set=function(row,column,value){
 	this.vector[this.getIndex(row,column)]=value;
 	return this;
+}
+Matrix.prototype.setDeterminant=function(){
+	this.determinant=this.getDeterminantUsingRowEchelonForm();
+	return this.determinant;
 }
 Matrix.prototype.setRow=function(vector,row){
 	this.vector.set(vector, row*this.columns);
@@ -545,33 +563,6 @@ Matrix.prototype.transpose=function(){
 	const matrix=new Matrix({rows:this.columns,columns:this.rows})
 	this.forEachCell((cell,row,column)=>matrix.set(column,row,cell))
 	return matrix;
-}
-Matrix.prototype.getDeterminant=function(){
-	if(this.determinant) return this.determinant
-	this.testIsSquare();
-	return this.setDeterminant();
-}
-Matrix.prototype.setDeterminant=function(){
-	this.determinant=this.getDeterminantUsingRowEchelonForm();
-	return this.determinant;
-}
-Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
-	if(this.rows==1) return this.vector[0];
-	const matrix=this.clone();
-	matrix.determinant=parseFloat(1); //force use of float
-	matrix.rowEchelonForm();
-	this.determinant=1/matrix.determinant;
-	return this.determinant;
-}
-Matrix.prototype.getInverseAdjointMethod=function(){
-    const determinant=this.getDeterminant();
-	if(determinant==0) throw Error("Singular matrix, can't find its inverse");
-	const adjoint=this.getAdjoint();
-
-	for(let offset=0;offset<adjoint.size;offset++) {
-		adjoint.vector[offset]/=determinant;
-	}
-	return adjoint;
 }
 
 module.exports=Matrix;
