@@ -278,7 +278,7 @@ Matrix.prototype.getAdjoint=function(){
 	for(let offset=0,row=0;row<adjoint.rows;row++) {
 		for(let column=0;column<adjoint.columns;column++) {
 			const temp=this.getCofactor(column,row); // get reverse
-			adjoint.vector[offset]=((row+column)%2== 0)?temp.getDeterminant():-temp.getDeterminant();
+			adjoint.vector[offset]=((row+column)%2==0)?temp.getDeterminant():-temp.getDeterminant();
 			offset++
 		}
 	}

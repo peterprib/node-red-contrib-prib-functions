@@ -296,11 +296,6 @@ describe("matrix 01base", function() {
 		assert.deepEqual(m44.clone().getDeterminant(),30);
 		done();
 	});
-	it('getInverseAdjointMethod', function(done) {
-		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]).getInverseAdjointMethod();
-		assert.doesNotThrow(()=>m.equalsNearly([[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]));
-		done();
-	});
 	it('forwardElimination', function(done) {
 		const m=new Matrix([[3.0, 2.0, -4.0, 3.0],
 							[2.0, 3.0, 3.0, 15.0],
@@ -317,6 +312,24 @@ describe("matrix 01base", function() {
 							[5.0, -3, 1.0, 14.0]]);
 		const v=m.gaussianElimination();
 		assert.doesNotThrow(()=>m.equalsNearlyVector(v,6,[3,1,2]));
+		done();
+	});
+	it('getAdjoint', function(done) {
+		const m=new Matrix([[-3,2,-5],
+							[-1,0,-2],
+							[3,-4,1]]).getAdjoint();
+		const a=[
+			[-8,18,-4],
+			[-5,12,-1],
+			[4,-6,2]
+		]
+
+		assert.doesNotThrow(()=>m.equalsNearly(a));
+		done();
+	});
+	it('getInverseAdjointMethod', function(done) {
+		const m=new Matrix([[1,2,-2],[-1,1,-2],[3,2,1]]).getInverseAdjointMethod();
+		assert.doesNotThrow(()=>m.equalsNearly([[1,2,1],[-6/5,7/5,4/5],[-2/5,4/5,3/5]]));
 		done();
 	});
 });
