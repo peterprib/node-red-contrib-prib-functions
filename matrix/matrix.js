@@ -169,6 +169,33 @@ Matrix.prototype.fillArray=function(a){
 	a.forEach((columns)=>matrix.addRow(columns))
 	return this;
 }
+Matrix.prototype.findColumnRow=function(column,call,startRow=0,endRow=this.rows-1){
+	let offset=startRow*this.columns+column;
+	for(let row=startRow;row<=this.rows;row++){
+		if(call.apply(this,[this.vector[offset],row,offset,this.vector])) {
+			return row;
+		}
+		offset+=this.columns;
+	}
+	return -1;
+}
+Matrix.prototype.findRowColumn=function(row,call,startColumn=0,endColumn=this.columns-1){
+	let offset=row*this.columns+startColumn;
+	for(let column=startColumn;column<=endColumn;column++){
+		if(call.apply(this,[this.vector[offset],column,offset,this.vector]))
+			return column;
+		offset++;
+	}
+	return -1;
+}
+Matrix.prototype.forColumnCells=function(column,call,startRow=0,endRow=this.rows-1){
+	let offset=startRow*this.columns+column;
+	for(let row=startRow;row<=endRow;row++){
+		call.apply(this,[this.vector[offset],row,offset,this.vector]);
+		offset+=this.columns;
+	}
+	return this;
+}
 Matrix.prototype.forEachCell=function(call){
 	for(let offset=0,row=0;row<this.rows;row++) {
 		for(let column=0;column<this.columns;column++) {
@@ -426,40 +453,44 @@ Matrix.prototype.reducedRowEchelonForm=function(){
 	return this;
 }
 Matrix.prototype.rowEchelonForm=function(){
-    let rows=this.rows,lastRowAdj=rows-1;
+    let lastRowAdj=this.rows-1;
 	const columns=this.columns;
-	for(let row=0;row<rows;row++) {
-        let allZeros=true;
-		for(let column=0;column<columns;column++) {
-            if(this.getZeroed(row,column)!== 0){
-                allZeros=false;
-                break;
-			}
-		}
-        if(allZeros==true){
-			if(row==lastRowAdj) return this;
-			this.swapRows(row--,lastRowAdj--)	
-		}
+/*
+	for(let row=0;row<=lastRowAdj;row++) { //placed all zeroed rows at end
+		const i=this.findRowColumn(row,value=>Math.abs(value)>zeroFloat32Value,row,lastRowAdj)  //none zeroe?
+		if(i==-1)this.swapRows(row--,lastRowAdj--)
     }
-    let pivot=0;
-    nextPivot: while(pivot<rows & pivot<columns){
-        let rowOffset=1;
-		let pivotValue=this.getZeroed(pivot, pivot);
-       	while(pivotValue==0){
-        	if((pivot+rowOffset) <= rows){
-                pivot++
-        	    continue nextPivot
+	if(lastRowAdj<=1) return this;
+*/
+    let pivotRow=0,pivotColumn=0;
+    nextPivot: while(pivotRow<=lastRowAdj & pivotColumn<columns){
+		let pivotValue=this.getZeroed(pivotRow, pivotColumn);
+		if(pivotValue==0) {
+			const i=this.findRowColumn(pivotRow,value=>Math.abs(value)>zeroFloat32Value,pivotColumn+1,lastRowAdj)  //none zeroe?
+			if(i==-1){
+				if(pivotRow==lastRowAdj) {
+					pivotColumn++;				
+					continue nextPivot;
+				}
+				this.swapRows(pivotRow,lastRowAdj--);
+				if(lastRowAdj<=1) return this;
+        	    continue nextPivot;
 			}
-        	this.swapRows(pivot,pivot+rowOffset)
-            rowOffset++
-			pivotValue=this.getZeroed(pivot, pivot);
+  			const row=this.findColumnRow(pivotColumn,value=>Math.abs(value)>zeroFloat32Value,pivotRow+1,lastRowAdj);
+			if(row==-1) {
+				pivotColumn++;				
+        	    continue nextPivot;
+			}
+        	this.swapRows(pivotRow,row);
+			pivotValue=this.get(pivotRow, pivotColumn);
 		}
-		this.divideRow(pivot,pivotValue);
-		for(let row=pivot+1; row<rows; row++) {
-			const factor=-this.get(row, pivot);
-			this.addRow2Row(pivot,row,factor,pivot);
+		this.divideRow(pivotRow,pivotValue,pivotColumn);
+		for(let row=pivotRow+1; row<=lastRowAdj; row++) {
+			const factor=-this.get(row, pivotColumn);
+			this.addRow2Row(pivotRow,row,factor,pivotColumn);
 		}
-        pivot++
+        pivotRow++;
+		pivotColumn++;		
 	}
 	return this;
 }
@@ -521,7 +552,7 @@ Matrix.prototype.getDeterminant=function(){
 	return this.setDeterminant();
 }
 Matrix.prototype.setDeterminant=function(){
-	this.determinant=1/this.getDeterminantUsingRowEchelonForm();
+	this.determinant=this.getDeterminantUsingRowEchelonForm();
 	return this.determinant;
 }
 Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){

@@ -78,6 +78,18 @@ describe("matrix 01base", function() {
 		assert.doesNotThrow(()=>m.equalsNearlyVector([0,0,0,1,2,3]));
 		done();
 	});
+	it('findColumnRow', function(done) {
+		const m=new Matrix([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]); 
+		const row=m.findColumnRow(1,(value)=>value==10);
+		assert.deepEqual(row,2);
+		done();
+	});
+	it('findRowColumn', function(done) {
+		const m=new Matrix([[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]); 
+		const column=m.findRowColumn(2,(value)=>value==11);
+		assert.deepEqual(column,2);
+		done();
+	});
 	it('forEachCell', function(done) {
 		const m=new Matrix([[00,01,02],[10,11,12]]); 
 		m.forEachCell((v,r,c)=>assert.strictEqual(v,r*10+c));
@@ -206,8 +218,8 @@ describe("matrix 01base", function() {
 							[3,-7,8,-5,8,9],
 							[3,-9,12,-9,6,15]]);
 		const echelonForm =new Matrix(
-							[[3,-9,12,-9,6,15],
-							[0,1,-2,2,1,-3],
+							[[1,-7/3,8/3,-5/3,8/3,3],
+							[0,1,-2,2,4/3,-5/3],
 							[0,0,0,0,1,4]]);
 		assert.doesNotThrow(()=>m.rowEchelonForm().equalsNearly(echelonForm));
 		done();
