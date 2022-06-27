@@ -1,0 +1,130 @@
+<script type="text/javascript">
+	/*globals RED */
+	RED.nodes.registerType('matrix', {
+		category: 'function',
+		color: '#fdeea2',
+		defaults: {
+			name: {value: ""},
+			action: {value: "create",required:true},
+			source1Property:{value:"_matrix",required:true},
+			source1PropertyType:{value:"msg",required:true},
+			source2Property:{value:"payload"},
+			source2PropertyType:{value:"msg",required:true},
+			targetProperty:{value:"_matrix",required:true},
+			targetPropertyType:{value:"msg",required:true}
+		},
+		inputs: 1,
+		outputs: 2,
+		icon: "icons8-matrix-desktop-80.png",
+		align: 'left',
+		paletteLabel: "Matrix",
+		inputLabels: "Message In",
+		outputLabels: ["Message Out","Error"],
+		label: function () {
+			return this.name || ("Matrix "+this.action||"*** new ***");
+		},
+		oneditprepare: function() {
+			const node=this;
+			const source1PropertyNode=$("#node-input-source1Property")
+			const source1PropertyNodeForm=$(".form-row-http-in-source1Property"); 
+			const source2PropertyNode=$("#node-input-source2Property")
+			const source2PropertyNodeForm=$(".form-row-http-in-source2Property"); 
+			const targetPropertyNode=$("#node-input-targetProperty")
+			const targetPropertyNodeForm=$(".form-row-http-in-targetProperty"); 
+			source1PropertyNode.typedInput({
+  				type:"msg",
+    			types:["msg","node", "flow","global"],
+    			typeField: "#node-input-source1Property-type"
+			})
+			source2PropertyNode.typedInput({
+  				type:"msg",
+    			types:["msg", "flow","global"],
+    			typeField: "#node-input-source2Property-type"
+			})
+			targetPropertyNode.typedInput({
+  				type:"msg",
+    			types:["msg", "flow","global"],
+    			typeField: "#node-input-targetProperty-type"
+			})
+			const actionNode=$("#node-input-action");
+			actionNode.typedInput({
+    			types: [{
+            		value: "actionType",
+            		options: [
+						{ value: "create", label: "Create"},
+                		{ value: "createLike", label: "Create Like"},
+                		{ value: "clone", label: "Clone"},
+                		{ value: "add", label: "Add"},
+                		{ value: "multiple", label: "Multiple"},
+                		{ value: "getAdjoint", label: "Adjoint"},
+                		{ value: "forwardElimination", label: "Forward Elimination"},
+                		{ value: "backwardSubstitution", label: "Backward Substitution"},
+                		{ value: "nearlyEquals", label: "Nearly Equals"},
+            		]
+        		}]
+			});
+			actionNode.change(function() {
+				const action=$(this).val();
+				source1PropertyNodeForm.show(); 
+				source2PropertyNodeForm.show(); 
+       			targetPropertyNodeForm.show();
+        		if(["create","clone","getDetermiant"].includes(action)) {
+        			source2PropertyNodeForm.hide(); 
+        		} else if(["forwardElimination","backwardSubstitution"].includes(action)) {
+        			source2PropertyNodeForm.hide(); 
+					targetPropertyNodeForm.hide(); 
+				} else if(["nearlyEquals"].includes(action)) {
+					targetPropertyNodeForm.hide();
+				};
+			
+			});
+		},
+		oneditsave: function() {
+		},
+		oneditresize: function() {
+		},
+		resizeRule: function(file,newWidth) {
+		}
+	});
+</script>
+
+<script type="text/x-red" data-template-name="matrix">
+
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row">
+        <label for="node-input-action"><i class="fa fa-list-ul"></i> Action</label>
+		<input type="text" id="node-input-action" placeholder="create">
+    </div>
+	<div class="form-row form-row-http-in-source1Property show">
+		<label for="node-input-source1Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument 1</label>
+		<input type="text" id="node-input-source1Property">
+		<input type="hidden" id="node-input-source1Property-type">
+	</div>
+	<div class="form-row form-row-http-in-source2Property show">
+		<label for="node-input-source2Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument 2</label>
+		<input type="text" id="node-input-source2Property">
+		<input type="hidden" id="node-input-source2Property-type">
+	</div>
+	<div class="form-row form-row-http-in-targetProperty show">
+		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
+		<input type="text" id="node-input-targetProperty">
+		<input type="hidden" id="node-input-targetProperty-type">
+	</div>
+
+</script>
+
+<script type="text/x-red" data-help-name="matrix">
+	<p>
+	Matrix manipulation
+	</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>msg <span class="property-type">topic</span></dt>
+		<dd>incoming message with topic</dd>
+		<dt>msg <span class="property-type">payload</span></dt>
+		<dd></dd>
+	</dl>
+</script>

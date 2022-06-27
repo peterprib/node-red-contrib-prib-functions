@@ -108,6 +108,7 @@
 			"hostAvailable": "testing/hostAvailable.js",
 			"levenshteinDistance": "levenshteinDistance/levenshteinDistanceNode.js",
 			"load-injector": "testing/load-injector.js",
+			"matrix": "matrix/matrixNode.js",
 			"monitorflow": "monitor/monitorflow.js",
 			"os": "nodejs/os.js",
 			"spawnProcess": "spawnProcess/spawnProcess.js",
