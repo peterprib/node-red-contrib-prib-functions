@@ -51,15 +51,22 @@
     			types: [{
             		value: "actionType",
             		options: [
-						{ value: "create", label: "Create"},
-                		{ value: "createLike", label: "Create Like"},
-                		{ value: "clone", label: "Clone"},
-                		{ value: "add", label: "Add"},
-                		{ value: "multiple", label: "Multiple"},
-                		{ value: "getAdjoint", label: "Adjoint"},
-                		{ value: "forwardElimination", label: "Forward Elimination"},
-                		{ value: "backwardSubstitution", label: "Backward Substitution"},
-                		{ value: "nearlyEquals", label: "Nearly Equals"},
+						{value:"create",				label:"Create"},
+                		{value:"createLike",			label:"Create Like"},
+                		{value:"clone",					label:"Clone"},
+                		{value:"add",					label:"Add"},
+                		{value:"multiple",				label:"Multiple"},
+                		{value:"transpose",				label:"Transpose"},
+                		{value:"getAdjoint",			label:"Adjoint"},
+						{value:"getIdentity",			label:"Identity"},
+						{value:"getDeterminant",		label:"Determinant"},
+                		{value:"backwardSubstitution",	label:"Backward Substitution"},
+                		{value:"forwardElimination",	label:"Forward Elimination"},
+						{value:"gaussianElimination",	label:"Gaussian Elimination"},
+						{value:"reducedRowEchelonForm",	label:"Reduced Row EchelonForm"},
+						{value:"rowEchelonForm",		label:"Row Echelon Form"},
+                		{value:"equalsNearly",			label:"Nearly Equals"},
+						{value:"testIsSquare",			label:"Is Square"},
             		]
         		}]
 			});
@@ -68,12 +75,12 @@
 				source1PropertyNodeForm.show(); 
 				source2PropertyNodeForm.show(); 
        			targetPropertyNodeForm.show();
-        		if(["create","clone","getDetermiant"].includes(action)) {
+        		if(["create","clone","getAdjoint","getDetermiant","getIdentity","transpose"].includes(action)){
         			source2PropertyNodeForm.hide(); 
-        		} else if(["forwardElimination","backwardSubstitution"].includes(action)) {
+        		} else if(["forwardElimination","backwardSubstitution","gaussianElimination","reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(action)) {
         			source2PropertyNodeForm.hide(); 
 					targetPropertyNodeForm.hide(); 
-				} else if(["nearlyEquals"].includes(action)) {
+				} else if(["equalsNearly"].includes(action)) {
 					targetPropertyNodeForm.hide();
 				};
 			
@@ -99,17 +106,17 @@
 		<input type="text" id="node-input-action" placeholder="create">
     </div>
 	<div class="form-row form-row-http-in-source1Property show">
-		<label for="node-input-source1Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument 1</label>
+		<label for="node-input-source1Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Source</label>
 		<input type="text" id="node-input-source1Property">
 		<input type="hidden" id="node-input-source1Property-type">
 	</div>
 	<div class="form-row form-row-http-in-source2Property show">
-		<label for="node-input-source2Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument 2</label>
+		<label for="node-input-source2Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument</label>
 		<input type="text" id="node-input-source2Property">
 		<input type="hidden" id="node-input-source2Property-type">
 	</div>
 	<div class="form-row form-row-http-in-targetProperty show">
-		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
+		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target</label>
 		<input type="text" id="node-input-targetProperty">
 		<input type="hidden" id="node-input-targetProperty-type">
 	</div>

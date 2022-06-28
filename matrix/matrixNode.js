@@ -37,20 +37,21 @@ module.exports = function (RED) {
 			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
 				node.setData.apply(this,[matrix,RED,node,msg,flow,global]);
 			};
-		} else if(["add","multiple","nearlyEquals"].includes(node.action)){
+		} else if(["add","multiple","equalsNearly"].includes(node.action)){
 			logger.sendInfo({label:"inputFunction source+source",action:node.action});
 			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
 				matrix[node.action](node.getData2(RED,node,msg,flow,global))
 			};
-		} else if(["forwardElimination","backwardSubstitution"].includes(node.action)){
+		} else if(["forwardElimination","backwardSubstitution","gaussianElimination",
+				"reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(node.action)){
 			logger.sendInfo({label:"inputFunction source",action:node.action});
 			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
-				matrix[node.action];
+				matrix[node.action]();
 			};
-		} else { //clone,createLike",getAdjoint
+		} else { //clone,createLike,getAdjoint
 			logger.sendInfo({label:"inputFunction target+source",action:node.action});
 			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
-				node.setData(matrix[node.action],RED,node,msg,flow,global);
+				node.setData(matrix[node.action](),RED,node,msg,flow,global);
 			};
 		}
 		node.on("input",function (msg) {
