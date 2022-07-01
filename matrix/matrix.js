@@ -304,7 +304,7 @@ Matrix.prototype.getCofactor=function(cellRow,cellColumn){
 	}
 	return matrix;
 }
-Matrix.prototype.getComplementMinor=function(cellRow, cellColumn) {
+Matrix.prototype.getComplementMinor=function(cellRow, cellColumn){
 	const matrix = new Matrix(this.rows-1,this.columns-1);
 	for(let row=0,column=0,sourceRow=0; sourceRow<this.rows; sourceRow++) {
 		if(sourceRow==cellRow) continue;

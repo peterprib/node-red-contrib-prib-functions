@@ -13,57 +13,82 @@ function evalFunction(id,mapping){
 		throw Error(id+" "+ex.message);
 	}
 }
+function evalInFunction(node,property){
+	try{
+		const mapping="(RED,node,msg,flow,global)=>"+(node[property+"Type"]||"msg")+"."+(node[property]||"payload");
+		logger.sendInfo({label:"mapping",property:property,mapping:mapping});
+		return eval(mapping);
+	} catch(ex) {
+		throw Error(property+" "+ex.message);
+	}
+}
 module.exports = function (RED) {
 	function matrixNode(n) {
 	    RED.nodes.createNode(this,n);
+		logger.sendInfo({label:"create",node:n});
 	    const node=Object.assign(this,n);
 	    const nodeContext = this.context();
 		const flowContext = this.context().flow;
 		const globalContext = this.context().global;
-		const source1Map="(RED,node,msg,flow,global)=>"+(node.source1PropertyType||"msg")+"."+(node.source1Property||"payload"),
-			source2Map="(RED,node,msg,flow,global)=>"+(node.source2PropertyType||"msg")+"."+(node.source2Property||"payload"),
-			targetMap="(data,RED,node,msg,flow,global)=>{"+(node.targetPropertyType||"msg")+"."+(node.targetProperty||"payload")+"=data;}";
-		logger.sendInfo({label:"mappings",source1:source1Map,source2:source2Map,target:targetMap});
+		const targetMap="(data,RED,node,msg,flow,global)=>{"+(node.targetPropertyType||"msg")+"."+(node.targetProperty||"payload")+"=data;}";
+		logger.sendInfo({label:"mappings",target:targetMap});
 		try{
-			node.getData1=evalFunction("source1",source1Map);
-			node.getData2=evalFunction("source2",source2Map);
+			node.getSource1Property=evalInFunction(node,"source1Property");
 			node.setData=evalFunction("target",targetMap);
+			node.argFunction=[];
+			node.args.forEach(property=>{
+				const callFunction=evalInFunction(node,property).bind(this);
+				node.argFunction.push(callFunction);
+			})
 		} catch(ex) {
 			error(node,ex,"Invalid setup "+ex.message);
 			return;
 		}
-		if(["create"].includes(node.action)){
-			logger.sendInfo({label:"inputFunction source new",action:node.action});
-			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
-				node.setData.apply(this,[matrix,RED,node,msg,flow,global]);
-			};
-		} else if(["add","multiple","equalsNearly"].includes(node.action)){
-			logger.sendInfo({label:"inputFunction source+source",action:node.action});
-			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
-				matrix[node.action](node.getData2(RED,node,msg,flow,global))
-			};
-		} else if(["forwardElimination","backwardSubstitution","gaussianElimination",
-				"reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(node.action)){
-			logger.sendInfo({label:"inputFunction source",action:node.action});
-			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
-				matrix[node.action]();
-			};
-		} else { //clone,createLike,getAdjoint
-			logger.sendInfo({label:"inputFunction target+source",action:node.action});
-			node.inputFunction=(matrix,RED,node,msg,flow,global)=>{
-				node.setData(matrix[node.action](),RED,node,msg,flow,global);
-			};
+		function baseProcess(msg){
+			const sourceIn=node.getSource1Property(RED,node,msg,flowContext,globalContext);
+			const sourceMatrix=(sourceIn instanceof Matrix?sourceIn:new Matrix(sourceIn));
+			const args=[];
+			node.argFunction.forEach(callFunction=> {
+				const result=callFunction(RED,node,msg,flowContext,globalContext);
+				args.push(result);
+			});
+			return sourceMatrix[node.action].apply(sourceMatrix,args);
 		}
+		function baseProcessAndSet(msg){
+			const result=baseProcess(msg);
+			node.setData.apply(this,[result,RED,node,msg,flowContext,globalContext]);
+		}
+		function createProcess(msg){
+			const sourceIn=node.getSource1Property(RED,node,msg,flowContext,globalContext);
+			const sourceMatrix=(sourceIn instanceof Matrix?sourceIn.clone():new Matrix(sourceIn));
+			node.setData.apply(this,[sourceMatrix,RED,node,msg,flowContext,globalContext]);
+		}
+		function defineProcess(msg){
+			const sourceMatrix=new Matrix({row:node.row,column:node.column});
+			node.setData.apply(this,[sourceMatrix,RED,node,msg,flowContext,globalContext]);
+		}
+		node.msgProcess=baseProcess;
+		if(["define"].includes(node.action)){
+			node.msgProcess=defineProcess;
+		}else if(["create"].includes(node.action)){
+				node.msgProcess=createProcess;
+		}else{
+			if(node.action.startsWith("get") 
+			|| ["create","createLike","clone","transpose","sumRow","createForEachCellPairSet",
+				,"findRowColumn","findColumnRow","maxAbsColumn","maxColumn","toArray"
+			].includes(node.action)) {
+				node.msgProcess=baseProcessAndSet;
+			}
+		}
+		node.status({fill:"green",shape:"ring"});
 		node.on("input",function (msg) {
 			try{
-				const sourceIn=node.getData1(RED,node,msg,flowContext,globalContext);
-				const sourceMatrix=(sourceIn instanceof Matrix?sourceIn:new Matrix(sourceIn));
-				node.inputFunction.apply(this,[sourceMatrix,RED,node,msg,flowContext,globalContext]);
+				node.msgProcess(msg);
 				node.send(msg);
 			} catch(ex) {
 				msg.error=ex.message;
 				node.send([null,msg]);
-				if(logger.active) logger.send({label:"error",node:node.id,exception:ex});
+				if(logger.active) logger.send({label:"error",node:node.id,action:node.action,exception:ex.message,stack:ex.stack});
 			}
 		});
 	}

@@ -4,14 +4,23 @@
 		category: 'function',
 		color: '#fdeea2',
 		defaults: {
-			name: {value: ""},
+			name: {value:null},
 			action: {value: "create",required:true},
-			source1Property:{value:"_matrix",required:true},
-			source1PropertyType:{value:"msg",required:true},
-			source2Property:{value:"payload"},
-			source2PropertyType:{value:"msg",required:true},
-			targetProperty:{value:"_matrix",required:true},
-			targetPropertyType:{value:"msg",required:true}
+			args: {value:[]},
+			column: {value:null},
+			columnType: {value:"num"},
+			row: {value:3},
+			rowType: {value:"num"},
+			rowTarget: {value:null},
+			rowTargetType: {value:"num"},
+			source1Property: {value:"_matrix",required:true},
+			source1PropertyType: {value:"msg",required:true},
+			source2Property: {value:"payload"},
+			source2PropertyType: {value:"msg",required:true},
+			targetProperty: {value:"_matrix",required:true},
+			targetPropertyType: {value:"msg",required:true},
+			vectorProperty: {value:"payload",required:true},
+			vectorPropertyType: {value:"msg",required:true}
 		},
 		inputs: 1,
 		outputs: 2,
@@ -25,39 +34,43 @@
 		},
 		oneditprepare: function() {
 			const node=this;
-			const source1PropertyNode=$("#node-input-source1Property")
-			const source1PropertyNodeForm=$(".form-row-http-in-source1Property"); 
-			const source2PropertyNode=$("#node-input-source2Property")
-			const source2PropertyNodeForm=$(".form-row-http-in-source2Property"); 
-			const targetPropertyNode=$("#node-input-targetProperty")
-			const targetPropertyNodeForm=$(".form-row-http-in-targetProperty"); 
-			source1PropertyNode.typedInput({
-  				type:"msg",
-    			types:["msg","node", "flow","global"],
-    			typeField: "#node-input-source1Property-type"
-			})
-			source2PropertyNode.typedInput({
-  				type:"msg",
-    			types:["msg", "flow","global"],
-    			typeField: "#node-input-source2Property-type"
-			})
-			targetPropertyNode.typedInput({
-  				type:"msg",
-    			types:["msg", "flow","global"],
-    			typeField: "#node-input-targetProperty-type"
-			})
+			let properties=[];
+
+			function defineProperty(name,...types) {
+				properties.push(name)
+				$("#node-input-"+name).typedInput({
+	  				type:types[0],
+    				types:types,
+    				typeField: "#node-input-"+name+"-type"
+				});
+			}
+			defineProperty("column","num","msg","flow","global")
+			defineProperty("end","num","msg","flow","global","env")
+			defineProperty("row","num","msg","flow","global")
+			defineProperty("rowTarget","num","msg","flow","global")
+			defineProperty("source1Property","msg","flow","global","env")
+			defineProperty("source2Property","msg","flow","global","env")
+			defineProperty("start","num","msg","flow","global","env")
+			defineProperty("targetProperty","msg","flow","global","env")
 			const actionNode=$("#node-input-action");
 			actionNode.typedInput({
     			types: [{
             		value: "actionType",
             		options: [
+						{value:"define",				label:"Define"},
 						{value:"create",				label:"Create"},
                 		{value:"createLike",			label:"Create Like"},
                 		{value:"clone",					label:"Clone"},
                 		{value:"add",					label:"Add"},
+//						{value:"addRow2Row",			label:"Add Row to Row"},
+//Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1,startColumn=0,endColumn=this.columns-1){
+                		{value:"addCell",				label:"Add to Cell"},
+                		{value:"addRow",				label:"Add Row"},
                 		{value:"multiple",				label:"Multiple"},
                 		{value:"transpose",				label:"Transpose"},
                 		{value:"getAdjoint",			label:"Adjoint"},
+                		{value:"getCofactor",			label:"Cofactor"},
+                		{value:"getComplementMinor",	label:"Complement Minor"},
 						{value:"getIdentity",			label:"Identity"},
 						{value:"getDeterminant",		label:"Determinant"},
                 		{value:"backwardSubstitution",	label:"Backward Substitution"},
@@ -67,23 +80,70 @@
 						{value:"rowEchelonForm",		label:"Row Echelon Form"},
                 		{value:"equalsNearly",			label:"Nearly Equals"},
 						{value:"testIsSquare",			label:"Is Square"},
+						{value:"get",					label:"Get Cell"},
+						{value:"sumRow",				label:"Sum Row"},
+						{value:"getComplementMinor",	label:"Complement Minor"},
             		]
         		}]
 			});
+//Matrix.prototype.divideCell=function(row,column,value){
+//Matrix.prototype.createForEachCellPairSet=function(matrix,call){
+//Matrix.prototype.divideRow=function(row,factor,startColumn=0,endColumn=this.columns-1){
+//Matrix.prototype.findRowColumn=function(row,call,startColumn=0,endColumn=this.columns-1){
+//Matrix.prototype.forRowCells=function(row,call,startColumn=0,endColumn=this.columns-1){
+//Matrix.prototype.fillArray=function(a){
+//Matrix.prototype.findColumnRow=function(column,call,startRow=0,endRow=this.rows-1){
+//Matrix.prototype.forColumnCells=function(column,call,startRow=0,endRow=this.rows-1){
+//Matrix.prototype.forEachCell=function(call){
+//Matrix.prototype.forEachRow=function(call){
+//Matrix.prototype.forEachCellPairSet=function(matrix,call){
+//Matrix.prototype.getDeterminantUsingCofactor=function(){
+//Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
+//Matrix.prototype.getIndex=function(row, column){
+//Matrix.prototype.getInverseAdjointMethod=function(){
+//Matrix.prototype.getInverseGaussJordan=function(){
+//Matrix.prototype.getMatrix=function(row,column,rows,columns){
+//Matrix.prototype.getRow=function(row){
+//Matrix.prototype.getZeroed=function(row, column){
+//Matrix.prototype.maxAbsColumn=function(column,maxRow=0){
+//Matrix.prototype.maxColumn=function(column,maxRow=0){
+//Matrix.prototype.multiplyRow=function(row,factor){
+//Matrix.prototype.reduceRow=function(row,call,value=0){
+//Matrix.prototype.set=function(row,column,value){
+//Matrix.prototype.setRow=function(vector,row){
+//Matrix.prototype.subtractCell=function(row,column,value){
+//Matrix.prototype.swapRows=function(rowA,rowB){
+//Matrix.prototype.toArray=function(precision=6){
 			actionNode.change(function() {
-				const action=$(this).val();
-				source1PropertyNodeForm.show(); 
-				source2PropertyNodeForm.show(); 
-       			targetPropertyNodeForm.show();
-        		if(["create","clone","getAdjoint","getDetermiant","getIdentity","transpose"].includes(action)){
-        			source2PropertyNodeForm.hide(); 
-        		} else if(["forwardElimination","backwardSubstitution","gaussianElimination","reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(action)) {
-        			source2PropertyNodeForm.hide(); 
-					targetPropertyNodeForm.hide(); 
-				} else if(["equalsNearly"].includes(action)) {
-					targetPropertyNodeForm.hide();
+				let args=[],show=[];
+				properties.forEach(property=>$(".form-row-http-in-"+property).hide());
+				if(["create","clone","getAdjoint","getDetermiant","getIdentity","transpose"].includes(node.action)){
+        			show=["source1Property","targetProperty"]; 
+					node.args=[]
+        		} else if(["forwardElimination","backwardSubstitution","gaussianElimination","reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(node.action)) {
+        			show=["source1Property"]; 
+					node.args=[]
+				} else if(["equalsNearly"].includes(node.action)) {
+					show=["source1Property"]; 
+					node.args=["source2Property"];
+				} else if(["define"].includes(node.action)) {
+					show=["targetProperty"]; 
+					node.args=["source2Property","row","column"];
+ 				} else if(["addCell"].includes(node.action)) {
+        			show=["source1Property"];
+					node.args=["source2Property","row","column"];
+				} else if(["get","getComplementMinor","getComplementMinor","getCofactor"].includes(node.action)) {
+        			show=["source1Property","targetProperty"]; 
+					node.args=["row","column"];
+				} else if(["sumRow"].includes(node.action)){
+					show=["source1Property","targetProperty"]; 
+					node.args=["row"];
+				} else if(["addRow2Row"].includes(node.action)){
+					show=["source1Property","targetProperty"]; 
+					node.args["row","rowTarget","start","end"];
 				};
-			
+				node.args.forEach(element=>$(".form-row-http-in-"+element).show());
+				show.forEach(element=>$(".form-row-http-in-"+element).show());
 			});
 		},
 		oneditsave: function() {
@@ -102,8 +162,8 @@
 		<input type="text" id="node-input-name" placeholder="Name">
 	</div>
 	<div class="form-row">
-        <label for="node-input-action"><i class="fa fa-list-ul"></i> Action</label>
-		<input type="text" id="node-input-action" placeholder="create">
+		<label for="node-input-action" style="white-space: nowrap"><i class="icon-list"></i> Action</label>
+		<input type="text" id="node-input-action">
     </div>
 	<div class="form-row form-row-http-in-source1Property show">
 		<label for="node-input-source1Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Source</label>
@@ -120,7 +180,26 @@
 		<input type="text" id="node-input-targetProperty">
 		<input type="hidden" id="node-input-targetProperty-type">
 	</div>
-
+	<div class="form-row form-row-http-in-row show">
+		<label for="node-input-row" style="white-space: nowrap"><i class="icon-bookmark"></i> Row</label>
+		<input type="text" id="node-input-row">
+		<input type="hidden" id="node-input-row-type">
+	</div>
+	<div class="form-row form-row-http-in-column show">
+		<label for="node-input-column" style="white-space: nowrap"><i class="icon-bookmark"></i> Column</label>
+		<input type="text" id="node-input-column">
+		<input type="hidden" id="node-input-column-type">
+	</div>
+	<div class="form-row form-row-http-in-start show">
+		<label for="node-input-start" style="white-space: nowrap"><i class="icon-bookmark"></i> Start</label>
+		<input type="text" id="node-input-start">
+		<input type="hidden" id="node-input-start-type">
+	</div>
+	<div class="form-row form-row-http-in-end show">
+		<label for="node-input-column" style="white-space: nowrap"><i class="icon-bookmark"></i> End</label>
+		<input type="text" id="node-input-end">
+		<input type="hidden" id="node-input-end-type">
+	</div>
 </script>
 
 <script type="text/x-red" data-help-name="matrix">
