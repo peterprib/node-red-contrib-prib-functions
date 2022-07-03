@@ -29,6 +29,7 @@ function evalInFunction(node,propertyName){
 		case "node":
 			return evalFunction(propertyName,"()=>nodeContext.get("+property+")");
 		case "flow":
+			if(flow) throw Error("context store may be memoryonly so flow doesn't work")
 			return evalFunction(propertyName,"()=>flow.get("+property+")");
 		case "global":
 			return evalFunction(propertyName,"()=>global.get("+property+")");
@@ -55,13 +56,13 @@ module.exports = function (RED) {
 			if(node.target) {
 				const nodeContext = node.context();
 				const flow = nodeContext.flow;
-				if(flow) throw Error("context store may be memoryonly so flow doesn't work")
 				const global = nodeContext.global;
 				switch(node["target-type"]){
 				case "node":
 					node.setData=evalFunction("target","data=>nodeContext.set("+node.target+",data)");
 					break;
 				case "flow":
+					if(flow) throw Error("context store may be memoryonly so flow doesn't work")
 					node.setData=evalFunction("target","data=>flow.set("+node.target+",data)");
 					break;
 				case "global":

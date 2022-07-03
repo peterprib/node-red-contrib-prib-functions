@@ -116,7 +116,6 @@
 						{value:"get",					label:"Get Cell"},
 						{value:"sumRow",				label:"Sum Row"},
 						{value:"swapRows",				label:"Swap Rows"},
-						{value:"getComplementMinor",	label:"Complement Minor"},
 						{value:"toArray",				label:"To Array Object"}
             		]
         		}]
@@ -157,7 +156,7 @@
  				} else if(["addCell","subtractCell","multiplyCell","divideCell"].includes(action)) {
         			show=["source"];
 					node.args=["row","column","value"];
-				} else if(["get","getComplementMinor","getComplementMinor","getCofactor"].includes(action)) {
+				} else if(["get","getComplementMinor","getCofactor"].includes(action)) {
         			show=["source","target"]; 
 					node.args=["row","column"];
 				} else if(["sumRow"].includes(action)){
