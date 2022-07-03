@@ -1,0 +1,224 @@
+<script type="text/javascript">
+	/*globals RED */
+	RED.nodes.registerType('matrix', {
+		category: 'function',
+		color: '#fdeea2',
+		defaults: {
+			name: {value:null},
+			action: {value: "create",required:true},
+			args: {value:[]},
+			arg: {value:null},
+			"arg-type": {value:"msg"},
+			column: {value:null},
+			"column-type": {value:"num"},
+			end: {value:null},
+			"end-type": {value:"num"},
+			factor: {value:null},
+			"factor-type": {value:"num"},
+			precision: {value:3},
+			"precision-type": {value:"num"},
+			row: {value:3},
+			"row-type": {value:"num"},
+			rowTarget: {value:null},
+			"rowTarget-type": {value:"num"},
+			source: {value:"_matrix"},
+			"source-type": {value:"msg"},
+			matrix: {value:"payload"},
+			"matrix-type": {value:"msg"},
+			start: {value:null},
+			"start-type": {value:"num"},
+			target: {value:"_matrix"},
+			"target-type": {value:"msg"},
+			value: {value:"payload"},
+			"value-type": {value:"msg"}
+		},
+		inputs: 1,
+		outputs: 2,
+		icon: "icons8-matrix-desktop-80.png",
+		align: 'left',
+		paletteLabel: "Matrix",
+		inputLabels: "Message In",
+		outputLabels: ["Message Out","Error"],
+		label: function () {
+			return this.name || ("Matrix "+this.action||"*** new ***");
+		},
+		oneditprepare: function() {
+			const node=this;
+			let properties=[];
+			const baseDiv=$("#node-inputDynamicBase");
+			function defineProperty(property,...types) {
+				const inputNode=$('<input type="text" id="node-input-'+property.name+'"/>').val(node[property.name]);
+				const typeNode=$('<input type="hidden" id="node-input-'+property.name+'-type"/>');
+				const element= $('<div/>',{ "class": "form-row form-row-http-in-"+property.name+" hide" }).append([
+    				 	$('<label for="node-input-'+property.name+'" style="white-space: nowrap"><i class="icon-'+(property.icon||'-bookmark')+'"></i> '+property.label+'</label>'),
+        				inputNode,typeNode
+    				]);
+				element.appendTo(baseDiv);
+				properties.push(property.name);
+				const typeValue=node[property.name+"-type"];
+				if(typeValue) typeNode.val(typeValue);
+				$("#node-input-"+property.name).typedInput({
+	  				type:typeValue||types[0],
+    				types:types,
+    				typeField: "#node-input-"+property.name+"-type"
+				});
+			}
+			defineProperty({name:"source"	,label:"Source"		,icon:"tag"},"msg","flow","global");
+			defineProperty({name:"arg"		,label:"Argument"	,icon:"tag"},"num","json","msg","flow","global","env");
+			defineProperty({name:"matrix"	,label:"Matrix"		,icon:"tag"},"msg","flow","global");
+			defineProperty({name:"target"	,label:"Target"		,icon:"tag"},"msg","flow","global");
+			defineProperty({name:"column"	,label:"Column"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"row"		,label:"Row"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"value"	,label:"Value"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"rowTarget",label:"Target Row"	,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"factor"	,label:"Factor"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"precision",label:"Precision"	,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"start"	,label:"Start"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"end"		,label:"End"		,icon:"tag"},"num","msg","flow","global");
+
+			const actionNode=$("#node-input-action");
+			actionNode.typedInput({
+    			types: [{
+            		value: "actionType",
+            		options: [
+						{value:"define",				label:"Define"},
+						{value:"defineEmpty",			label:"Define Empty"},
+						{value:"create",				label:"Create"},
+                		{value:"createLike",			label:"Create Like"},
+                		{value:"clone",					label:"Clone"},
+                		{value:"add",					label:"Add"},
+						{value:"addRow2Row",			label:"Add Row to Row"},
+                		{value:"addCell",				label:"Add to Cell"},
+                		{value:"addRow",				label:"Add Row"},
+                		{value:"subtractCell",			label:"Subtract Cell"},
+                		{value:"multiple",				label:"Multiple"},
+                		{value:"multipleCell",			label:"Multiple Cell"},
+                		{value:"divideCell",			label:"Divide Cell"},
+                		{value:"divideRow",				label:"Divide Row"},
+                		{value:"transpose",				label:"Transpose"},
+                		{value:"getAdjoint",			label:"Adjoint"},
+                		{value:"getCofactor",			label:"Cofactor"},
+                		{value:"getComplementMinor",	label:"Complement Minor"},
+						{value:"getIdentity",			label:"Identity"},
+						{value:"getInverse",			label:"Inverse"},
+						{value:"getInverseAdjointMethod",label:"Inverse (Adjoint Method)"},
+						{value:"getInverseGaussJordan"	,label:"Inverse (Gauss Jordan Method)"},
+						{value:"getDeterminant",		label:"Determinant"},
+						{value:"getDeterminantUsingCofactor",label:"Determinant (Cofactor)"},
+						{value:"getDeterminantUsingCofactor",label:"Determinant (Row Echelon Form)"},
+                		{value:"backwardSubstitution",	label:"Backward Substitution"},
+						{value:"forwardElimination",	label:"Forward Elimination"},
+						{value:"gaussianElimination",	label:"Gaussian Elimination"},
+						{value:"reducedRowEchelonForm",	label:"Reduced Row EchelonForm"},
+						{value:"rowEchelonForm",		label:"Row Echelon Form"},
+                		{value:"equalsNearly",			label:"Nearly Equals"},
+						{value:"testIsSquare",			label:"Is Square"},
+						{value:"get",					label:"Get Cell"},
+						{value:"sumRow",				label:"Sum Row"},
+						{value:"swapRows",				label:"Swap Rows"},
+						{value:"toArray",				label:"To Array Object"}
+            		]
+        		}]
+			});
+//Matrix.prototype.createForEachCellPairSet=function(matrix,call){
+//Matrix.prototype.findRowColumn=function(row,call,startColumn=0,endColumn=this.columns-1){
+//Matrix.prototype.forRowCells=function(row,call,startColumn=0,endColumn=this.columns-1){
+//Matrix.prototype.fillArray=function(a){
+//Matrix.prototype.findColumnRow=function(column,call,startRow=0,endRow=this.rows-1){
+//Matrix.prototype.forColumnCells=function(column,call,startRow=0,endRow=this.rows-1){
+//Matrix.prototype.forEachCell=function(call){
+//Matrix.prototype.forEachRow=function(call){
+//Matrix.prototype.forEachCellPairSet=function(matrix,call){
+//Matrix.prototype.getIndex=function(row, column){
+//Matrix.prototype.getZeroed=function(row, column){
+//Matrix.prototype.getMatrix=function(row,column,rows,columns){
+//Matrix.prototype.getRow=function(row){
+//Matrix.prototype.maxAbsColumn=function(column,startRow=0){
+//Matrix.prototype.maxColumn=function(column,startRow=0){
+//Matrix.prototype.multiplyRow=function(row,factor){
+//Matrix.prototype.reduceRow=function(row,call,value=0){
+//Matrix.prototype.set=function(row,column,value){
+//Matrix.prototype.setRow=function(vector,row){
+			actionNode.change(function() {
+				action=$(this).val();
+				let show=["source","target"];
+				node.args=[];
+				properties.forEach(property=>$(".form-row-http-in-"+property).hide());
+        		if(["forwardElimination","backwardSubstitution","gaussianElimination",
+					"reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(action)) {
+        			show=["source"];
+				} else if(["equalsNearly"].includes(action)) {
+					show=["source"]; 
+					node.args=["matrix"];
+				} else if(["define"].includes(action)) {
+					show=["target"]; 
+					node.args=["row","column"];
+ 				} else if(["addCell","subtractCell","multiplyCell","divideCell"].includes(action)) {
+        			show=["source"];
+					node.args=["row","column","value"];
+				} else if(["get","getComplementMinor","getCofactor"].includes(action)) {
+        			show=["source","target"]; 
+					node.args=["row","column"];
+				} else if(["sumRow"].includes(action)){
+					node.args=["row"];
+				} else if(["define"].includes(action)){
+					show=["target"]; 
+					node.args=["row","column"];
+				} else if(["defineEmpty"].includes(action)){
+					show=["target"]; 
+					node.args=["row","column"];
+				} else if(["swapRows"].includes(action)){
+					show=["source"]; 
+					node.args["row","rowTarget"];
+				} else if(["addRow2Row"].includes(action)){
+					show=["source"]; 
+					node.args["row","rowTarget","factor","start","end"];
+				} else if(["divideRow"].includes(action)){
+					show=["source"]; 
+					node.args["row","factor","start","end"];
+				} else if(["toArray"].includes(action)){
+					node.args["precision"];
+				};
+				node.args.forEach(property=>$(".form-row-http-in-"+property).show());
+				show.forEach(property=>$(".form-row-http-in-"+property).show());
+			});
+		},
+		oneditsave: function() {
+		},
+		oneditresize: function() {
+		},
+		resizeRule: function(file,newWidth) {
+		}
+	});
+</script>
+
+<script type="text/x-red" data-template-name="matrix">
+
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-action" style="white-space: nowrap"><i class="icon-list"></i> Action</label>
+		<input type="text" id="node-input-action">
+    </div>
+	<div class="form-row form-row-http-in-source1Propertyx hide">
+		<label for="node-input-source1Propertyx" style="white-space: nowrap"><i class="icon-bookmark"></i> Sourcex`</label>
+		<input type="text" id="node-input-source1Propertyx">
+		<input type="hidden" id="node-input-source1Propertyx-type">
+	</div>
+	<div id="node-inputDynamicBase"/>
+</script>
+
+<script type="text/x-red" data-help-name="matrix">
+	<p>
+	Matrix manipulation
+	</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>msg <span class="property-type">topic</span></dt>
+		<dd>incoming message with topic</dd>
+		<dt>msg <span class="property-type">payload</span></dt>
+		<dd></dd>
+	</dl>
+</script>

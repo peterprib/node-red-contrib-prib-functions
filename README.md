@@ -3,6 +3,7 @@
 [Node-Red][1] nodes for various functions:
 
 *   Data Analysis  - statistical metrics that has real time option
+*   Matrix
 *	Transform
 *	Test
 *   Load Injector
@@ -66,6 +67,36 @@ example:
 
 ![Data Analysis example](documentation/DataAnalysisTest.JPG "Data Analysis example")
 
+
+------------------------------------------------------------
+
+## Matrix
+
+Define a matrix and perform various functions
+
+ * Define / Define Empty / Create / Create Like/ clone"
+ * Add / Add Row to Row / Add to Cell / Add Row / Subtract Cell
+ * Multiple / Multiple Cell / Divide Cell / Divide Row
+ * Transpose
+ * Adjoint
+ * Cofactor
+ * Complement Minor
+ * Identity
+ * Inverse
+ * Determinant
+ * Backward Substitution
+ * Forward Elimination
+ * Gaussian Elimination
+ * Reduced Row EchelonForm
+ * Row Echelon Form
+ * Nearly Equals / Is Square / Get Cell
+ * Sum Row
+ * Swap Rows
+ * To Array Object
+
+
+![Matrix](documentation/matrix.jpg "Matrix")
+
 ------------------------------------------------------------
 
 ## Transform
@@ -120,7 +151,7 @@ With xlsx object one can use the function in [xlsx][7] against the object in fun
 
 Example AVRO with schema
 
-![Transform AVRO](documentation/transformArvo.JPG "Transform AVRO example")
+![Transform AVRO](documentation/transformArvo.jpg "Transform AVRO example")
 
 For Confluence schema contains a list of schemas in form {"<schema id>",<schema>}
 
@@ -246,6 +277,8 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.18.0 Add matrix node
 
 0.17.0 Add finished wire to load injector
 
