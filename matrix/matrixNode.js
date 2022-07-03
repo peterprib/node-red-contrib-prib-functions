@@ -7,78 +7,126 @@ function error(node,message,shortMessage){
 	node.status({fill:"red",shape:"ring",text:shortMessage});
 }
 function evalFunction(id,mapping){
+	logger.sendInfo({label:"evalFunction",id:id,mapping:mapping})
 	try{
 		return eval(mapping);
 	} catch(ex) {
+		logger.sendError({label:"evalFunction error",id:id,mapping:mapping,error:ex.message})
 		throw Error(id+" "+ex.message);
 	}
 }
-function evalInFunction(node,property){
+function evalInFunction(node,propertyName){
 	try{
-		const mapping="(RED,node,msg,flow,global)=>"+(node[property+"Type"]||"msg")+"."+(node[property]||"payload");
-		logger.sendInfo({label:"mapping",property:property,mapping:mapping});
-		return eval(mapping);
+	    const nodeContext = node.context();
+		const flow = nodeContext.flow;
+		const global = nodeContext.global;
+		const property=node[propertyName];
+		if(property==null) throw Error("no value for "+propertyName);
+		const propertyType=propertyName+"-type";
+		switch (node[propertyType]){
+		case "num":
+			return evalFunction(propertyName,"()=>"+property);
+		case "node":
+			return evalFunction(propertyName,"()=>nodeContext.get("+property+")");
+		case "flow":
+			return evalFunction(propertyName,"()=>flow.get("+property+")");
+		case "global":
+			return evalFunction(propertyName,"()=>global.get("+property+")");
+		case "env":
+			return evalFunction(propertyName,"()=>env.get("+property+")");
+		case "msg":
+			return evalFunction(propertyName,"(msg)=>msg."+property);
+		default:
+			logger.sendInfo({label:"setData unknown type",action:node.action,propertyType:propertyType,type:node[propertyType]});
+			throw Error("unknown type "+node[propertyType])
+		}
 	} catch(ex) {
+		logger.sendError({label:"setup",error:ex.message,stack:ex.stack});
 		throw Error(property+" "+ex.message);
 	}
 }
 module.exports = function (RED) {
 	function matrixNode(n) {
 	    RED.nodes.createNode(this,n);
-		logger.sendInfo({label:"create",node:n});
+//		logger.sendInfo({label:"create",node:n});
 	    const node=Object.assign(this,n);
-	    const nodeContext = this.context();
-		const flowContext = this.context().flow;
-		const globalContext = this.context().global;
-		const targetMap="(data,RED,node,msg,flow,global)=>{"+(node.targetPropertyType||"msg")+"."+(node.targetProperty||"payload")+"=data;}";
-		logger.sendInfo({label:"mappings",target:targetMap});
 		try{
-			node.getSource1Property=evalInFunction(node,"source1Property");
-			node.setData=evalFunction("target",targetMap);
+			if(node.source)node.getSource=evalInFunction(node,"source");
+			if(node.target) {
+				const nodeContext = node.context();
+				const flow = nodeContext.flow;
+				if(flow) throw Error("context store may be memoryonly so flow doesn't work")
+				const global = nodeContext.global;
+				switch(node["target-type"]){
+				case "node":
+					node.setData=evalFunction("target","data=>nodeContext.set("+node.target+",data)");
+					break;
+				case "flow":
+					node.setData=evalFunction("target","data=>flow.set("+node.target+",data)");
+					break;
+				case "global":
+					node.setData=evalFunction("target","data=>global.set("+node.target+",data)");
+					break;
+				case "msg":
+					node.setData=evalFunction("target","(data,msg)=>{msg."+node.target+"=data;}");
+					break;
+				default:
+					logger.sendInfo({label:"setData unknown type",action:node.action,targetType:node["target-type"]});
+				}
+			}	
 			node.argFunction=[];
 			node.args.forEach(property=>{
-				const callFunction=evalInFunction(node,property).bind(this);
-				node.argFunction.push(callFunction);
+				node.argFunction.push(evalInFunction(node,property).bind(this));
 			})
+			function baseProcess(msg){
+				const sourceIn=node.getSource(msg);
+				if(sourceIn==null) throw Error("source data not found");
+				const sourceMatrix=(sourceIn instanceof Matrix?sourceIn:new Matrix(sourceIn));
+				const args=[];
+				node.argFunction.forEach(callFunction=> {
+					const result=callFunction(msg);
+					args.push(result);
+				});
+				return sourceMatrix[node.action].apply(sourceMatrix,args);
+			}
+			function baseProcessAndSet(msg){
+				const result=baseProcess(msg);
+				node.setData.apply(node,[result,msg]);
+			}
+			function createProcess(msg){
+				const sourceIn=node.getSource(msg);
+				if(sourceIn==null) throw Error("source data not found");
+				const sourceMatrix=(sourceIn instanceof Matrix?sourceIn.clone():new Matrix(sourceIn));
+				node.setData.apply(node,[sourceMatrix,msg]);
+			}
+			function defineProcess(msg){
+				if(logger.active) logger.sendInfo({label:"define",arg:{rows:node.row,columns:node.column}});
+				const sourceMatrix=new Matrix({rows:node.row,columns:node.column});
+				node.setData.apply(node,[sourceMatrix,msg]);
+			}
+			function defineEmptyProcess(msg){
+				if(logger.active) logger.sendInfo({label:"define",arg:{rowsMax:node.row,columns:node.column}});
+				const sourceMatrix=new Matrix({rowsMax:node.row,columns:node.column});
+				node.setData.apply(node,[sourceMatrix,msg]);
+			}
+			node.msgProcess=baseProcess;
+			if(["define"].includes(node.action)){
+				node.msgProcess=defineProcess;
+			}else if(["defineEmpty"].includes(node.action)){
+				node.msgProcess=defineEmptyProcess;
+			}else if(["create"].includes(node.action)){
+					node.msgProcess=createProcess;
+			}else{
+				if(node.action.startsWith("get") 
+				|| ["create","createLike","clone","transpose","sumRow","createForEachCellPairSet",
+					,"findRowColumn","findColumnRow","maxAbsColumn","maxColumn","toArray"
+				].includes(node.action)) {
+					node.msgProcess=baseProcessAndSet;
+				}
+			}
 		} catch(ex) {
 			error(node,ex,"Invalid setup "+ex.message);
 			return;
-		}
-		function baseProcess(msg){
-			const sourceIn=node.getSource1Property(RED,node,msg,flowContext,globalContext);
-			const sourceMatrix=(sourceIn instanceof Matrix?sourceIn:new Matrix(sourceIn));
-			const args=[];
-			node.argFunction.forEach(callFunction=> {
-				const result=callFunction(RED,node,msg,flowContext,globalContext);
-				args.push(result);
-			});
-			return sourceMatrix[node.action].apply(sourceMatrix,args);
-		}
-		function baseProcessAndSet(msg){
-			const result=baseProcess(msg);
-			node.setData.apply(this,[result,RED,node,msg,flowContext,globalContext]);
-		}
-		function createProcess(msg){
-			const sourceIn=node.getSource1Property(RED,node,msg,flowContext,globalContext);
-			const sourceMatrix=(sourceIn instanceof Matrix?sourceIn.clone():new Matrix(sourceIn));
-			node.setData.apply(this,[sourceMatrix,RED,node,msg,flowContext,globalContext]);
-		}
-		function defineProcess(msg){
-			const sourceMatrix=new Matrix({row:node.row,column:node.column});
-			node.setData.apply(this,[sourceMatrix,RED,node,msg,flowContext,globalContext]);
-		}
-		node.msgProcess=baseProcess;
-		if(["define"].includes(node.action)){
-			node.msgProcess=defineProcess;
-		}else if(["create"].includes(node.action)){
-				node.msgProcess=createProcess;
-		}else{
-			if(node.action.startsWith("get") 
-			|| ["create","createLike","clone","transpose","sumRow","createForEachCellPairSet",
-				,"findRowColumn","findColumnRow","maxAbsColumn","maxColumn","toArray"
-			].includes(node.action)) {
-				node.msgProcess=baseProcessAndSet;
-			}
 		}
 		node.status({fill:"green",shape:"ring"});
 		node.on("input",function (msg) {

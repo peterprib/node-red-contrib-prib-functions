@@ -7,20 +7,30 @@
 			name: {value:null},
 			action: {value: "create",required:true},
 			args: {value:[]},
+			arg: {value:null},
+			"arg-type": {value:"msg"},
 			column: {value:null},
-			columnType: {value:"num"},
+			"column-type": {value:"num"},
+			end: {value:null},
+			"end-type": {value:"num"},
+			factor: {value:null},
+			"factor-type": {value:"num"},
+			precision: {value:3},
+			"precision-type": {value:"num"},
 			row: {value:3},
-			rowType: {value:"num"},
+			"row-type": {value:"num"},
 			rowTarget: {value:null},
-			rowTargetType: {value:"num"},
-			source1Property: {value:"_matrix",required:true},
-			source1PropertyType: {value:"msg",required:true},
-			source2Property: {value:"payload"},
-			source2PropertyType: {value:"msg",required:true},
-			targetProperty: {value:"_matrix",required:true},
-			targetPropertyType: {value:"msg",required:true},
-			vectorProperty: {value:"payload",required:true},
-			vectorPropertyType: {value:"msg",required:true}
+			"rowTarget-type": {value:"num"},
+			source: {value:"_matrix"},
+			"source-type": {value:"msg"},
+			matrix: {value:"payload"},
+			"matrix-type": {value:"msg"},
+			start: {value:null},
+			"start-type": {value:"num"},
+			target: {value:"_matrix"},
+			"target-type": {value:"msg"},
+			value: {value:"payload"},
+			"value-type": {value:"msg"}
 		},
 		inputs: 1,
 		outputs: 2,
@@ -35,46 +45,69 @@
 		oneditprepare: function() {
 			const node=this;
 			let properties=[];
-
-			function defineProperty(name,...types) {
-				properties.push(name)
-				$("#node-input-"+name).typedInput({
-	  				type:types[0],
+			const baseDiv=$("#node-inputDynamicBase");
+			function defineProperty(property,...types) {
+				const inputNode=$('<input type="text" id="node-input-'+property.name+'"/>').val(node[property.name]);
+				const typeNode=$('<input type="hidden" id="node-input-'+property.name+'-type"/>');
+				const element= $('<div/>',{ "class": "form-row form-row-http-in-"+property.name+" hide" }).append([
+    				 	$('<label for="node-input-'+property.name+'" style="white-space: nowrap"><i class="icon-'+(property.icon||'-bookmark')+'"></i> '+property.label+'</label>'),
+        				inputNode,typeNode
+    				]);
+				element.appendTo(baseDiv);
+				properties.push(property.name);
+				const typeValue=node[property.name+"-type"];
+				if(typeValue) typeNode.val(typeValue);
+				$("#node-input-"+property.name).typedInput({
+	  				type:typeValue||types[0],
     				types:types,
-    				typeField: "#node-input-"+name+"-type"
+    				typeField: "#node-input-"+property.name+"-type"
 				});
 			}
-			defineProperty("column","num","msg","flow","global")
-			defineProperty("end","num","msg","flow","global","env")
-			defineProperty("row","num","msg","flow","global")
-			defineProperty("rowTarget","num","msg","flow","global")
-			defineProperty("source1Property","msg","flow","global","env")
-			defineProperty("source2Property","msg","flow","global","env")
-			defineProperty("start","num","msg","flow","global","env")
-			defineProperty("targetProperty","msg","flow","global","env")
+			defineProperty({name:"source"	,label:"Source"		,icon:"tag"},"msg","flow","global");
+			defineProperty({name:"arg"		,label:"Argument"	,icon:"tag"},"num","json","msg","flow","global","env");
+			defineProperty({name:"matrix"	,label:"Matrix"		,icon:"tag"},"msg","flow","global");
+			defineProperty({name:"target"	,label:"Target"		,icon:"tag"},"msg","flow","global");
+			defineProperty({name:"column"	,label:"Column"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"row"		,label:"Row"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"value"	,label:"Value"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"rowTarget",label:"Target Row"	,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"factor"	,label:"Factor"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"precision",label:"Precision"	,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"start"	,label:"Start"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"end"		,label:"End"		,icon:"tag"},"num","msg","flow","global");
+
 			const actionNode=$("#node-input-action");
 			actionNode.typedInput({
     			types: [{
             		value: "actionType",
             		options: [
 						{value:"define",				label:"Define"},
+						{value:"defineEmpty",			label:"Define Empty"},
 						{value:"create",				label:"Create"},
                 		{value:"createLike",			label:"Create Like"},
                 		{value:"clone",					label:"Clone"},
                 		{value:"add",					label:"Add"},
-//						{value:"addRow2Row",			label:"Add Row to Row"},
-//Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1,startColumn=0,endColumn=this.columns-1){
+						{value:"addRow2Row",			label:"Add Row to Row"},
                 		{value:"addCell",				label:"Add to Cell"},
                 		{value:"addRow",				label:"Add Row"},
+                		{value:"subtractCell",			label:"Subtract Cell"},
                 		{value:"multiple",				label:"Multiple"},
+                		{value:"multipleCell",			label:"Multiple Cell"},
+                		{value:"divideCell",			label:"Divide Cell"},
+                		{value:"divideRow",				label:"Divide Row"},
                 		{value:"transpose",				label:"Transpose"},
                 		{value:"getAdjoint",			label:"Adjoint"},
                 		{value:"getCofactor",			label:"Cofactor"},
                 		{value:"getComplementMinor",	label:"Complement Minor"},
 						{value:"getIdentity",			label:"Identity"},
+						{value:"getInverse",			label:"Inverse"},
+						{value:"getInverseAdjointMethod",label:"Inverse (Adjoint Method)"},
+						{value:"getInverseGaussJordan"	,label:"Inverse (Gauss Jordan Method)"},
 						{value:"getDeterminant",		label:"Determinant"},
+						{value:"getDeterminantUsingCofactor",label:"Determinant (Cofactor)"},
+						{value:"getDeterminantUsingCofactor",label:"Determinant (Row Echelon Form)"},
                 		{value:"backwardSubstitution",	label:"Backward Substitution"},
-                		{value:"forwardElimination",	label:"Forward Elimination"},
+						{value:"forwardElimination",	label:"Forward Elimination"},
 						{value:"gaussianElimination",	label:"Gaussian Elimination"},
 						{value:"reducedRowEchelonForm",	label:"Reduced Row EchelonForm"},
 						{value:"rowEchelonForm",		label:"Row Echelon Form"},
@@ -82,13 +115,13 @@
 						{value:"testIsSquare",			label:"Is Square"},
 						{value:"get",					label:"Get Cell"},
 						{value:"sumRow",				label:"Sum Row"},
+						{value:"swapRows",				label:"Swap Rows"},
 						{value:"getComplementMinor",	label:"Complement Minor"},
+						{value:"toArray",				label:"To Array Object"}
             		]
         		}]
 			});
-//Matrix.prototype.divideCell=function(row,column,value){
 //Matrix.prototype.createForEachCellPairSet=function(matrix,call){
-//Matrix.prototype.divideRow=function(row,factor,startColumn=0,endColumn=this.columns-1){
 //Matrix.prototype.findRowColumn=function(row,call,startColumn=0,endColumn=this.columns-1){
 //Matrix.prototype.forRowCells=function(row,call,startColumn=0,endColumn=this.columns-1){
 //Matrix.prototype.fillArray=function(a){
@@ -97,53 +130,58 @@
 //Matrix.prototype.forEachCell=function(call){
 //Matrix.prototype.forEachRow=function(call){
 //Matrix.prototype.forEachCellPairSet=function(matrix,call){
-//Matrix.prototype.getDeterminantUsingCofactor=function(){
-//Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
 //Matrix.prototype.getIndex=function(row, column){
-//Matrix.prototype.getInverseAdjointMethod=function(){
-//Matrix.prototype.getInverseGaussJordan=function(){
+//Matrix.prototype.getZeroed=function(row, column){
 //Matrix.prototype.getMatrix=function(row,column,rows,columns){
 //Matrix.prototype.getRow=function(row){
-//Matrix.prototype.getZeroed=function(row, column){
-//Matrix.prototype.maxAbsColumn=function(column,maxRow=0){
-//Matrix.prototype.maxColumn=function(column,maxRow=0){
+//Matrix.prototype.maxAbsColumn=function(column,startRow=0){
+//Matrix.prototype.maxColumn=function(column,startRow=0){
 //Matrix.prototype.multiplyRow=function(row,factor){
 //Matrix.prototype.reduceRow=function(row,call,value=0){
 //Matrix.prototype.set=function(row,column,value){
 //Matrix.prototype.setRow=function(vector,row){
-//Matrix.prototype.subtractCell=function(row,column,value){
-//Matrix.prototype.swapRows=function(rowA,rowB){
-//Matrix.prototype.toArray=function(precision=6){
 			actionNode.change(function() {
-				let args=[],show=[];
+				action=$(this).val();
+				let show=["source","target"];
+				node.args=[];
 				properties.forEach(property=>$(".form-row-http-in-"+property).hide());
-				if(["create","clone","getAdjoint","getDetermiant","getIdentity","transpose"].includes(node.action)){
-        			show=["source1Property","targetProperty"]; 
-					node.args=[]
-        		} else if(["forwardElimination","backwardSubstitution","gaussianElimination","reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(node.action)) {
-        			show=["source1Property"]; 
-					node.args=[]
-				} else if(["equalsNearly"].includes(node.action)) {
-					show=["source1Property"]; 
-					node.args=["source2Property"];
-				} else if(["define"].includes(node.action)) {
-					show=["targetProperty"]; 
-					node.args=["source2Property","row","column"];
- 				} else if(["addCell"].includes(node.action)) {
-        			show=["source1Property"];
-					node.args=["source2Property","row","column"];
-				} else if(["get","getComplementMinor","getComplementMinor","getCofactor"].includes(node.action)) {
-        			show=["source1Property","targetProperty"]; 
+        		if(["forwardElimination","backwardSubstitution","gaussianElimination",
+					"reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(action)) {
+        			show=["source"];
+				} else if(["equalsNearly"].includes(action)) {
+					show=["source"]; 
+					node.args=["matrix"];
+				} else if(["define"].includes(action)) {
+					show=["target"]; 
 					node.args=["row","column"];
-				} else if(["sumRow"].includes(node.action)){
-					show=["source1Property","targetProperty"]; 
+ 				} else if(["addCell","subtractCell","multiplyCell","divideCell"].includes(action)) {
+        			show=["source"];
+					node.args=["row","column","value"];
+				} else if(["get","getComplementMinor","getComplementMinor","getCofactor"].includes(action)) {
+        			show=["source","target"]; 
+					node.args=["row","column"];
+				} else if(["sumRow"].includes(action)){
 					node.args=["row"];
-				} else if(["addRow2Row"].includes(node.action)){
-					show=["source1Property","targetProperty"]; 
-					node.args["row","rowTarget","start","end"];
+				} else if(["define"].includes(action)){
+					show=["target"]; 
+					node.args=["row","column"];
+				} else if(["defineEmpty"].includes(action)){
+					show=["target"]; 
+					node.args=["row","column"];
+				} else if(["swapRows"].includes(action)){
+					show=["source"]; 
+					node.args["row","rowTarget"];
+				} else if(["addRow2Row"].includes(action)){
+					show=["source"]; 
+					node.args["row","rowTarget","factor","start","end"];
+				} else if(["divideRow"].includes(action)){
+					show=["source"]; 
+					node.args["row","factor","start","end"];
+				} else if(["toArray"].includes(action)){
+					node.args["precision"];
 				};
-				node.args.forEach(element=>$(".form-row-http-in-"+element).show());
-				show.forEach(element=>$(".form-row-http-in-"+element).show());
+				node.args.forEach(property=>$(".form-row-http-in-"+property).show());
+				show.forEach(property=>$(".form-row-http-in-"+property).show());
 			});
 		},
 		oneditsave: function() {
@@ -165,41 +203,12 @@
 		<label for="node-input-action" style="white-space: nowrap"><i class="icon-list"></i> Action</label>
 		<input type="text" id="node-input-action">
     </div>
-	<div class="form-row form-row-http-in-source1Property show">
-		<label for="node-input-source1Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Source</label>
-		<input type="text" id="node-input-source1Property">
-		<input type="hidden" id="node-input-source1Property-type">
+	<div class="form-row form-row-http-in-source1Propertyx hide">
+		<label for="node-input-source1Propertyx" style="white-space: nowrap"><i class="icon-bookmark"></i> Sourcex`</label>
+		<input type="text" id="node-input-source1Propertyx">
+		<input type="hidden" id="node-input-source1Propertyx-type">
 	</div>
-	<div class="form-row form-row-http-in-source2Property show">
-		<label for="node-input-source2Property" style="white-space: nowrap"><i class="icon-bookmark"></i> Argument</label>
-		<input type="text" id="node-input-source2Property">
-		<input type="hidden" id="node-input-source2Property-type">
-	</div>
-	<div class="form-row form-row-http-in-targetProperty show">
-		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target</label>
-		<input type="text" id="node-input-targetProperty">
-		<input type="hidden" id="node-input-targetProperty-type">
-	</div>
-	<div class="form-row form-row-http-in-row show">
-		<label for="node-input-row" style="white-space: nowrap"><i class="icon-bookmark"></i> Row</label>
-		<input type="text" id="node-input-row">
-		<input type="hidden" id="node-input-row-type">
-	</div>
-	<div class="form-row form-row-http-in-column show">
-		<label for="node-input-column" style="white-space: nowrap"><i class="icon-bookmark"></i> Column</label>
-		<input type="text" id="node-input-column">
-		<input type="hidden" id="node-input-column-type">
-	</div>
-	<div class="form-row form-row-http-in-start show">
-		<label for="node-input-start" style="white-space: nowrap"><i class="icon-bookmark"></i> Start</label>
-		<input type="text" id="node-input-start">
-		<input type="hidden" id="node-input-start-type">
-	</div>
-	<div class="form-row form-row-http-in-end show">
-		<label for="node-input-column" style="white-space: nowrap"><i class="icon-bookmark"></i> End</label>
-		<input type="text" id="node-input-end">
-		<input type="hidden" id="node-input-end-type">
-	</div>
+	<div id="node-inputDynamicBase"/>
 </script>
 
 <script type="text/x-red" data-help-name="matrix">

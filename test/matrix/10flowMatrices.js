@@ -28,6 +28,8 @@ describe('matrix', function() {
 		helper.unload();
 		helper.stopServer(done);
 	});
+
+/*
 	it("test loading", function(done) {
 		helper.load(Matrix,[matrixNode], function() {
             try{
@@ -61,4 +63,6 @@ describe('matrix', function() {
 			}
 		});
 	}).timeout(5000);
+*/
+
 });

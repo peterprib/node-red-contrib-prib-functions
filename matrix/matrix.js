@@ -393,8 +393,8 @@ Matrix.prototype.getZeroed=function(row, column){
 	this.vector[offset]=0;
 	return 0;
 }
-Matrix.prototype.maxAbsColumn=function(column,maxRow=0){
-	let rowColumnOffset=maxRow*this.columns+column;
+Matrix.prototype.maxAbsColumn=function(column,startRow=0){
+	let rowColumnOffset=startRow*this.columns+column;
 	let maxValue=Math.abs(this.vector[rowColumnOffset]);
 	rowColumnOffset+=this.columns;
 	while (rowColumnOffset<this.size) {
@@ -407,8 +407,8 @@ Matrix.prototype.maxAbsColumn=function(column,maxRow=0){
 	}
 	return {row:(maxRowColumnOffset-column)/this.columns,value:this.vector[maxRowColumnOffset]}
 }
-Matrix.prototype.maxColumn=function(column,maxRow=0){
-	let rowColumnOffset=maxRow*this.columns+column;
+Matrix.prototype.maxColumn=function(column,startRow=0){
+	let rowColumnOffset=startRow*this.columns+column;
 	let maxValue=this.vector[rowColumnOffset];
 	rowColumnOffset+=this.columns;
 	while (rowColumnOffset<this.size) {
