@@ -110,6 +110,10 @@ module.exports = function (RED) {
 				const sourceMatrix=new Matrix({rowsMax:node.row,columns:node.column});
 				node.setData.apply(node,[sourceMatrix,msg]);
 			}
+			function defineRunningSum(msg){
+				const sourceMatrix=new Matrix({rows:node.size,columns:node.size});
+				node.setData.apply(node,[sourceMatrix.setRunningSum(),msg]);
+			}
 			node.msgProcess=baseProcess;
 			if(["define"].includes(node.action)){
 				node.msgProcess=defineProcess;

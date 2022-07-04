@@ -75,6 +75,7 @@
 			defineProperty({name:"precision",label:"Precision"	,icon:"tag"},"num","msg","flow","global");
 			defineProperty({name:"start"	,label:"Start"		,icon:"tag"},"num","msg","flow","global");
 			defineProperty({name:"end"		,label:"End"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"size"		,label:"Size"		,icon:"tag"},"num","msg","flow","global");
 
 			const actionNode=$("#node-input-action");
 			actionNode.typedInput({
@@ -102,7 +103,8 @@
 						{value:"getIdentity",			label:"Identity"},
 						{value:"getInverse",			label:"Inverse"},
 						{value:"getInverseAdjointMethod",label:"Inverse (Adjoint Method)"},
-						{value:"getInverseGaussJordan"	,label:"Inverse (Gauss Jordan Method)"},
+						{value:"getInverseGaussJordan",	label:"Inverse (Gauss Jordan Method)"},
+						{value:"norm",					label:"Norm"},
 						{value:"getDeterminant",		label:"Determinant"},
 						{value:"getDeterminantUsingCofactor",label:"Determinant (Cofactor)"},
 						{value:"getDeterminantUsingCofactor",label:"Determinant (Row Echelon Form)"},
@@ -116,7 +118,9 @@
 						{value:"get",					label:"Get Cell"},
 						{value:"sumRow",				label:"Sum Row"},
 						{value:"swapRows",				label:"Swap Rows"},
-						{value:"toArray",				label:"To Array Object"}
+						{value:"toArray",				label:"To Array Object"},
+						{value:"runningSum",			label:"Running Sum"}
+
             		]
         		}]
 			});
@@ -139,7 +143,8 @@
 //Matrix.prototype.reduceRow=function(row,call,value=0){
 //Matrix.prototype.set=function(row,column,value){
 //Matrix.prototype.setRow=function(vector,row){
-			actionNode.change(function() {
+//Matrix.prototype.reduce=function(call,aggregagte){
+	actionNode.change(function() {
 				action=$(this).val();
 				let show=["source","target"];
 				node.args=[];
@@ -156,7 +161,7 @@
  				} else if(["addCell","subtractCell","multiplyCell","divideCell"].includes(action)) {
         			show=["source"];
 					node.args=["row","column","value"];
-				} else if(["get","getComplementMinor","getCofactor"].includes(action)) {
+				} else if(["get","getComplementMinor","getCofactor","norm"].includes(action)) {
         			show=["source","target"]; 
 					node.args=["row","column"];
 				} else if(["sumRow"].includes(action)){
@@ -167,6 +172,9 @@
 				} else if(["defineEmpty"].includes(action)){
 					show=["target"]; 
 					node.args=["row","column"];
+				} else if(["runningSum"].includes(action)){
+					show=["target"]; 
+					node.args=["size"];
 				} else if(["swapRows"].includes(action)){
 					show=["source"]; 
 					node.args["row","rowTarget"];
