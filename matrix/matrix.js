@@ -30,7 +30,12 @@ Matrix.prototype.addCell=function(row,column,value){
 	this.vector[this.getIndex(row,column)]+=value;
 	return this;
 }
-Matrix.prototype.addRow=function(vector){
+Matrix.prototype.addRow=function(row,vectorIn){
+	if(vectorIn & row>=0){
+		this.forRowCells(row,(value,column,offset,vector)=>vector[offset]+=vectorIn[column]);
+		return this;
+	}
+	const vector=vectorIn?vectorIn:row;
 	if(this.size==this.sizeMax){
 		this.vector.copyWithin(0,this.columns,this.sizeMax);
 		this.rows--;
@@ -172,7 +177,7 @@ Matrix.prototype.fillArray=function(a){
 Matrix.prototype.findColumnRow=function(column,call,startRow=0,endRow=this.rows-1){
 	let offset=startRow*this.columns+column;
 	for(let row=startRow;row<=this.rows;row++){
-		if(call.apply(this,[this.vector[offset],row,offset,this.vector])) {
+		if(call.apply(this,[this.vector[offset],row,column,offset,this.vector])) {
 			return row;
 		}
 		offset+=this.columns;
