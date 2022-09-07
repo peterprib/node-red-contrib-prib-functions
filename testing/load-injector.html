@@ -9,8 +9,10 @@
             thinktimemin: {value:1000, required:true},   // 1seconds 
             thinktimemax: {value:10000, required:true}, // 10 seconds
             runtime: {value:60, required:true}, // 60 seconds
-            payload: {value:"", validate: RED.validators.typedInput("payloadType")},
-            payloadType: {value:"date"}
+            payload: {value:"", validate: RED.validators.typedInput("payload-type")},
+            "payload-type": {value:"date"},
+            topic: {value:"", validate: RED.validators.typedInput("topic-type")},
+            "topic-type": {value:"date"}
         },
 	    inputs:1,
         inputLabels: "",
@@ -24,6 +26,7 @@
             return "node_label_italic";
         },
         oneditprepare: function() {
+/*
             if (this.payloadType === null) {
                 if (this.payload === "") {
                     this.payloadType = "date";
@@ -37,13 +40,93 @@
             $("#node-input-payload").typedInput({
                 default: 'str',
                 typeField: $("#node-input-payloadType"),
-                types:['flow','global','str','num','bool','json','bin','date','env']
+                types:[]
             });
-        },
-        oneditsave: function() {
+*/
+			const node=this;
+//*** common block
+			node.properties=[];
+			node.editors={};
+			const actions={
+//				blockStorage:{label:"Block Storage",show:["fileName"],args:[]}
+			};
+			const baseDiv=$("#node-inputDynamicBase");
+            const addedTypes={
+                genid:{value:"genid",label:"Generated ID",icon:"fa fa-key",hasValue:false}
+            }
+			function defineProperty(property,...types) {
+				const element=$('<div/>',{ "class": "form-row form-row-http-in-"+property.name+" hide" }).append(
+    				 	$('<label for="node-input-'+property.name+'" style="white-space: nowrap"><i class="fa fa-'+(property.icon||'bookmark')+'"></i> '+property.label+'</label>'),
+					);
+				element.appendTo(baseDiv);
+				node.properties.push(property.name);
+				if(types[0]=="edit") {
+					element.append($('<div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-'+property.name+'-editor"></div>'));
+					node.editors[property.name] = RED.editor.createEditor({
+   						id: 'node-input-'+property.name+'-editor',
+   						mode: 'ace/mode/'+(property.mode||"text"),
+   						value: node[property.name]||property.default
+					});
+				} else {
+					const inputNode=$('<input type="text" id="node-input-'+property.name+'"/>').val(node[property.name]);
+					const typeNode=$('<input type="hidden" id="node-input-'+property.name+'-type"/>');
+					element.append([inputNode,typeNode]);
+					const typeValue=node[property.name+"-type"];
+					if(typeValue) typeNode.val(typeValue);
+					$("#node-input-"+property.name).typedInput({
+	  					type:typeValue||types[0],
+    					types:types,
+    					typeField: "#node-input-"+property.name+"-type"
+					});
+				}
+			}
+//			defineProperty({name:"action",label:"Action"	,icon:"tag"},"str","msg");
+            defineProperty({name:"topic",label:"topic",icon:"task"},'date',addedTypes.genid,'str','num','bool','json','jsonata','bin','flow','global','env');
+            defineProperty({name:"payload",label:"payload",icon:"envelope"},addedTypes.genid),'date','str','num','bool','json','jsonata','bin','env','flow','global';
+			["topic","payload"].forEach(property=>$(".form-row-http-in-"+property).show());
+/*
+			const options=Object.keys(actions).reduce((previousValue,property)=>previousValue.concat({value:property,label:actions[property].label}),
+				[]);
+			const actionNode=$("#node-input-action");
+			actionNode.typedInput({
+    			types: [{
+            		value: "actionType",
+            		options: options
+				}]
+			});
+			actionNode.change(function() {
+				action=$(this).val();
+				node.args=[];
+				node.properties.forEach(property=>$(".form-row-http-in-"+property).hide());
+				const actionDef=actions[action];
+				node.args=actionDef.args;
+				node.args.forEach(property=>$(".form-row-http-in-"+property).show());
+				actionDef.show.forEach(property=>$(".form-row-http-in-"+property).show());
+
+			});
+*/
+//***** end common
+
         },
         oneditresize: function() {
         },
+		oneditsave: function() {
+			const node=this;
+			Object.keys(node.editors).forEach(property=>{
+				const editor=node.editors[property];
+				node[property]=editor.getValue();
+	    		editor.destroy();
+    			delete editor;
+			})
+		},
+		oneditcancel: function() {
+			const node=this;
+			Object.keys(node.editors).forEach(property=>{
+				const editor=node.editors[property];
+    			editor.destroy();
+    			delete editor;
+			});
+		},
         resizeRule : function(file,newWidth) {
         },
         button: {
@@ -102,16 +185,7 @@
         <input type="number" id="node-input-runtime" placeholder="Name" min=1 max=1000000 step=10>
     </div>
 
-    <div class="form-row">
-        <label for="node-input-payload"><i class="fa fa-envelope"></i> Payload Type</label>
-        <input type="text" id="node-input-payload" style="width:70%">
-        <input type="hidden" id="node-input-payloadType">
-    </div>
-
-    <div class="form-row">
-        <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</span></label>
-        <input type="text" id="node-input-topic">
-    </div>
+    <div id="node-inputDynamicBase"/>
 
 </script>
 

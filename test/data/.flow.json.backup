@@ -1,0 +1,109 @@
+[
+    {
+        "id": "1be03be45284f9d4",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "f8d6f002dbf1a0ec",
+        "type": "Load Injector",
+        "z": "1be03be45284f9d4",
+        "name": "gen id + json",
+        "thinktimemin": 1000,
+        "thinktimemax": 10000,
+        "runtime": 60,
+        "payload": "[\"aaa\"]",
+        "payload-type": "json",
+        "topic": "",
+        "topic-type": "genid",
+        "x": 130,
+        "y": 260,
+        "wires": [
+            [
+                "06a65ce9414ae1a8"
+            ],
+            [
+                "d75971a334c97a1d"
+            ]
+        ]
+    },
+    {
+        "id": "d75971a334c97a1d",
+        "type": "debug",
+        "z": "1be03be45284f9d4",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "06a65ce9414ae1a8",
+        "type": "Monitor Flow",
+        "z": "1be03be45284f9d4",
+        "name": "",
+        "x": 370,
+        "y": 200,
+        "wires": [
+            [
+                "d75971a334c97a1d"
+            ]
+        ]
+    },
+    {
+        "id": "ce87d1616e851eb3",
+        "type": "Load Injector",
+        "z": "1be03be45284f9d4",
+        "name": "timestamp+string",
+        "thinktimemin": 1000,
+        "thinktimemax": 10000,
+        "runtime": 60,
+        "payload": "abc",
+        "payload-type": "str",
+        "topic": "",
+        "topic-type": "date",
+        "x": 150,
+        "y": 80,
+        "wires": [
+            [
+                "06a65ce9414ae1a8"
+            ],
+            [
+                "d75971a334c97a1d"
+            ]
+        ]
+    },
+    {
+        "id": "f92c48ed91e841ca",
+        "type": "Load Injector",
+        "z": "1be03be45284f9d4",
+        "name": "number+boolean",
+        "thinktimemin": 1000,
+        "thinktimemax": 10000,
+        "runtime": 60,
+        "payload": "true",
+        "payload-type": "bool",
+        "topic": "123",
+        "topic-type": "num",
+        "x": 110,
+        "y": 340,
+        "wires": [
+            [
+                "06a65ce9414ae1a8"
+            ],
+            [
+                "d75971a334c97a1d"
+            ]
+        ]
+    }
+]

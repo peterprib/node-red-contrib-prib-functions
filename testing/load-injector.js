@@ -1,7 +1,6 @@
-const nodeLabel="Load Injector";
-const Logger = require("node-red-contrib-logger");
-const logger = new Logger(nodeLabel);
-logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
+const logger = new (require("node-red-contrib-logger"))("Load Injector");
+logger.sendInfo("Copyright 2022 Jaroslav Peter Prib");
+const noderedBase=require("node-red-contrib-noderedbase");
 
 function thinkTimeTime() {
 	return this.thinktimemin+Math.floor(Math.random()*this.thinkRange);
@@ -43,19 +42,27 @@ module.exports = function (RED) {
     function LoadInjectorNode(n) {
         RED.nodes.createNode(this, n);
         const node=Object.assign(this,n);
-        this.thinktimemin=Number(this.thinktimemin);
-        this.thinktimemax=Number(this.thinktimemax);
-        if(this.thinktimemax<this.thinktimemin) { 
-        	this.thinktimemin=this.thinktimemax;
-        	node.error("Minimum think time "+his.thinktimemin+" set down to max "+this.thinktimemax);
-        }
-        this.thinkRange=node.thinktimemax-node.thinktimemin+1;
-        if(this.thinkRange<0) {
-        	this.thinkRange=0;
-        }
-        node.status({fill:"red",shape:"ring",text:"Not started"});
+		node._base=new noderedBase(RED,node);
+		try{
+			this._base.setSource("payload").setSource("topic");
+			this.thinktimemin=Number(this.thinktimemin);
+			this.thinktimemax=Number(this.thinktimemax);
+			if(this.thinktimemax<this.thinktimemin) { 
+				this.thinktimemin=this.thinktimemax;
+				node.error("Minimum think time "+his.thinktimemin+" set down to max "+this.thinktimemax);
+			}
+			this.thinkRange=node.thinktimemax-node.thinktimemin+1;
+			if(this.thinkRange<0) {
+				this.thinkRange=0;
+			}
+			node.status({fill:"red",shape:"ring",text:"Not started"});
+		} catch(ex) {
+			node._base.error(ex,"Invalid setup "+ex.message);
+			return;
+		}
         node.on("input", function(msg) {
-        	switch(msg.topic) {
+			try{
+	        	switch(msg.topic) {
     			case "loadinjector.stop":
     	    		runtimeStop.apply(node);
     	    		node.send();
@@ -64,8 +71,17 @@ module.exports = function (RED) {
         			runtimeStart.apply(node);
     	    		node.send();
         			return;
-        	}
-            msg.topic = node.topic;
+        		}
+				msg.topic=node.getTopic(msg);
+				msg.payload=node.getPayload(msg);
+				node.send(msg);
+			} catch(ex) {
+				msg.error=ex.message;
+				node.send([null,msg]);
+				if(logger.active) logger.send({label:"msg error",node:node.id,exception:ex.message,stack:ex.stack});
+			}
+/*
+			msg.topic = node.topic;
             if (node.payloadType !== 'flow' && node.payloadType !== 'global') {
                 try {
                     if ( (node.payloadType === null && this.payload === "") || node.payloadType === "date") {
@@ -80,7 +96,7 @@ module.exports = function (RED) {
                     node.send(msg);
                     msg = null;
                 } catch(err) {
-                	node.error(err,msg);
+					node.error(err,msg);
                 }
             } else {
                 RED.util.evaluateNodeProperty(node.payload,node.payloadType,node,msg, function(err,res) {
@@ -92,6 +108,7 @@ module.exports = function (RED) {
                     }
                 });
             }
+			*/
         });
     }
 
@@ -120,12 +137,9 @@ module.exports = function (RED) {
     		var reason2="request to start/stop load injector failed for id:" +req.params.id;
     		node.error(reason2);
     		res.status(404).send(reason2);
- //   	    res.sendStatus(404);
     	}
     });
-    
-    RED.nodes.registerType(nodeLabel,LoadInjectorNode);
-
+    RED.nodes.registerType(logger.label,LoadInjectorNode);
 };
 
 
