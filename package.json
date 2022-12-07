@@ -14,8 +14,8 @@
 		"bcrypt": "^5.0.1",
 		"bl": "^5.0.0",
 		"mocha": "^9.2.2",
-		"node-red": "^2.2.2",
-		"node-red-node-test-helper": "^0.2.7"
+		"node-red": "^3.0.2",
+		"node-red-node-test-helper": "^0.3.0"
 	},
 	"scripts": {
 		"test": "mocha \"test/matrix/**/*.js\""
