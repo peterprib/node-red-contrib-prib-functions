@@ -30,7 +30,12 @@ Matrix.prototype.addCell=function(row,column,value){
 	this.vector[this.getIndex(row,column)]+=value;
 	return this;
 }
-Matrix.prototype.addRow=function(vector){
+Matrix.prototype.addRow=function(row,vectorIn){
+	if(vectorIn & row>=0){
+		this.forRowCells(row,(value,column,offset,vector)=>vector[offset]+=vectorIn[column]);
+		return this;
+	}
+	const vector=vectorIn?vectorIn:row;
 	if(this.size==this.sizeMax){
 		this.vector.copyWithin(0,this.columns,this.sizeMax);
 		this.rows--;
@@ -172,7 +177,7 @@ Matrix.prototype.fillArray=function(a){
 Matrix.prototype.findColumnRow=function(column,call,startRow=0,endRow=this.rows-1){
 	let offset=startRow*this.columns+column;
 	for(let row=startRow;row<=this.rows;row++){
-		if(call.apply(this,[this.vector[offset],row,offset,this.vector])) {
+		if(call.apply(this,[this.vector[offset],row,column,offset,this.vector])) {
 			return row;
 		}
 		offset+=this.columns;
@@ -205,6 +210,17 @@ Matrix.prototype.forEachCell=function(call){
 	}
 	return this;
 }
+Matrix.prototype.forEachCellLowerTriangle=function(call){
+	this.testIsSquare();
+	for(let row=0;row<this.rows;row++) {
+		let offset=row*this.columns;
+		for(let column=0;column<=row;column++) {
+			call.apply(this,[this.vector[offset],row,column,this.vector,offset,this]);
+			offset++
+		}
+	}
+	return this;
+}
 Matrix.prototype.forEachCellPairSet=function(matrix,call){
 	if(matrix instanceof Matrix){
 		if(this.rows!=matrix.rows) throw Error("number of rows different");
@@ -218,6 +234,17 @@ Matrix.prototype.forEachCellPairSet=function(matrix,call){
 	for(let offset=0,row=0;row<this.rows;row++) {
 		for(let column=0;column<this.columns;column++) {
 			this.vector[offset]=call.apply(this,[this.vector[offset],matrix[row][column]]);
+			offset++
+		}
+	}
+	return this;
+}
+Matrix.prototype.forEachCellUpperTriangle=function(call){
+	this.testIsSquare();
+	for(let row=0;row<this.rows;row++) {
+		let offset=row*this.columns;
+		for(let column=row;column<=this.columns;column++) {
+			call.apply(this,[this.vector[offset],row,column,this.vector,offset,this]);
 			offset++
 		}
 	}
@@ -386,6 +413,11 @@ Matrix.prototype.getRow=function(row){
 	const start=row*this.columns;
 	return this.vector.subarray(start,start+this.columns);
 }
+Matrix.prototype.getVandermonde=function(vectorIn,columns){
+    const matrix = new Matrix(vectorIn.length,columns);
+	matrix.forEachCell((cell,row,column,vector,offset,object)=>vector[offset]=vectorIn[row]**column)
+	return matrix;
+}
 Matrix.prototype.getZeroed=function(row, column){
 	const offset=row*this.columns+column;
 	const value=this.vector[offset];
@@ -438,6 +470,16 @@ Matrix.prototype.multiplyRow=function(row,factor){
 	this.determinant*=factor;
 	this.forRowCells(row,(cell,column,offset,vector)=>vector[offset]*=factor)
 	return this;
+}
+Matrix.prototype.norm=function(){
+
+	return Math.sqrt(this.reduce((aggregate,cell)=>aggregate+cell*cell))
+}
+Matrix.prototype.reduce=function(call,aggregate=0){
+	this.forEachCell((cell,row,column,vector,offset,object)=>
+		aggregate=call.apply(this,[aggregate,cell,row,column,vector,offset,object])
+	);
+	return aggregate;
 }
 Matrix.prototype.reducedRowEchelonForm=function(){
 	const lastColumn=this.columns-1;
@@ -524,6 +566,10 @@ Matrix.prototype.setDeterminant=function(){
 }
 Matrix.prototype.setRow=function(vector,row){
 	this.vector.set(vector, row*this.columns);
+	return this;
+}
+Matrix.prototype.setRunningSum=function(){
+	this.forEachCellLowerTriangle((cell,row,column,vector,offset,object)=>vector[offset]=1);
 	return this;
 }
 Matrix.prototype.substract=function(matrix){

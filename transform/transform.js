@@ -1,12 +1,13 @@
 const logger = new (require("node-red-contrib-logger"))("transform");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
+const CompressionTool = require('compressionTool');
 
 const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
 	Buffer=require('buffer').Buffer,
 	os=require('os'),
 	path=require('path'),
 	process=require('process');
-let  avsc,snappy,xmlParser,json2xmlParser,XLSX;
+let  avsc,snappy,xmlParser,json2xmlParser,XLSX,compressor;
 const {ISO8583BitMapId,ISO8583BitMapName}=require("./ISO8583BitMap");
 let ISO8583,ISO8583message;
 const XMLoptions = {
@@ -170,6 +171,35 @@ function array2tag(a,t,tf){
 	const ts="<"+t+">",te="</"+t+">"
 	return a.reduce((a,c)=>a+=ts+tf(c)+te,"");
 }
+function Array2csv(node,data){
+	if(!(data instanceof Array)) return JSON.stringify(data);
+	if(data.length==0) return;
+	if(data[0] instanceof Array) {
+		return data.map(r=>
+			r instanceof Array?r.map(c=>JSON.stringify(c)).join(node.delimiter):JSON.stringify(r)
+		).join("\n");
+	} else if(data[0] instanceof Object) {
+		const properties=[];
+		data.forEach(r=>{
+			if(typeof r == "object" && ! (r instanceof Array)){
+				Object.keys(r).forEach(p=>{
+					if(properties.includes(p)) return
+					properties.push(p)
+				})
+			}
+		})
+		properties.sort();
+		const rows=data.map(r=>{
+			if(typeof r == "object" && ! (r instanceof Array)) {
+				return properties.map(c=>r[c]||"").join(node.delimiter)
+			} else {
+				return node.delimiter.repeat(properties.length)+JSON.stringify(r)
+			}
+		})
+		return properties.join(node.delimiter)+"\n"+rows.join("\n");
+	}
+	return data .map(r=>JSON.stringify(r)).join("/n");
+}
 const functions={
 	ArrayToCSV: (RED,node,msg,data)=>data.map(c=>JSON.stringify(c)).join("\n"),
 	ArrayToHTML: (RED,node,msg,data)=>
@@ -198,6 +228,52 @@ const functions={
 	ArrayToXLSX:ArrayToXLSX,
 	ArrayToXLSXObject:ArrayToXLSXObject,
 	AVROToJSON: (RED,node,msg,data)=>node.avroTransformer.fromBuffer(data), // = {kind: 'CAT', name: 'Albert'}
+	BufferToCompressed: (RED,node,msg,data)=>compressor.compress(data,
+		(compressed)=>{
+			node.setData(RED,node,msg,compressed);
+			node.send(msg);
+		},
+		(err)=>{
+			error(node,Error(err));
+		}
+	),
+	CompressedToBuffer:(RED,node,msg,data)=>compressor.decompress(data,
+		(uncompressed)=>{
+			node.setData(RED,node,msg,uncompressed);
+			node.send(msg);
+		},
+		(err)=>{
+			error(node,Error(err));
+		}
+	),
+	CompressedToJSON:(RED,node,msg,data)=>compressor.decompress(data,
+		(uncompressed)=>{
+			try{
+				node.setData(RED,node,msg,JSON.parse(uncompressed));
+				node.send(msg);
+			} catch(ex){
+				msg.error=ex.message
+				node.setData(RED,node,msg,uncompressed);
+			}
+		},
+		(err)=>{
+			error(node,Error(err));
+		}
+	),
+	CompressedToString:(RED,node,msg,data)=>compressor.decompress(data,
+		(uncompressed)=>{
+			try{
+				node.setData(RED,node,msg,uncompressed.toString());
+				node.send(msg);
+			} catch(ex){
+				msg.error=ex.message;
+				node.setData(RED,node,msg,uncompressed);
+			}
+		},
+		(err)=>{
+			error(node,Error(err));
+		}
+	),
 	ConfluenceToJSON: ConfluenceToJSON,
 	CSVToArray: (RED,node,msg,data)=>{
 		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
@@ -256,8 +332,17 @@ const functions={
 		}
 		return data;
 	},
+	JSONToCompressed: (RED,node,msg,data)=>compressor.compress(JSON.stringify(data),
+		(compressed)=>{
+			node.setData(RED,node,msg,compressed);
+			node.send(msg);
+		},
+		(err)=>{
+			error(node,Error(err));
+		}
+	),
 	JSONToConfluence:JSONToConfluence,
-	JSONToCSV: (RED,node,msg,data)=>functions.ArrayToCSV(RED,node,msg,functions.JSONToArray(RED,node,msg,data)),
+	JSONToCSV: (RED,node,msg,data)=>Array2csv(node,data),
 	JSONToAVRO: (RED,node,msg,data)=>node.avroTransformer.toBuffer(data), // Encoded buffer.
 	JSONToHTML: (RED,node,msg,data,level=0)=>{
 		if(Array.isArray(data)) {
@@ -294,6 +379,15 @@ const functions={
 	JSONToXLSX:JSONToXLSX,
 	JSONToXLSXObject:JSONToXLSXObject,
 	JSONToXML: (RED,node,msg,data)=>json2xmlParser.parse(data),
+	StringToCompressed: (RED,node,msg,data)=>compressor.compress(data,
+		(compressed)=>{
+			node.setData(RED,node,msg,compressed);
+			node.send(msg);
+		},
+		(err)=>{
+			error(node,Error(err));
+		}
+	),
 	StringToJSON: (RED,node,msg,data)=>JSON.parse(data),  
 	pathToBasename: (RED,node,msg,data)=>path.basename(data),
 	pathToDirname: (RED,node,msg,data)=>path.dirname(data),
@@ -373,11 +467,11 @@ module.exports = function (RED) {
 				}
 				if(logger.active) logger.send({label:"load xml",xmlParserKeys:Object.keys(xmlParser),json2xmlParser:Object.keys(json2xmlParser)});
 			}
-			node.sendInFunction=["snappy"].includes(node.actionSource)||["Messages"].includes(node.actionTarget);
+			node.sendInFunction=["snappy","Compressed"].includes(node.actionSource)||["Messages","Compressed"].includes(node.actionTarget);
 			node.hasNewTopic=![null,""].includes(node.topicProperty);
 			const sourceMap="(RED,node,msg)=>"+(node.sourceProperty||"msg.payload"),
 				sourceDelete="(RED,node,msg)=>{delete "+(node.sourceProperty||"msg.payload")+";}",
-					targetMap="(RED,node,msg,data,index)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
+				targetMap="(RED,node,msg,data,index)=>{"+(node.targetProperty||"msg.payload")+"=data;"+
 					(node.sendInFunction && node.hasNewTopic? "msg.topic=node.topicFunction(RED,node,msg,data,index);":"")+
 					(node.sendInFunction ? "" : "node.send(msg);" )+
 					"}",
@@ -389,13 +483,21 @@ module.exports = function (RED) {
 			node.topicFunction=evalFunction("topic",topicMap);
 			if(is(node,"AVRO")) {
 				 node.avroTransformer=avsc.Type.forSchema(node.schemaValid);
+			} else 	if(is(node,"Compressed")) {
+				compressor=new CompressionTool();
+				compressor[node.compressionType]();
 			} else 	if(is(node,"Confluence")) {
 				node.schemas={};
 				for(const schema in node.schemaValid )
 					node.schemas[schema]=avsc.Type.forSchema(node.schemaValid[schema]);
 				logger.info({label:"confluence",schemas:Object.keys(node.schemas)});
 			}
+			if(node.actionTarget=="Compressed"){
+				compressor=new CompressionTool();
+				compressor[node.compressionType]();
+			}
 		} catch(ex) {
+			logger.error(n);
 			error(node,ex,"Invalid setup "+ex.message);
 			return;
 		}
@@ -420,15 +522,17 @@ module.exports = function (RED) {
 			error(node,ex,node.actionSource+"\nto "+node.actionTarget + " not implemented")
 			return;
 		}
-		
+		node.processMsg=node.sendInFunction?this.transform
+			:(RED,node,msg,data)=>node.setData(RED,node,msg,node.transform(RED,node,msg,data));
 		this.status({fill:"green",shape:"ring",text:"Ready"});
 		node.on("input", function(msg) {
 			if(logger.active) logger.send({label:"input",msgid:msg._msgid,topic:msg.topic});
 			try{
 				const data=node.getData(RED,node,msg);
 				if(node.invalidSourceType(data)) throw Error("expected source data type "+node.actionSource); 
-				node.setData(RED,node,msg,node.transform(RED,node,msg,data));
+				node.processMsg(RED,node,msg,data);
 			} catch (ex) {
+				if(logger.active) logger.sendErrorAndDump("on input error",ex)
 				msg.error=node.actionSource+" to "+node.actionTarget + " " +ex.message;
 				error(node,Error(msg.error),"Error(s)");
 				node.send([null,msg]);

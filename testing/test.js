@@ -31,6 +31,7 @@ function setError(msg,node,err) {
 
 function equalObjects(obj1,obj2,errorFactor) {
 	if( obj1 === obj2 ) return true;
+	if(obj1 instanceof Buffer ) return Buffer.compare(obj1, obj2) === 0
 	if( obj1 === Number.POSITIVE_INFINITY && obj2==="Infinity") return true;
 	if( obj1 === Number.NEGATIVE_INFINITY && obj2==="-Infinity") return true;
 	if( Number.isNaN(obj1) && obj2==="NaN") return true;

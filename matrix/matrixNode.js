@@ -25,6 +25,7 @@ function evalInFunction(node,propertyName){
 		const propertyType=propertyName+"-type";
 		switch (node[propertyType]){
 		case "num":
+		case "json":
 			return evalFunction(propertyName,"()=>"+property);
 		case "node":
 			return evalFunction(propertyName,"()=>nodeContext.get("+property+")");
@@ -45,6 +46,14 @@ function evalInFunction(node,propertyName){
 		logger.sendError({label:"setup",error:ex.message,stack:ex.stack});
 		throw Error(property+" "+ex.message);
 	}
+}
+function argsArray(node,msg) {
+	const args=[];
+	node.argFunction.forEach(callFunction=> {
+		const result=callFunction(msg);
+		args.push(result);
+	});
+	return args;
 }
 module.exports = function (RED) {
 	function matrixNode(n) {
@@ -83,12 +92,7 @@ module.exports = function (RED) {
 				const sourceIn=node.getSource(msg);
 				if(sourceIn==null) throw Error("source data not found");
 				const sourceMatrix=(sourceIn instanceof Matrix?sourceIn:new Matrix(sourceIn));
-				const args=[];
-				node.argFunction.forEach(callFunction=> {
-					const result=callFunction(msg);
-					args.push(result);
-				});
-				return sourceMatrix[node.action].apply(sourceMatrix,args);
+				return sourceMatrix[node.action].apply(sourceMatrix,argsArray(node,msg));
 			}
 			function baseProcessAndSet(msg){
 				const result=baseProcess(msg);
@@ -102,13 +106,21 @@ module.exports = function (RED) {
 			}
 			function defineProcess(msg){
 				if(logger.active) logger.sendInfo({label:"define",arg:{rows:node.row,columns:node.column}});
-				const sourceMatrix=new Matrix({rows:node.row,columns:node.column});
+				const sourceMatrix=new Matrix({rows:node.rows,columns:node.columns});
 				node.setData.apply(node,[sourceMatrix,msg]);
 			}
 			function defineEmptyProcess(msg){
 				if(logger.active) logger.sendInfo({label:"define",arg:{rowsMax:node.row,columns:node.column}});
-				const sourceMatrix=new Matrix({rowsMax:node.row,columns:node.column});
+				const sourceMatrix=new Matrix({rowsMax:node.rows,columns:node.columns});
 				node.setData.apply(node,[sourceMatrix,msg]);
+			}
+			function createSize(msg){
+				const sourceMatrix=new Matrix({rows:node.size,columns:node.size});
+				node.setData.apply(node,[sourceMatrix[node.action](),msg]);
+			}
+			function createDummy(msg){
+				const sourceMatrix=new Matrix(1,1);
+				node.setData.apply(node,[sourceMatrix[node.action].apply(sourceMatrix,argsArray(node,msg)),msg]);
 			}
 			node.msgProcess=baseProcess;
 			if(["define"].includes(node.action)){
@@ -116,7 +128,11 @@ module.exports = function (RED) {
 			}else if(["defineEmpty"].includes(node.action)){
 				node.msgProcess=defineEmptyProcess;
 			}else if(["create"].includes(node.action)){
-					node.msgProcess=createProcess;
+				node.msgProcess=createProcess;
+			}else if(["runningSum"].includes(node.action)){
+				node.msgProcess=createSize;
+			}else if(["getVandermonde"].includes(node.action)){
+				node.msgProcess=createDummy;
 			}else{
 				if(node.action.startsWith("get") 
 				|| ["create","createLike","clone","transpose","sumRow","createForEachCellPairSet",
@@ -126,6 +142,7 @@ module.exports = function (RED) {
 				}
 			}
 		} catch(ex) {
+			logger.sendError({label:"setup",error:ex.message,stack:ex.stack})
 			error(node,ex,"Invalid setup "+ex.message);
 			return;
 		}

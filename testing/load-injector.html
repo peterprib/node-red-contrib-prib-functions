@@ -1,5 +1,37 @@
-
 <script type="text/javascript">
+    const pribDataTypes={
+        genid:{value:"genid",label:"Generated ID",icon:"fa fa-key",hasValue:false},
+        genData:{value:"genData",label:"Generate Data",icon:"fa fa-pencil-square",hasValue:true,
+            validate: function(v){return true;},
+            expand: function() {
+                const node=this;
+                RED.editor.editText({
+                    mode: "handlebars",
+                    width: "Infinity",
+                    focus: true,
+                    value: this.value(),
+                    complete: function(v) {
+                        node.value(v);
+                    }
+                })
+            }
+        },  
+        genDataJSON:{value:"genDataJSON",label:"Generate JSON",icon:"fa fa-pencil-square-o",hasValue:true,
+            validate: function(v){return true;},
+            expand: function() {
+                const node=this;
+                RED.editor.editText({
+                    mode: "handlebars",
+                    width: "Infinity",
+                    focus: true,
+                    value: this.value(),
+                    complete: function(v) {
+                        node.value(v);
+                    }
+                })
+            }
+        }
+        };
     /*globals RED */
     RED.nodes.registerType('Load Injector', {
         category: 'testing',
@@ -10,7 +42,9 @@
             thinktimemax: {value:10000, required:true}, // 10 seconds
             runtime: {value:60, required:true}, // 60 seconds
             payload: {value:"", validate: RED.validators.typedInput("payloadType")},
-            payloadType: {value:"date"}
+            payloadType: {value:"date"},
+            topic: {value:"", validate: RED.validators.typedInput("topicType")},
+            topicType: {value:"date"}
         },
 	    inputs:1,
         inputLabels: "",
@@ -24,27 +58,48 @@
             return "node_label_italic";
         },
         oneditprepare: function() {
-            if (this.payloadType === null) {
-                if (this.payload === "") {
-                    this.payloadType = "date";
-                } else {
-                    this.payloadType = "str";
-                }
-            } else if (this.payloadType === 'string' || this.payloadType === 'none') {
-                this.payloadType = "str";
-            }
-            $("#node-input-payloadType").val(this.payloadType);
+            this.editors={};
+            $("#node-input-payloadType").val(this.payloadType||"str");
             $("#node-input-payload").typedInput({
                 default: 'str',
                 typeField: $("#node-input-payloadType"),
-                types:['flow','global','str','num','bool','json','bin','date','env']
+                types:['date',
+                    pribDataTypes.genid,
+                    'str','num','bool','json','jsonata',
+                    pribDataTypes.genData,
+                    pribDataTypes.genDataJSON,
+                    'bin','flow','global','env']
+            });
+            $("#node-input-topicType").val(this.topicType||"str");
+            $("#node-input-topic").typedInput({
+                default: 'str',
+                typeField: $("#node-input-topicType"),
+                types:['date',
+                    pribDataTypes.genid,
+                    'str','num','bool','json','jsonata',
+                    pribDataTypes.genData,
+                    pribDataTypes.genDataJSON,
+                    'bin','flow','global','env']
             });
         },
-        oneditsave: function() {
-        },
+		oneditsave: function() {
+			const node=this;
+			Object.keys(node.editors).forEach(property=>{
+				const editor=node.editors[property];
+				node[property]=editor.getValue();
+	    		editor.destroy();
+    			delete editor;
+			})
+		},
+		oneditcancel: function() {
+			const node=this;
+			Object.keys(node.editors).forEach(property=>{
+				const editor=node.editors[property];
+    			editor.destroy();
+    			delete editor;
+			});
+		},
         oneditresize: function() {
-        },
-        resizeRule : function(file,newWidth) {
         },
         button: {
             enabled: function() {
@@ -103,14 +158,15 @@
     </div>
 
     <div class="form-row">
-        <label for="node-input-payload"><i class="fa fa-envelope"></i> Payload Type</label>
-        <input type="text" id="node-input-payload" style="width:70%">
+        <label for="node-input-payload"><i class="fa fa-envelope"></i> Payload</label>
+        <input type="text" id="node-input-payload">
         <input type="hidden" id="node-input-payloadType">
     </div>
 
     <div class="form-row">
         <label for="node-input-topic"><i class="fa fa-tasks"></i> Topic</span></label>
         <input type="text" id="node-input-topic">
+        <input type="hidden" id="node-input-topicType">
     </div>
 
 </script>
@@ -120,4 +176,3 @@
 	Simulate random arrival of messages and can be set to reflect think time of a user by setting min and maximum boundaries.
 	</p>
 </script>
-

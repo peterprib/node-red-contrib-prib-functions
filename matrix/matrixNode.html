@@ -7,30 +7,22 @@
 			name: {value:null},
 			action: {value: "create",required:true},
 			args: {value:[]},
-			arg: {value:null},
-			"arg-type": {value:"msg"},
-			column: {value:null},
-			"column-type": {value:"num"},
-			end: {value:null},
-			"end-type": {value:"num"},
-			factor: {value:null},
-			"factor-type": {value:"num"},
-			precision: {value:3},
-			"precision-type": {value:"num"},
-			row: {value:3},
-			"row-type": {value:"num"},
-			rowTarget: {value:null},
-			"rowTarget-type": {value:"num"},
-			source: {value:"_matrix"},
-			"source-type": {value:"msg"},
-			matrix: {value:"payload"},
-			"matrix-type": {value:"msg"},
-			start: {value:null},
-			"start-type": {value:"num"},
-			target: {value:"_matrix"},
-			"target-type": {value:"msg"},
-			value: {value:"payload"},
-			"value-type": {value:"msg"}
+			arg: {value:null},"arg-type": {value:"msg"},
+			call:{value:null},
+			column: {value:null},"column-type": {value:"num"},
+			columns: {value:null},"columns-type": {value:"num"},
+			end: {value:null},"end-type": {value:"num"},
+			factor: {value:null},"factor-type": {value:"num"},
+			matrix: {value:"payload"},"matrix-type": {value:"msg"},
+			precision: {value:3},"precision-type": {value:"num"},
+			row: {value:3},"row-type": {value:"num"},
+			rows: {value:3},"rows-type": {value:"num"},
+			rowTarget: {value:null},"rowTarget-type": {value:"num"},
+			source: {value:"_matrix"},"source-type": {value:"msg"},
+			start: {value:null},"start-type": {value:"num"},
+			target: {value:"_matrix"},"target-type": {value:"msg"},
+			value: {value:"payload"},"value-type": {value:"msg"},
+			vector: {value:"payload"},"vector-type": {value:"msg"}
 		},
 		inputs: 1,
 		outputs: 2,
@@ -44,148 +36,151 @@
 		},
 		oneditprepare: function() {
 			const node=this;
-			let properties=[];
+			node.properties=[];
+			node.editors=[];
+			const actions={
+				define:{label:"Define",show:["target"],args:["rows","columns"]},
+				defineEmpty:{label:"Define Empty",show:["target"],args:["rows","columns"]},
+				create:{label:"Create",show:["target"],args:[]},
+                createLike:{label:"Create Like",show:["source","target"],args:[]},
+                clone:{label:"Clone",show:["source","target"],args:[]},
+                add:{label:"Add",show:["source"],args:["matrix"]},
+                addRow:{label:"Add Row",show:["source"],args:["row","vector"]},
+				addRow2Row:{label:"Add Row to Row",show:["source"],args:["row","target","factor","start","end"]},
+                addCell:{label:"Add to Cell",show:["source"],args:["row","column","value"]},
+                subtractCell:{label:"Subtract Cell",show:["source","target"],args:["row","column","value"]},
+                multiple:{label:"Multiple",show:["source","target"],args:[]},
+                multipleCell:{label:"Multiple Cell",show:["source","target"],args:["rows","columns","value"]},
+                divideCell:{label:"Divide Cell",show:["source"],args:["rows","columns","value"]},
+                divideRow:{label:"Divide Row",show:["source"],args:["row","factor","start","end"]},
+                transpose:{label:"Transpose",show:["source","target"],args:[]},
+                getAdjoint:{label:"Adjoint",show:["source","target"],args:[]},
+                getCofactor:{label:"Cofactor",show:["source","target"],args:[]},
+                getComplementMinor:{label:"Complement Minor",show:["source","target"],args:[]},
+				getIdentity:{label:"Identity",show:["source","target"],args:[]},
+				getInverse:{label:"Inverse",show:["source","target"],args:[]},
+				getInverseAdjointMethod:{label:"Inverse (Adjoint Method)",show:["source","target"],args:[]},
+				getInverseGaussJordan:{label:"Inverse (Gauss Jordan Method)",show:["source","target"],args:[]},
+				norm:{label:"Norm",show:["source","target"],args:[]},
+				getDeterminant:{label:"Determinant",show:["source","target"],args:[]},
+				getDeterminantUsingCofactor:{label:"Determinant (Cofactor)",show:["source","target"],args:[]},
+				getDeterminantUsingCofactor:{label:"Determinant (Row Echelon Form)",show:["source","target"],args:[]},
+                backwardSubstitution:{label:"Backward Substitution",show:["source"],args:[]},
+				forwardElimination:{label:"Forward Elimination",show:["source"],args:[]},
+				gaussianElimination:{label:"Gaussian Elimination",show:["source"],args:[]},
+				reducedRowEchelonForm:{label:"Reduced Row EchelonForm",show:["source"],args:[]},
+				rowEchelonForm:{label:"Row Echelon Form",show:["source"],args:[]},
+                equalsNearly:{label:"Nearly Equals",show:["source"],args:[]},
+				testIsSquare:{label:"Is Square",show:["source"],args:[]},
+				get:{label:"Get Cell",show:["source","target"],args:[]},
+				sumRow:{label:"Sum Row",show:["source","target"],args:[]},
+				swapRows:{label:"Swap Rows",show:["source"],args:[]},
+				toArray:{label:"To Array Object",show:["source","target"],args:[]},
+				runningSum:{label:"Running Sum",show:["source","target"],args:[]},
+				getVandermonde:{label:"Vandermonde",show:["target"],args:["vector","columns"]},
+				create:{label:"Create",show:[,"target"],args:["rows","columns"]},
+				createForEachCellPairSet:{label:"Create Pair Set Cells",show:["source","target"],args:["matrix","call"],default:{call:"(baseCellValue,matrixCellValue)=>{}"}},
+				findRowColumn:{label:"Find in Row",show:["source"],args:["row","call","start","end"],default:{call:"(value,row,column,offset,vector)=>true"}},
+				forRowCells:{label:"Row Cells",show:["source"],args:["row","call","start","end"],default:{call:"()=>{}"}},
+				fillArray:{label:"fill",show:["source"],args:["matrix"]},
+				findColumnRow:{label:"Find in Column",show:["source"],args:["column","call","start","end"],default:{call:"()=>{}"}},
+				forColumnCells:{label:"Column Cells",show:["source"],args:["column","call","start","end"],default:{call:"()=>{}"}},
+				forEachCell:{label:"For Each Cell",show:["source"],args:["call"],default:{call:"()=>{}"}},
+				forEachRow:{label:"For Each Row",show:["source"],args:["call"],default:{call:"()=>{}"}},
+				forEachCellPairSet:{label:"For Each Cell Pair Set",show:["source"],args:["matrix","call"],default:{call:"()=>{}"}},
+				getIndex:{label:"Get Vector Offset",show:["source","target"],args:["row","column"]},
+				getZeroed:{label:"Get Zeroed",show:["source","target"],args:["row","column"]},
+				getMatrix:{label:"get Sub Matrix",show:["source","target"],args:["row","column","rows","columns"]},
+				getRow:{label:"Get Row",show:["source","target"],args:["row"]},
+				maxAbsColumn:{label:"Column Maximum Absolute",show:["source","target"],args:["column","start"]},
+				maxColumn:{label:"Column Max",show:["source","target"],args:["column","start"]},
+				multiplyRow:{label:"Multiply Row",show:["source"],args:["row","factor"]},
+				reduceRow:{label:"Reduce Row",show:["source","target"],args:["row","call","value"],default:{call:"(agregatevalue,cellValue,row,column)=>agregatevalue+cellValue"}},
+				set:{label:"Set Cell",show:["source"],args:["row","column","value"]},
+				setRow:{label:"Set Row",show:["source"],args:["vector","row"]},
+				reduce:{label:"Reduce Cells",show:["source","target"],args:["call","value"],default:{call:"()=>{}"}}
+			};
 			const baseDiv=$("#node-inputDynamicBase");
 			function defineProperty(property,...types) {
-				const inputNode=$('<input type="text" id="node-input-'+property.name+'"/>').val(node[property.name]);
-				const typeNode=$('<input type="hidden" id="node-input-'+property.name+'-type"/>');
-				const element= $('<div/>',{ "class": "form-row form-row-http-in-"+property.name+" hide" }).append([
-    				 	$('<label for="node-input-'+property.name+'" style="white-space: nowrap"><i class="icon-'+(property.icon||'-bookmark')+'"></i> '+property.label+'</label>'),
-        				inputNode,typeNode
-    				]);
+				const element=$('<div/>',{ "class": "form-row form-row-http-in-"+property.name+" hide" }).append(
+    				 	$('<label for="node-input-'+property.name+'" style="white-space: nowrap"><i class="fa fa-'+(property.icon||'bookmark')+'"></i> '+property.label+'</label>'),
+					);
 				element.appendTo(baseDiv);
-				properties.push(property.name);
-				const typeValue=node[property.name+"-type"];
-				if(typeValue) typeNode.val(typeValue);
-				$("#node-input-"+property.name).typedInput({
-	  				type:typeValue||types[0],
-    				types:types,
-    				typeField: "#node-input-"+property.name+"-type"
-				});
+				node.properties.push(property.name);
+				if(types[0]=="edit") {
+					element.append($('<div style="height: 250px; min-height:150px;" class="node-text-editor" id="node-input-'+property.name+'-editor"></div>'));
+					node.editors[property.name] = RED.editor.createEditor({
+   						id: 'node-input-'+property.name+'-editor',
+   						mode: 'ace/mode/'+property.mode||"text",
+   						value: node[property.name]||property.default
+					});
+				} else {
+					const inputNode=$('<input type="text" id="node-input-'+property.name+'"/>').val(node[property.name]);
+					const typeNode=$('<input type="hidden" id="node-input-'+property.name+'-type"/>');
+					element.append([inputNode,typeNode]);
+					const typeValue=node[property.name+"-type"];
+					if(typeValue) typeNode.val(typeValue);
+					$("#node-input-"+property.name).typedInput({
+	  					type:typeValue||types[0],
+    					types:types,
+    					typeField: "#node-input-"+property.name+"-type"
+					});
+				}
 			}
-			defineProperty({name:"source"	,label:"Source"		,icon:"tag"},"msg","flow","global");
+			defineProperty({name:"source"	,label:"Source"		,icon:"crosshairs"},"msg","flow","global");
 			defineProperty({name:"arg"		,label:"Argument"	,icon:"tag"},"num","json","msg","flow","global","env");
-			defineProperty({name:"matrix"	,label:"Matrix"		,icon:"tag"},"msg","flow","global");
-			defineProperty({name:"target"	,label:"Target"		,icon:"tag"},"msg","flow","global");
-			defineProperty({name:"column"	,label:"Column"		,icon:"tag"},"num","msg","flow","global");
-			defineProperty({name:"row"		,label:"Row"		,icon:"tag"},"num","msg","flow","global");
-			defineProperty({name:"value"	,label:"Value"		,icon:"tag"},"num","msg","flow","global");
-			defineProperty({name:"rowTarget",label:"Target Row"	,icon:"tag"},"num","msg","flow","global");
-			defineProperty({name:"factor"	,label:"Factor"		,icon:"tag"},"num","msg","flow","global");
-			defineProperty({name:"precision",label:"Precision"	,icon:"tag"},"num","msg","flow","global");
-			defineProperty({name:"start"	,label:"Start"		,icon:"tag"},"num","msg","flow","global");
-			defineProperty({name:"end"		,label:"End"		,icon:"tag"},"num","msg","flow","global");
+			defineProperty({name:"matrix"	,label:"Matrix"		,icon:"th"},"msg","flow","global");
+			defineProperty({name:"target"	,label:"Target"		,icon:"save"},"msg","flow","global");
+			defineProperty({name:"column"	,label:"Column"		,icon:"bars fa-rotate-90"},"num","msg","flow","global");
+			defineProperty({name:"columns"	,label:"Columns"	,icon:"bars fa-rotate-90"},"num","msg","flow","global");
+			defineProperty({name:"row"		,label:"Row"		,icon:"bars"},"num","msg","flow","global");
+			defineProperty({name:"rows"		,label:"Rows"		,icon:"bars"},"num","msg","flow","global");
+			defineProperty({name:"value"	,label:"Value"		,icon:"tachometer"},"num","msg","flow","global");
+			defineProperty({name:"rowTarget",label:"Target Row"	,icon:"bars"},"num","msg","flow","global");
+			defineProperty({name:"factor"	,label:"Factor"		,icon:"adjust"},"num","msg","flow","global");
+			defineProperty({name:"precision",label:"Precision"	,icon:"tachometer"},"num","msg","flow","global");
+			defineProperty({name:"start"	,label:"Start"		,icon:"tachometer"},"num","msg","flow","global");
+			defineProperty({name:"end"		,label:"End"		,icon:"tachometer"},"num","msg","flow","global");
+			defineProperty({name:"size"		,label:"Size"		,icon:"tachometer"},"num","msg","flow","global");
+			defineProperty({name:"vector"	,label:"Vector"		,icon:"ellipsis-h"},"json","msg","flow","global");
+			defineProperty({name:"call"		,label:"Call"		,icon:"js",mode:"javascript"},"edit");
 
+			const options=Object.keys(actions).reduce((previousValue,property)=>previousValue.concat({value:property,label:actions[property].label}),
+				[]);
 			const actionNode=$("#node-input-action");
 			actionNode.typedInput({
     			types: [{
             		value: "actionType",
-            		options: [
-						{value:"define",				label:"Define"},
-						{value:"defineEmpty",			label:"Define Empty"},
-						{value:"create",				label:"Create"},
-                		{value:"createLike",			label:"Create Like"},
-                		{value:"clone",					label:"Clone"},
-                		{value:"add",					label:"Add"},
-						{value:"addRow2Row",			label:"Add Row to Row"},
-                		{value:"addCell",				label:"Add to Cell"},
-                		{value:"addRow",				label:"Add Row"},
-                		{value:"subtractCell",			label:"Subtract Cell"},
-                		{value:"multiple",				label:"Multiple"},
-                		{value:"multipleCell",			label:"Multiple Cell"},
-                		{value:"divideCell",			label:"Divide Cell"},
-                		{value:"divideRow",				label:"Divide Row"},
-                		{value:"transpose",				label:"Transpose"},
-                		{value:"getAdjoint",			label:"Adjoint"},
-                		{value:"getCofactor",			label:"Cofactor"},
-                		{value:"getComplementMinor",	label:"Complement Minor"},
-						{value:"getIdentity",			label:"Identity"},
-						{value:"getInverse",			label:"Inverse"},
-						{value:"getInverseAdjointMethod",label:"Inverse (Adjoint Method)"},
-						{value:"getInverseGaussJordan"	,label:"Inverse (Gauss Jordan Method)"},
-						{value:"getDeterminant",		label:"Determinant"},
-						{value:"getDeterminantUsingCofactor",label:"Determinant (Cofactor)"},
-						{value:"getDeterminantUsingCofactor",label:"Determinant (Row Echelon Form)"},
-                		{value:"backwardSubstitution",	label:"Backward Substitution"},
-						{value:"forwardElimination",	label:"Forward Elimination"},
-						{value:"gaussianElimination",	label:"Gaussian Elimination"},
-						{value:"reducedRowEchelonForm",	label:"Reduced Row EchelonForm"},
-						{value:"rowEchelonForm",		label:"Row Echelon Form"},
-                		{value:"equalsNearly",			label:"Nearly Equals"},
-						{value:"testIsSquare",			label:"Is Square"},
-						{value:"get",					label:"Get Cell"},
-						{value:"sumRow",				label:"Sum Row"},
-						{value:"swapRows",				label:"Swap Rows"},
-						{value:"toArray",				label:"To Array Object"}
-            		]
-        		}]
+            		options: options
+				}]
 			});
-//Matrix.prototype.createForEachCellPairSet=function(matrix,call){
-//Matrix.prototype.findRowColumn=function(row,call,startColumn=0,endColumn=this.columns-1){
-//Matrix.prototype.forRowCells=function(row,call,startColumn=0,endColumn=this.columns-1){
-//Matrix.prototype.fillArray=function(a){
-//Matrix.prototype.findColumnRow=function(column,call,startRow=0,endRow=this.rows-1){
-//Matrix.prototype.forColumnCells=function(column,call,startRow=0,endRow=this.rows-1){
-//Matrix.prototype.forEachCell=function(call){
-//Matrix.prototype.forEachRow=function(call){
-//Matrix.prototype.forEachCellPairSet=function(matrix,call){
-//Matrix.prototype.getIndex=function(row, column){
-//Matrix.prototype.getZeroed=function(row, column){
-//Matrix.prototype.getMatrix=function(row,column,rows,columns){
-//Matrix.prototype.getRow=function(row){
-//Matrix.prototype.maxAbsColumn=function(column,startRow=0){
-//Matrix.prototype.maxColumn=function(column,startRow=0){
-//Matrix.prototype.multiplyRow=function(row,factor){
-//Matrix.prototype.reduceRow=function(row,call,value=0){
-//Matrix.prototype.set=function(row,column,value){
-//Matrix.prototype.setRow=function(vector,row){
-			actionNode.change(function() {
+	actionNode.change(function() {
 				action=$(this).val();
-				let show=["source","target"];
 				node.args=[];
-				properties.forEach(property=>$(".form-row-http-in-"+property).hide());
-        		if(["forwardElimination","backwardSubstitution","gaussianElimination",
-					"reducedRowEchelonForm","rowEchelonForm","testIsSquare"].includes(action)) {
-        			show=["source"];
-				} else if(["equalsNearly"].includes(action)) {
-					show=["source"]; 
-					node.args=["matrix"];
-				} else if(["define"].includes(action)) {
-					show=["target"]; 
-					node.args=["row","column"];
- 				} else if(["addCell","subtractCell","multiplyCell","divideCell"].includes(action)) {
-        			show=["source"];
-					node.args=["row","column","value"];
-				} else if(["get","getComplementMinor","getCofactor"].includes(action)) {
-        			show=["source","target"]; 
-					node.args=["row","column"];
-				} else if(["sumRow"].includes(action)){
-					node.args=["row"];
-				} else if(["define"].includes(action)){
-					show=["target"]; 
-					node.args=["row","column"];
-				} else if(["defineEmpty"].includes(action)){
-					show=["target"]; 
-					node.args=["row","column"];
-				} else if(["swapRows"].includes(action)){
-					show=["source"]; 
-					node.args["row","rowTarget"];
-				} else if(["addRow2Row"].includes(action)){
-					show=["source"]; 
-					node.args["row","rowTarget","factor","start","end"];
-				} else if(["divideRow"].includes(action)){
-					show=["source"]; 
-					node.args["row","factor","start","end"];
-				} else if(["toArray"].includes(action)){
-					node.args["precision"];
-				};
+				node.properties.forEach(property=>$(".form-row-http-in-"+property).hide());
+				const actionDef=actions[action];
+				node.args=actionDef.args;
 				node.args.forEach(property=>$(".form-row-http-in-"+property).show());
-				show.forEach(property=>$(".form-row-http-in-"+property).show());
+				actionDef.show.forEach(property=>$(".form-row-http-in-"+property).show());
+
 			});
 		},
 		oneditsave: function() {
+			const node=this;
+			Object.keys(node.editors).forEach(property=>{
+				const editor=node.editors[property];
+				node[property]=editor.getValue();
+	    		editor.destroy();
+    			delete editor;
+			})
 		},
-		oneditresize: function() {
+		oneditcancel: function() {
+			const node=this;
+			Object.keys(node.editors).forEach(property=>{
+				const editor=node.editors[property];
+    			editor.destroy();
+    			delete editor;
+			});
 		},
 		resizeRule: function(file,newWidth) {
 		}
@@ -199,14 +194,9 @@
 		<input type="text" id="node-input-name" placeholder="Name">
 	</div>
 	<div class="form-row">
-		<label for="node-input-action" style="white-space: nowrap"><i class="icon-list"></i> Action</label>
+		<label for="node-input-action" style="white-space: nowrap"><i class="fa fa-cog"></i> Action</label>
 		<input type="text" id="node-input-action">
     </div>
-	<div class="form-row form-row-http-in-source1Propertyx hide">
-		<label for="node-input-source1Propertyx" style="white-space: nowrap"><i class="icon-bookmark"></i> Sourcex`</label>
-		<input type="text" id="node-input-source1Propertyx">
-		<input type="hidden" id="node-input-source1Propertyx-type">
-	</div>
 	<div id="node-inputDynamicBase"/>
 </script>
 
