@@ -80,35 +80,6 @@ module.exports = function (RED) {
 				node.send([null,msg]);
 				if(logger.active) logger.send({label:"msg error",node:node.id,exception:ex.message,stack:ex.stack});
 			}
-/*
-			msg.topic = node.topic;
-            if (node.payloadType !== 'flow' && node.payloadType !== 'global') {
-                try {
-                    if ( (node.payloadType === null && this.payload === "") || node.payloadType === "date") {
-                        msg.payload = Date.now();
-                    } else if (node.payloadType === null) {
-                        msg.payload = node.payload;
-                    } else if (node.payloadType === 'none') {
-                        msg.payload = "";
-                    } else {
-                        msg.payload = RED.util.evaluateNodeProperty(node.payload,node.payloadType,node,msg);
-                    }
-                    node.send(msg);
-                    msg = null;
-                } catch(err) {
-					node.error(err,msg);
-                }
-            } else {
-                RED.util.evaluateNodeProperty(node.payload,node.payloadType,node,msg, function(err,res) {
-                    if (err) {
-                        node.error(err,msg);
-                    } else {
-                        msg.payload = res;
-                        node.send(msg);
-                    }
-                });
-            }
-			*/
         });
     }
 
@@ -116,7 +87,7 @@ module.exports = function (RED) {
     	runtimeStop.apply(this);
     };
 
-//  RED.httpAdmin.post("/loadinjector/:id", RED.auth.needsPermission("inject.write"), function(req,res) {
+//	RED.httpAdmin.post("/loadinjector/:id", RED.auth.needsPermission("inject.write"), function(req,res) {
     RED.httpAdmin.get("/loadinjector/:id",  function(req,res) {
     	const node = RED.nodes.getNode(req.params.id);
     	if (node && node.type==="Load Injector") {
@@ -141,7 +112,3 @@ module.exports = function (RED) {
     });
     RED.nodes.registerType(logger.label,LoadInjectorNode);
 };
-
-
-
-

@@ -199,7 +199,13 @@ The levenshtein distance between two character strings.
 Inject messages for a set period of time with varying think time.
 Primary purpose is testing and useful for load/stress testing.
 
-![Load Injector](documentation/LoadInjector.JPG "Load Injector")
+Has 3 extra data types
+1. generated id - Unique id for each message
+2. generated data - string text generated using [dummy-json][3]
+3. generated json - json generated using [dummy-json][3]
+
+
+![Load Injector](documentation/loadInjector.png "Load Injector")
 
 Test example:
 
@@ -278,27 +284,14 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.19.0 Improve load injector, fix bug in test comparing buffers, add compression tranforms
+
 0.18.0 Add matrix node
 
 0.17.0 Add finished wire to load injector
 
-0.16.10 data analysis add eulcidean distance functions. Add array pairs
-
 0.16.0 fix data analysis variance and stddev, add sample, add tests
 
-0.14.2 fix general test flows. Add icon for data analysis
-
-0.14.1 fix capitalization issue with levenshtein Distance
-
-0.14.0 add xlsx transformer
-
-0.13.0 Confluence AVRO message converter
-
-0.12.0 added xml to json and json to xml.  Make snappy installed separately as can cause install issues 
-
-0.11.1 Fix spelling of AVRO. 
-
-0.11.0 Transform for AVRO and snappy.  Add JSON to CSV 
 
 
 # Author
@@ -318,3 +311,5 @@ Test/example flow in test/generalTest.json
 [6]: https://www.npmjs.com/package/avsc "avsc"
 
 [7]: https://www.npmjs.com/package/xlsx "xlsx"
+
+[8]: https://www.npmjs.com/package/dummy-json "dummy-json"

@@ -59,6 +59,8 @@ module.exports = {
      * The following property can be used to specify an additional directory to scan.
      */
     nodesDir: './',
+ //   nodesDir: '~/Desktop/node-red-contrib-prib-functions/',
+//    nodesDir: '/home/peter/Desktop/node-red-contrib-prib-functions/',
 
 /*******************************************************************************
  * Security

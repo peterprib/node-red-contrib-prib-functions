@@ -30,7 +30,8 @@
 			schemaType: {value:"json"},
 			skipLeading: {value:0},
 			skipTrailing: {value:0},
-			delimiter: {value:",",required:true}
+			delimiter: {value:",",required:true},
+			compressionType: {value:"gzip"}
 		},
 		inputs: 1,
 		outputs: 2,
@@ -43,11 +44,49 @@
 			return this.name ||this.actionSource+"=>"+this.actionTarget|| "Transform";
 		},
 		oneditprepare: function() {
-			const actionTarget=this.actionTarget
+			const actionTarget=this.actionTarget;
+			$("#node-input-actionSource").typedInput({type:"actionSource", types:[{
+				value: "actionSource",
+    			options: [
+				{ value: "Array", label: "Array"},
+				{ value: "AVRO", label: "AVRO"},
+				{ value: "Buffer", label: "Buffer"},
+				{ value: "Compressed", label: "Compressed"},
+				{ value: "Confluence", label: "Confluence"},
+				{ value: "CSVWithHeader", label: "CSV with header"},
+				{ value: "CSV", label: "CSV"},
+				{ value: "ISO8385", label: "ISO 8583"},
+				{ value: "JSON", label: "JSON"},
+				{ value: "String", label: "String"},
+				{ value: "snappy", label: "Snappy"},
+				{ value: "path", label: "Path"},
+				{ value: "XLSX", label: "XLSX (excel)"},
+				{ value: "XLSXObject", label: "XLSX object (excel)"},
+				{ value: "XML", label: "XML"}
+    			]
+			}]});
+			$("#node-input-compressionType").typedInput({type:"compression", types:[{
+			    value: "compression",
+    			options: [
+					{ value: "setGzip", label: "gzip"},
+					{ value: "setGzipSpeed", label: "gzip speed"},
+					{ value: "setGzipCompression", label: "gzip compression"},
+        			{ value: "setZlib", label: "zip"},
+        			{ value: "setZlibSpeed", label: "zip speed"},
+        			{ value: "setZlibCompression", label: "zip compression"},
+        			{ value: "setLzma", label: "Lempel-Ziv-Markov speed"},
+        			{ value: "setLzmaCompression", label: "Lempel-Ziv-Markov compression"},
+        			{ value: "setBrotli", label: "Brotli"},
+        			{ value: "setSnappy", label: "Snappy"},
+        			{ value: "setFlate", label: "Deflate/Inflate"}
+    			]
+			}]});
+
 			$("#node-input-actionSource").change(function() {
 				const actionSource=$(this).val();
 				$(".form-row-http-in-skip").hide();
 				$(".form-row-http-in-schema").hide();
+				$(".form-row-http-in-compressionType").hide();
 				if(!['CSV','CSVWithHeader'].includes(actionSource)) {
 					$(".form-row-http-in-csv").hide();
 				}
@@ -62,9 +101,18 @@
 					options["XLSXObject"]="XLSX object (excel)";
 					break;
 				case 'AVRO':
+				case 'Buffer':
+					options["Compressed"]="Compressed";
+					break;
 				case 'Confluence':
 					options["JSON"]="JSON";
 					$(".form-row-http-in-schema").show();
+					break;
+				case 'Compressed':
+					options["JSON"]="JSON";
+					options["String"]="String";
+					options["Buffer"]="Buffer";
+					$(".form-row-http-in-compressionType").show();
 					break;
 				case 'CSVWithHeader':
 					options["JSON"]="JSON";
@@ -82,8 +130,8 @@
 				case 'JSON':
 					options["Array"]="Array";
 					options["AVRO"]="AVRO";
+					options["Compressed"]="Compressed";
 					options["Confluence"]="Confluence";
-					options["CSVWithHeader"]="CSV with header";
 					options["CSV"]="CSV";
 					options["ISO8385"]="ISO 8583";
 					options["HTML"]="HTML";
@@ -108,6 +156,7 @@
 					options["Compress"]="Compress";
 					break;
 				case 'String':
+					options["Compressed"]="Compressed";
 					options["JSON"]="JSON";
 					break;
 				case 'XLSX':
@@ -145,10 +194,14 @@
 				if(!['CSV','CSVWithHeader'].includes(actionTarget)) {
 					$(".form-row-http-in-csv").hide();
 				}
+				$(".form-row-http-in-compressionType").hide();
 				switch (actionTarget) {
 				case 'AVRO':
 				case 'Confluence':
 					$(".form-row-http-in-schema").show();
+					break;
+				case 'Compressed':
+					$(".form-row-http-in-compressionType").show();
 					break;
 				case 'CSV':
 					$(".form-row-http-in-csv").show();
@@ -187,21 +240,7 @@
 	</div>
 	<div class="form-row">
 		<label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
-		<select id="node-input-actionSource" placeholder="actionSource">
-			<option value="Array">Array</option>
-			<option value="AVRO">AVRO</option>
-			<option value="Confluence">Confluence</option>
-			<option value="CSVWithHeader">CSV with header</option>
-			<option value="CSV">CSV</option>
-			<option value="ISO8385">ISO 8583</option>
- 			<option value="JSON">JSON</option> 
-			<option value="String">String</option> 
-			<option value="snappy">snappy</option> 
-			<option value="path">Path</option> 
-			<option value="XLSX">XLSX (excel)</option> 
-			<option value="XLSXObject">XLSX object (excel)</option> 
-			<option value="XML">XML</option> 
-		</select>
+		<input type="text" id="node-input-actionSource">
 	</div>
 	<div class="form-row">
 		<label for="node-input-actionTarget"><i class="fa fa-list-ul"></i> Target Type </label>
@@ -227,7 +266,10 @@
 		<input type="text" id="node-input-schema" style="width:70%">
 		<input type="hidden" id="node-input-schemaType">
 	</div>
-
+	<div class="form-row form-row-http-in-compressionType hide">
+		<label for="node-input-compressionType"><i class="fa fa-envelope"></i> <span data-i18n="common.label.compressionType"> Type </span></label>
+		<input type="text" id="node-input-compressionType">
+	</div>
 
 </script>
 
