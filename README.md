@@ -111,8 +111,12 @@ Transformations:
 *	Array to ISO8385
 *	Array to Messages
 *	Array to xlsx / xlsx object (excel uses [xlsx][7])  
-*	AVRO to JSON (uses [avsc][6]) 
+*	AVRO to JSON (uses [avsc][6])
+*   Buffer to comprossed 
 *	Confluence to JSON
+*   Compressed to Buffer
+*   Compressed to String
+*   COmpressed to JSON
 *	CSV to Array
 *	CSV to HTML
 *	CSV to Messages
