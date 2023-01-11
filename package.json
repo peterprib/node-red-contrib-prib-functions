@@ -4,7 +4,7 @@
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"avsc": "^5.6.1",
-		"compressionTool": "git+https://glpat-GiHPDRyrSnfzWpnhKe6B@gitlab.com/peter.prib/compressionTool.git",
+		"compressiontool": "*",
 		"fast-xml-parser": "^3.19.0",
 		"node-red-contrib-logger": "latest",
 		"node-red-contrib-noderedbase": ">=0.0.16",

@@ -1,6 +1,6 @@
 const logger = new (require("node-red-contrib-logger"))("transform");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
-const CompressionTool = require('compressionTool');
+const CompressionTool = require('compressiontool');
 
 const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
 	Buffer=require('buffer').Buffer,
