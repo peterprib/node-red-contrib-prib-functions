@@ -1,32 +1,27 @@
 function PCA() {
 }
 PCA.prototype.computeDeviationMatrix=function(matrix) {
-    return this.subtract(matrix, this.scale(this.multiply(this.unitSquareMatrix(matrix.length), matrix), 1 / matrix.length));
+    const columns=matrix.length;
+    return this.subtract(matrix, this.scale(this.multiply(this.getMatrix(columns,columns,1), matrix), 1/columns));
 }
 PCA.prototype.computeDeviationScores=function(deviation) {
     return this.multiply(this.transpose(deviation), deviation);
 }
 PCA.prototype.computeVarianceCovariance=function(devSumOfSquares, sample) {
-    return this.scale(devSumOfSquares, 1 / (devSumOfSquares.length - sample?1:0));
+    return this.scale(devSumOfSquares, 1/devSumOfSquares.length);
 }
-PCA.prototype.computeSVD=function((atrix){
-    const result = svd(matrix);
-    const eigenvectors = result.U;
-    const eigenvalues = result.S;
-    return eigenvalues.map((value,i)=>{
-        return {
-            eigenvalue:value,
-            vector:eigenvectors.map((vector,j)=>-vector[i]) //HACK prevent completely negative vectors
-        }
-    });
+PCA.prototype.computeVarianceCovarianceSample=function(devSumOfSquares) {
+    const factor=devSumOfSquares.length-1
+    return this.scale(devSumOfSquares, 1/factor);
 }
 //     Get reduced dataset after removing some dimensions
+
 PCA.prototype.computeAdjustedData=function(data, ...vectorObjs){
     const vectors = vectorObjs.map((v)=>v.vector);
     const matrixMinusMean = this.computeDeviationMatrix(data);
     const adjustedData = this.multiply(vectors, this.transpose(matrixMinusMean));
-    const unit = this.unitSquareMatrix(data.length);
-    const avgData = this.scale(multiply(unit, data), -1 / data.length); //NOTE get the averages to add back
+    const rows=data.length
+    const avgData =this.scale(multiply(this.getMatrix(rows,rows,1),data), -1/rows); //NOTE get the averages to add back
     return {
         adjustedData: adjustedData,
         formattedAdjustedData:formatData(adjustedData, 2),
@@ -42,13 +37,23 @@ PCA.prototype.computeOriginalData=function(adjustedData, vectors, avgData) {
         originalData: originalWithMean,
         formattedOriginalData: this.formatData(originalWithMean, 2)
     }
+}
 PCA.prototype.computePercentageExplained=function(vectors, ...selected) {
     const total = vectors.map((v)=>v.eigenvalue).reduce((a,b)=>a+b);
     const explained = selected.map((v)=>v.eigenvalue).reduce((a,b)=>a+b);
     return (explained / total);
 }
 PCA.prototype.getEigenVectors=function(data) {
-   return this.computeSVD(this.computeVarianceCovariance(this.computeDeviationScores(this.computeDeviationMatrix(data)), false));
+    const matrix=this.computeVarianceCovariance(this.computeDeviationScores(this.computeDeviationMatrix(data)))
+    const result = this.svd(matrix);
+    const eigenvectors = result.U;
+    const eigenvalues = result.S;
+    return eigenvalues.map((value,i)=>{
+        return {
+            eigenvalue:value,
+            vector:eigenvectors.map((vector,j)=>-vector[i]) //HACK prevent completely negative vectors
+        }
+    });
 }
 PCA.prototype.analyseTopResult=function(data){
     const eigenVectors = this.getEigenVectors(data);
@@ -60,19 +65,21 @@ PCA.prototype.formatData=function(data, precision) {
     const factor= Math.pow(10, precision || 2);
     return data.map((d,i)=>d.map((n)=>Math.round(n * factor) / factor))
 }
-PCA.prototype.testMatrix=function(a){
-    if(!a[0] || !a.length) throw Error("Not matrix")
-}
+PCA.prototype.testIsMatrix=(a)=>{if(!a[0] || !a.length) throw Error("Not matrix")}
 PCA.prototype.multiply=function(a, b){
-    this.testMatrix(a);
-    this.testMatrix(b);
-    if(b.length !== a[0].length) throw new Error('Columns in A should be the same as the number of rows in B');
-    const product = [];
-    for(let i = 0; i < a.length; i++) {
-        product[i] = []; //initialize a new row
-        for (var j = 0; j < b[0].length; j++) {
-            for (var k = 0; k < a[0].length; k++) {
-                (product[i])[j] = !!(product[i])[j] ? (product[i])[j] + (a[i])[k] * (b[k])[j] : (a[i])[k] * (b[k])[j];
+    this.testIsMatrix(a);
+    this.testIsMatrix(b);
+    const rows=a.length;
+    const columns=b.length;
+    if(rows!==b[0].length) throw new Error('Columns in B should be the same as the number of rows in A');
+    if(columns!==a[0].length) throw new Error('Columns in A should be the same as the number of rows in B');
+    const product=this.getMatrix(rows,columns,0);
+    for(let i=0; i<rows; i++) {
+        const row=a[i]
+        const productRow=product[i];
+        for(let j=0; j<rows; j++) {
+            for (let k=0; k < columns; k++) {
+                productRow[j]+=row[k]*b[k][j];
             }
         }
     }
@@ -80,41 +87,47 @@ PCA.prototype.multiply=function(a, b){
 }
 PCA.prototype.subtract=function(a,b) {
     if(!(a.length === b.length && a[0].length === b[0].length)) throw Error('Both A and B should have the same dimensions');
-    const result=[];
-    for(let i=0;i< a.length;i++){
-        result[i]=[];
-        for (let j = 0; j < b[0].length; j++) {
-            (result[i])[j] = (a[i])[j] - (b[i])[j];
-       }
-    }
-    return result;
+    return this.map(a,(cell,row,column)=>a[row][column]-b[row][column])
 }
-PCA.prototype.scale=function(matrix, factor) {
-    const result = [];
-    for(let i = 0; i < matrix.length; i++) {
-        result[i] = [];
-        for(let j = 0; j < matrix[0].length; j++) {
-            (result[i])[j] = (matrix[i])[j] * factor;
-        }
-    }
-    return result;
+PCA.prototype.map=function(matrix,call=(c)=>c) {
+    return matrix.map(
+        (row,ri)=>r.map(
+            (cell,ci)=>call(cell,ri,ci,matrix)
+        )
+    )
 }
-PCA.prototype.unitSquareMatrix=function(rows) {
-    const result = [];
-    for(let i = 0; i < rows; i++) {
-        result[i] = [];
-        for (var j = 0; j < rows; j++) {
-            (result[i])[j] = 1;
-        }
-    }
-    return result;
+PCA.prototype.clone=PCA.prototype.map
+PCA.prototype.mapTranspose=function(matrix,call=(c)=>c) {
+    return matrix[0].map(
+        (column,ci)=>column.map(
+            (row,ri)=>call(row[ri],ci,ri,matrix)
+        )
+    )
 }
-PCA.prototype.transpose=function(matrix) {
-    const operated = this.clone(matrix);
-    return operated[0].map((m,c)=>matrix.map((r)=>r[c]));
+PCA.prototype.transpose=PCA.prototype.mapTranspose
+PCA.prototype.forEachRow=function(matrix,call) {
+    matrix.forEach((row,RowIndex)=>call(row,frowIndex,matrix))
+    return this
 }
-PCA.prototype.clone=function(m) {
-    return m.map(r=>r.map(c=>c));
+PCA.prototype.forEachCell=function(matrix,call) {
+    matrix.forEach(
+        (row,rowIndex)=>row.forEach(
+            (cell,columnIndex)=>call(cell,rowIndex,columnIndex,matrix)
+        )
+    )
+    return this
+}
+PCA.prototype.forEachSetCell=function(matrix,call) {
+    matrix.forEach(
+        (row,rowIndex)=>row.forEach(
+            (cell,columnIndex)=>matrix=call(rowIndex,columnIndex,matrix)
+        )
+    )
+    return this
+}
+PCA.prototype.scale=(matrix,factor)=>this.map(matrix,c=>c*factor);
+PCA.prototype.getMatrix=function(rows=2,columns=rows,fill=0) {
+    return Array(rows).map(row=>Array(columns).fill(fill));
 }
 PCA.prototype.svd=function(A) {
         let temp;
