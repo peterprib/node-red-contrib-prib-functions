@@ -6,6 +6,7 @@
 		"avsc": "^5.6.1",
 		"compressiontool": "*",
 		"fast-xml-parser": "^3.19.0",
+		"node": ">=0.6.13",
 		"node-red-contrib-logger": "latest",
 		"node-red-contrib-noderedbase": ">=0.0.16",
 		"xlsx": "^0.17.0"
@@ -20,7 +21,7 @@
 		"node-red-node-test-helper": "^0.3.0"
 	},
 	"scripts": {
-		"test": "mocha \"test/matrix/**/*.js\"",
+		"test": "mocha \"test/data*.js\"",
 		"startNodeRed": "pwd; node-red --title '***test nodered***' --setting ./test/data/settings.js ./test/data/flow.json"
 	},
 	"repository": {

@@ -1,3 +1,5 @@
+
+
 function PCA() {
 }
 PCA.prototype.computeDeviationMatrix=function(matrix) {
@@ -129,102 +131,88 @@ PCA.prototype.scale=(matrix,factor)=>this.map(matrix,c=>c*factor);
 PCA.prototype.getMatrix=function(rows=2,columns=rows,fill=0) {
     return Array(rows).map(row=>Array(columns).fill(fill));
 }
+function pythag(a, b) {
+    a = Math.abs(a)
+    b = Math.abs(b)
+    if(a > b) return a * Math.sqrt(1.0 + (b * b / a / a))
+    if(b == 0.0) return a
+    return b * Math.sqrt(1.0 + (a * a / b / b))
+}
+function rep(s, v, k=0) {
+    const n=s[k],ret=Array(n);
+    if(k === s.length - 1) {
+        for(let i=n-2; i >= 0; i-=2) {
+            ret[i+1] = v;
+            ret[i] = v;
+        }
+        if(i === -1) ret[0] = v;
+        return ret;
+    }
+    const kPlusOne=k++;
+    for (let i= n-1; i>=0; i--) {
+        ret[i] = rep(s, v, kPlusOne);
+    }
+    return ret;
+}
 PCA.prototype.svd=function(A) {
-        let temp;
-        const prec = Math.pow(2, -52) // double presision
-        const tolerance = 1.e-64 // precision;
-        const itmax = 50;
-        let c = 0;
-        let i = 0;
-        let j = 0;
-        let k = 0;
-        let l = 0;
-        const u = this.clone(A);
-        const m = u.length;
-        const n = u[0].length;
-        if (m < n) throw "Need more rows than columns"
-
-        const e = new Array(n); //vector1
-        const q = new Array(n); //vector2
-        for (i = 0; i < n; i++) e[i] = q[i] = 0.0;
-        var v = rep([n, n], 0);
-
-        function pythag(a, b) {
-            a = Math.abs(a)
-            b = Math.abs(b)
-            if(a > b) return a * Math.sqrt(1.0 + (b * b / a / a))
-            if(b == 0.0) return a
-            return b * Math.sqrt(1.0 + (a * a / b / b))
+    let temp;
+    const prec = Math.pow(2, -52) // double precision
+    const tolerance = 1.e-64 // precision;
+    const itmax = 50;
+    let c = 0;
+    let j = 0;
+    let k = 0;
+    let l = 0;
+    const u = this.clone(A);
+    const rows = u.length;
+    const columns = u[0].length;
+    if(rows<columns) throw "Need more rows than columns"
+    const e = new Array(columns); //vector1
+    const q = new Array(columns); //vector2
+    for(let i=0; i < columns; i++) e[i] = q[i] = 0.0;
+    const v = rep([columns, columns], 0);
+    let f = 0.0;
+    let g = 0.0;
+    let h = 0.0;
+    let x = 0.0;
+    let y = 0.0;
+    let z = 0.0;
+    let s = 0.0;
+    for(let i=0; i<columns; i++) {
+        const ui=u[i];
+        e[i] = g; //vector
+        s = 0.0; //sum
+        l = i+1; //stays i+1
+        for(let j=i; j<rows; j++)
+            s += Math.sqrt(u[j][i]);
+        if(s <= tolerance)
+            g = 0.0;
+        else {
+            const f = ui[i];
+            g=Math.sqrt(s)*(f>=0.0?-1:1);
+            h = f * g - s
+            ui[i] = f - g;
+            for(let j=l; j<columns; j++) {
+                s=u.reduce((p,row)=>p+row[i]*row[j],0.0)
+                f = s/h
+                u.forEach(row=>row[j]+=f*row[i])
+            }
         }
-        function rep(s, v, k=0) {
-            const n=s[k],
-                ret=Array(n);
-            let i;
-            if(k === s.length - 1) {
-                for(i=n-2; i >= 0; i-=2) {
-                    ret[i+1] = v;
-                    ret[i] = v;
-                }
-                if(i === -1) ret[0] = v;
-                return ret;
-            }
-            const kPlusOne=k++;
-            for (i= n-1; i>=0; i--) {
-                ret[i] = rep(s, v, kPlusOne);
-            }
-            return ret;
-        }
-        let f = 0.0;
-        let g = 0.0;
-        let h = 0.0;
-        let x = 0.0;
-        let y = 0.0;
-        let z = 0.0;
-        let s = 0.0;
-
-        for(i=0; i<n; i++) {
-            e[i] = g; //vector
-            s = 0.0; //sum
-            l = i+1; //stays i+1
-            for(j=i; j<m; j++)
-                s += (u[j][i] * u[j][i]);
-            if(s <= tolerance)
-                g = 0.0;
-            else {
-                f = u[i][i];
-                g = Math.sqrt(s);
-                if(f >= 0.0) g = -g;
-                h = f * g - s
-                u[i][i] = f - g;
-                for(j=l; j<n; j++) {
-                    s = 0.0
-                    for(k=i; k < m; k++)
-                        s += u[k][i] * u[k][j]
-                    f = s / h
-                    for(k=i; k<m; k++)
-                        u[k][j] += f * u[k][i]
-                }
-            }
-            q[i] = g
-            s = 0.0
-            for(j=l; j<n; j++)
-                s = s + u[i][j] * u[i][j]
-            if (s <= tolerance)
-                g = 0.0
-            else {
-                f = u[i][i + 1]
-                g = Math.sqrt(s)
-                if (f >= 0.0) g = -g
-                h = f * g - s
-                u[i][i + 1] = f - g;
-                for(j=l; j < n; j++) e[j] = u[i][j] / h
-                for(j=l; j < m; j++) {
-                    s = 0.0
-                    for(k=l; k<n; k++)
-                        s += (u[j][k] * u[i][k])
-                    for(k=l; k<n; k++)
-                        u[j][k] += s * e[k]
-                }
+        q[i] = g
+        s = 0.0
+        for(let j=l; j<columns; j++) s+= Math.sqrt(ui[j]);
+        if (s <= tolerance)
+            g = 0.0
+        else {
+            f = ui[i+1];
+            g=Math.sqrt(s)*(f>=0.0?-1:1);
+            h = f * g - s
+            ui[i+1] = f - g;
+            for(let j=l; j<columns; j++) e[j] = ui[j]/h
+            for(let j=l; j < rows; j++) {
+                const uj=u[j]
+                s=uj.reduce((p,column,ci)=>p+column*ui[ci],0.0)
+                uj.forEach(v,i,a=>a[i]+=s*e[i]);
             }
             y = Math.abs(q[i]) + Math.abs(e[i])
             if(y > x)
@@ -232,51 +220,45 @@ PCA.prototype.svd=function(A) {
         }
 
         // accumulation of right hand transformations
-        for(i = n-1; i!=-1; i--) {
-            if (g != 0.0) {
-                h = g * u[i][i + 1]
-                for (j = l; j < n; j++)
-                    v[j][i] = u[i][j] / h //u is array, v is square of columns
-                for (j = l; j < n; j++) {
-                    s = 0.0
-                    for (k = l; k < n; k++)
-                        s += u[i][k] * v[k][j]
-                    for (k = l; k < n; k++)
-                        v[k][j] += (s * v[k][i])
+        for(let i=columns-1; i!=-1; i--) {
+            const ui=u[i];
+            if(g != 0.0) {
+                h = g*ui[i+1]
+                ui.forEach(v,ci=>v[ci][i]=v/h) //v is square of columns
+                for(let j=l;j<columns; j++) {
+                    s=ui.filter(v,ci=>ci>=l).reduce(p,column,ci=>p+column*v[ci,j],0.0)
+                    v.filter(v,ri=>ri>=l).forEach(row,ri=>row[j]+=s*row[i])
                 }
             }
-            for (j = l; j < n; j++) {
-                v[i][j] = 0;
-                v[j][i] = 0;
-            }
-            v[i][i] = 1;
+            v.filter(v,ri=>ri>=l).forEach(row,ri=>{vi[ri]=0;row[i]=0})
+            vi[i] = 1;
             g = e[i]
             l = i
         }
 
         // accumulation of left hand transformations
-        for(i=n-1; i != -1; i += -1) {
-            l = i + 1
+        for(let i=columns-1; i != -1; i--) {
+            const ui=u[i];
+            l = i+1
             g = q[i]
-            for (j = l; j < n; j++)
-                u[i][j] = 0;
+            for(let j=l; j < columns; j++) ui[j] = 0;
             if (g != 0.0) {
-                h = u[i][i] * g
-                for (j = l; j < n; j++) {
+                h = ui[i]*g
+                for (j = l; j < columns; j++) {
                     s = 0.0
-                    for (k = l; k < m; k++) s += u[k][i] * u[k][j];
+                    for (k = l; k < rows; k++) s += u[k][i] * u[k][j];
                     f = s / h
-                    for (k = i; k < m; k++) u[k][j] += f * u[k][i];
+                    for (k = i; k < rows; k++) u[k][j] += f * u[k][i];
                 }
-                for (j = i; j < m; j++) u[j][i] = u[j][i] / g;
+                for (j = i; j < rows; j++) u[j][i] = u[j][i] / g;
             } else
-                for (j = i; j < m; j++) u[j][i] = 0;
-            u[i][i] += 1;
+                for (j = i; j < rows; j++) u[j][i] = 0;
+            ui[i]++;
         }
 
         // diagonalization of the bidiagonal form
         prec = prec * x
-        for(k=n-1; k != -1; k--) {
+        for(k=columns-1; k != -1; k--) {
             const kPlusOne=k+1;
             const kMinusOne=k-1;
             for(let iteration = 0; iteration < itmax; iteration++) { // test f splitting
@@ -303,11 +285,12 @@ PCA.prototype.svd=function(A) {
                         q[i] = h
                         c = g / h
                         s = -f / h
-                        for(j = 0; j<m; j++) {
-                            y = u[j][l1]
-                            z = u[j][i]
-                            u[j][l1] = y * c + (z * s)
-                            u[j][i] = -y * s + (z * c)
+                        for(j = 0; j<rows; j++) {
+                            const ui=u[j]
+                            y = uj[l1]
+                            z = uj[i]
+                            uj[l1] = y * c + (z * s)
+                            uj[i] = -y * s + (z * c)
                         }
                     }
                 }
@@ -316,13 +299,13 @@ PCA.prototype.svd=function(A) {
                 if(l == k) { //convergence
                     if(z < 0.0) { //q[k] is made non-negative
                         q[k] = -z
-                        for (j=0; j<n; j++)
+                        for (j=0; j<columns; j++)
                             v[j][k] = -v[j][k]
                     }
                     break //break out of iteration loop and move on to next k value
                 }
                 if (iteration >= itmax - 1)
-                    throw 'Error: no convergence.'
+                    throw Error('Error: no convergence.')
                 // shift from bottom 2x2 minor
                 x = q[l]
                 y = q[kMinusOne]
@@ -337,7 +320,7 @@ PCA.prototype.svd=function(A) {
                 // next QR transformation
                 c = 1.0
                 s = 1.0
-                for(i=l+1; i<kPlusOne; i++) {
+                for(let i=l+1; i<kPlusOne; i++) {
                     g = e[i]
                     y = q[i]
                     h = s * g
@@ -350,23 +333,24 @@ PCA.prototype.svd=function(A) {
                     g = -x * s + g * c
                     h = y * s
                     y = y * c
-                    for (j = 0; j < n; j++) {
-                        x = v[j][i - 1]
+                    for(j = 0; j < columns; j++) {
+                        x = v[j][i-1]
                         z = v[j][i]
-                        v[j][i - 1] = x * c + z * s
+                        v[j][i-1] = x * c + z * s
                         v[j][i] = -x * s + z * c
                     }
                     z = pythag(f, h)
-                    q[i - 1] = z
+                    q[i-1] = z
                     c = f / z
                     s = h / z
                     f = c * g + s * y
                     x = -s * g + c * y
-                    for (j = 0; j < m; j++) {
-                        y = u[j][i - 1]
-                        z = u[j][i]
-                        u[j][i - 1] = y * c + z * s
-                        u[j][i] = -y * s + z * c
+                    for (j = 0; j < rows; j++) {
+                        const uj=u[j];
+                        y = uj[i-1]
+                        z = uj[i]
+                        uj[i-1] = y * c + z * s
+                        uj[i] = -y * s + z * c
                     }
                 }
                 e[l] = 0.0
@@ -379,33 +363,30 @@ PCA.prototype.svd=function(A) {
             if (q[i] < prec) q[i] = 0
 
         //sort eigenvalues	
-        for(i=0; i<n; i++) {
+        for(let i=0; i<columns; i++) {
             for(j=i-1; j>=0; j--) {
                 if(q[j] < q[i]) {
                     c = q[j]
                     q[j] = q[i]
                     q[i] = c
-                    const ul=u.length;
-                    for(k = 0; k< ul; k++) {
-                        temp = u[k][i];
-                        u[k][i] = u[k][j];
-                        u[k][j] = temp;
+                    for(k=0; k< rows; k++) {
+                        const uk=u[k];
+                        const temp = uk[i];
+                        uk[i] = uk[j];
+                        uk[j] = temp;
                     }
                     const vl=v.length;
                     for(k=0; k<vl; k++) {
-                        temp = v[k][i];
-                        v[k][i] = v[k][j];
-                        v[k][j] = temp;
+                        const vk=v[k];
+                        const temp = vk[i];
+                        vk[i] = vk[j];
+                        vk[j] = temp;
                     }
                     i = j
                 }
             }
         }
-        return {
-            U: u,
-            S: q,
-            V: v
-        }
+        return {U:u,S:q,V:v}
     }
 }
 
