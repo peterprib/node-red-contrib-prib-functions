@@ -14,7 +14,7 @@ function Matrix(rows,columns,fill) {
 		return this;
 	} 
 	if(rows instanceof Object) {
-			Object.assign(this,rows);
+		Object.assign(this,rows);
 	} else {
 		this.rows=rows;
 		this.columns=columns;
@@ -612,49 +612,3 @@ Matrix.prototype.transpose=function(){
 }
 
 module.exports=Matrix;
-
-/*
-function setDataPoint(value,term,node,dp) {
-		Object.assign(dp,{
-			avg:0,
-			count:0, =rows
-			movingSum:0,
-			movingSumSquared:0,
-			movingSumCubed:0,
-			outlier:false,
-			sum:0,
-			sumSquared:0,
-			sumCubed:0,
-			term:term,
-			weightedMovingSum:0,
-			exponentialWeightedMoving:[new EMA(0.25),new EMA(0.5),new EMA(0.75)]
-		});
-	};
-	dp.max=Math.max(dp.max||value,value);
-	dp.min=Math.min(dp.min||value,value);
-	dp.range=dp.max-dp.min;
-	dp.sum+=value;
-	dp.sumSquared+=Math.pow(value,2);
-	dp.sumCubed+=Math.pow(value,3);
-	dp.movingSum+=value-removedValue;
-	dp.movingSumSquared+=Math.pow(value,2)-Math.pow(removedValue,2);
-	dp.movingSumCubed+=Math.pow(value,3)-Math.pow(removedValue,3);
-//	dp.avg=dp.sum/this.rows;
-	const avg=dp.avg;
-	dp.normalised=dp.range ? (value-avg)/dp.range : 0;
-//	dp.movingAvg=dp.movingSum/values.length;
-//	dp.variance=dp.sumSquared/count - Math.pow(avg,2);
-//	dp.stdDev=Math.sqrt(dp.variance);
-	dp.movingVariance=dp.movingSumSquared/values.length - Math.pow(dp.movingAvg,2);
-	dp.movingStdDev=Math.sqrt(dp.movingVariance);
-	dp.median=functions.median(values);
-	dp.standardized=( (value-avg)/dp.stdDev )||0;
-	dp.movingStandardized=( (value-dp.movingAvg)/dp.movingStdDev )||0;
-	dp.skewness=(dp.sumCubed-3*avg*dp.variance-Math.pow(avg,3))/dp.variance*dp.stdDev;
-	dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
-	dp.outlier=node.outliersFunction(node,dp,value);
-	dp.weightedMovingSum+=count*value;
-	dp.weightedMovingAvg=(dp.weightedMovingAvg*2/count)/(count+1);
-	dp.exponentialWeightedMoving.forEach(c=>c.sample(value));
-}
-*/

@@ -441,6 +441,23 @@ function evalFunction(id,mapping){
 function is(node,value){
 	return node.actionSource==value||node.actionTarget==value;
 }
+let jsonata;
+function JSONataTransform(data,ok,error){
+/*
+(async () => {
+    return result = await expression.evaluate(data);
+})()
+*/
+
+	this.transformFuncionCompiled.evalFunction(data,{},(error, result) => {
+		if(error) {
+		  console.error(error);
+		  return;
+		}
+		console.log("Finished with", result);
+	});
+}
+
 module.exports = function (RED) {
 	function transformNode(n) {
 		RED.nodes.createNode(this,n);
@@ -513,6 +530,16 @@ module.exports = function (RED) {
 				}
 			}
 		}
+		if(node.transformFuncion && node.actionSource=="JSON" || node.actionTarget=="JSON") {
+			try{
+				if(!jsonata) jsonata=require('jsonata')
+				node.transformFuncionCompiled = jsonata(node.transformFuncion);
+			} catch (ex) {
+				error(node,ex,"Transform function error");
+				return;
+			}
+		}
+
 		const typeValidate="invalid"+node.actionSource;
 		node.invalidSourceType=typeValidate in functions &! ["XLSX","XLSXObject"].includes(node.actionTarget)?functions[typeValidate]:(()=>false);
 		try {

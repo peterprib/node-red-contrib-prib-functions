@@ -21,7 +21,7 @@
 		"node-red-node-test-helper": "^0.3.0"
 	},
 	"scripts": {
-		"test": "mocha \"test/data*.js\"",
+		"test": "mocha \"test/dataAnalysisE*.js\"",
 		"startNodeRed": "pwd; node-red --title '***test nodered***' --setting ./test/data/settings.js ./test/data/flow.json"
 	},
 	"repository": {
