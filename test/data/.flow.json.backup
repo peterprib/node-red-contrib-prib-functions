@@ -2965,13 +2965,17 @@
         "runtime": "30",
         "payload": "",
         "payloadType": "date",
+        "topic": "",
+        "topicType": "str",
         "x": 190,
         "y": 100,
         "wires": [
             [
                 "df6c40ba.fb661"
             ],
-            []
+            [
+                "dd8f915be7585f46"
+            ]
         ]
     },
     {
@@ -2985,11 +2989,27 @@
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 460,
+        "x": 600,
         "y": 100,
         "wires": [
             []
         ]
+    },
+    {
+        "id": "dd8f915be7585f46",
+        "type": "debug",
+        "z": "cf804fb2.6df8c",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "false",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 580,
+        "y": 160,
+        "wires": []
     },
     {
         "id": "c4e5d98c.1db6f8",
