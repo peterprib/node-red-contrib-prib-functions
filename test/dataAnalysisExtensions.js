@@ -7,7 +7,7 @@ describe('generatedVectorFunction', function(){
 	const generateVectorFunction=require("../dataAnalysis/generateVectorFunction.js");
 	it("error gen", function(done){
 		assert.throws(()=>generateVectorFunction({
-			code:"=an error ",
+			code:"=a deliberate error in test",
 			args:["arg1,arg2"]
 		}),Error("code failed"))
 		done();
@@ -62,15 +62,14 @@ describe('generatedVectorFunction', function(){
 	});
 });	
 describe('generateMatrixFunction', function(){
-	const generateMatrixFunction=require("../dataAnalysis/generateMatrixFunction.js");
-;
+	const generateMatrixFunction=require("../dataAnalysis/generateMatrixFunction.js")
 	const breakLogic="\nconsole.log({loop:loop});if(--loop<0) throw Error('break loop');\n"
 	const debugScript="console.log({rowOffset:rowOffset,rowEndOffset:rowEndOffset});"+
 			"console.log({columnOffset:columnOffset,columnEndOffset:columnEndOffset});"+
 			"console.log({elementOffset:elementOffset,matrixEndOffset:matrixEndOffset,element:element});"
 	it("error gen", function(done){
 		assert.throws(()=>generateMatrixFunction({
-				code:"=an error ",
+				code:"=a deliberate error in test ",
 				args:["arg1,arg2"]
 			}),Error("code failed"))
 		done();
@@ -102,7 +101,14 @@ describe('generateMatrixFunction', function(){
 			debug:true
 		})
 		const vector=new Float32Array([1,2,3,4,5,6])
-		forEach(vector,3,2)
+		try{
+			forEach(vector,3,2)
+		} catch(ex){
+			console.error("error: "+ex.message)
+			console.error(ex.stack)
+			console.error(forEach.toString())
+			done("failed")
+		}
 		assert.deepEqual(vector,new Float32Array([0,1,10,11,20,21]))
 		done();
 	});
@@ -306,9 +312,9 @@ describe('pca', function(){
 
 	it("multiplyMatrix", function(done){
 		const sumVector=generateVectorFunction({
-			code:"returnValue+=vector[index]*matrix[index][column]",
+			code:"returnValue+=vector[index]*matrix[index][column]; console.log({row:index,column:column,returnValue:returnValue})",
 			args:["matrix","column"],
-			returnValue:0
+			returnValue:"0"
 		})
 		const multiplyMatrix=generateMatrixFunction({
 			code:"setElement(sumVector(element,bMatrix,columnOffset));",
@@ -317,7 +323,7 @@ describe('pca', function(){
 			returnValue:"()=>getMatrix()"
 		})
 		const matrix=[[1,2],[3,4],[5,6]];
-		console.log(multiplyMatrix(matrix,[[1,1],[1,1]]));
+		console.log(multiplyMatrix(matrix,3,2,[[1,1],[1,1]]));
 		done();
 	})
 });

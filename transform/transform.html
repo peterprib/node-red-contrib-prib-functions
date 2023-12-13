@@ -57,6 +57,8 @@
 				{ value: "CSV", label: "CSV"},
 				{ value: "ISO8385", label: "ISO 8583"},
 				{ value: "JSON", label: "JSON"},
+				{ value: "npy", label: "npy"},
+				{ value: "NumPyObject", label: "NumPy Obect"},
 				{ value: "String", label: "String"},
 				{ value: "snappy", label: "Snappy"},
 				{ value: "path", label: "Path"},
@@ -137,11 +139,21 @@
 					options["HTML"]="HTML";
 					options["JSON"]="JSON";
 					options["Messages"]="Messages";
+					options["npy"]="npy";
+					options["NumPyObject"]="NumPy Object";
 					options["String"]="String";
 					options["XLSX"]="XLSX";
 					options["XLSXObject"]="XLSX Object";
 					options["XML"]="XML";
 					break;
+				case 'npy':
+					options["JSON"]="JSON";
+					options["NumPyObject"]="NumPy Object";
+					break;
+				case 'NumPyObject':
+					options["JSON"]="JSON";
+					break;
+				
 				case 'path':
 					options["Basename"]="basename";
 					options["Dirname"]="dirname";

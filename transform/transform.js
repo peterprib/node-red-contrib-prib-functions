@@ -1,7 +1,7 @@
 const logger = new (require("node-red-contrib-logger"))("transform");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 const CompressionTool = require('compressiontool');
-
+const NumPy = require("./NumPy.js")
 const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
 	Buffer=require('buffer').Buffer,
 	os=require('os'),
@@ -332,6 +332,7 @@ const functions={
 		}
 		return data;
 	},
+	JSONToAVRO: (RED,node,msg,data)=>node.avroTransformer.toBuffer(data), // Encoded buffer.
 	JSONToCompressed: (RED,node,msg,data)=>compressor.compress(JSON.stringify(data),
 		(compressed)=>{
 			node.setData(RED,node,msg,compressed);
@@ -343,7 +344,6 @@ const functions={
 	),
 	JSONToConfluence:JSONToConfluence,
 	JSONToCSV: (RED,node,msg,data)=>Array2csv(node,data),
-	JSONToAVRO: (RED,node,msg,data)=>node.avroTransformer.toBuffer(data), // Encoded buffer.
 	JSONToHTML: (RED,node,msg,data,level=0)=>{
 		if(Array.isArray(data)) {
 			return data.length?"<table><tr>"+data.map((r)=>functions.JSONToHTML(RED,node,msg,r,++level)).join("</tr><tr>")+"</tr><table>":"";
@@ -375,10 +375,15 @@ const functions={
 			node.send(newMsg);
 		}
 	},
+	JSONTonpy: (RED,node,msg,data)=>new NumPy(data).toNpyBuffer(),
+	JSONToNumPyObject: (RED,node,msg,data)=>new NumPy(data),
 	JSONToString: (RED,node,msg,data)=>JSON.stringify(data),
 	JSONToXLSX:JSONToXLSX,
 	JSONToXLSXObject:JSONToXLSXObject,
 	JSONToXML: (RED,node,msg,data)=>json2xmlParser.parse(data),
+	npyToJSON: (RED,node,msg,data)=>new NumPy(data).toSerializable(),
+	npyToNumPyObject: (RED,node,msg,data)=>new NumPy(data),
+	NumPyObjectToJSON: (RED,node,msg,data)=> data.toSerializable(),
 	StringToCompressed: (RED,node,msg,data)=>compressor.compress(data,
 		(compressed)=>{
 			node.setData(RED,node,msg,compressed);
@@ -530,7 +535,7 @@ module.exports = function (RED) {
 				}
 			}
 		}
-		if(node.transformFuncion && node.actionSource=="JSON" || node.actionTarget=="JSON") {
+		if(node.transformFuncion && ( node.actionSource=="JSON" || node.actionTarget=="JSON" )) {
 			try{
 				if(!jsonata) jsonata=require('jsonata')
 				node.transformFuncionCompiled = jsonata(node.transformFuncion);

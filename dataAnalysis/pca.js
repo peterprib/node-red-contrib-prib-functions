@@ -132,8 +132,15 @@ function mapMatrix(matrix,callFunction) {
     return this.cloneMatrix(matrix);
 };
 
-const mapVector=generateVectorFunction("vector[index]=fromVector[index]",["fromVector"])
-const cloneVector=generateVectorFunction("returnValue[index]=vector[index]",["type=Array"],)
+const mapVector=generateVectorFunction({
+    code:"vector[index]=fromVector[index]",
+    args:["fromVector"],
+});
+
+const cloneVector=generateVectorFunction({
+    code:"returnValue[index]=vector[index]",
+    args:["type=Array"],
+});
 
 function cloneMatrix(matrix){
     const columns=matrix.length
@@ -146,7 +153,10 @@ function cloneMatrix(matrix){
     }
     return result;
 }
-const transposeVector=generateVectorFunction("vector[index]=fromVector[index][column]",["fromVector","column"])
+const transposeVector=generateVectorFunction({
+    code:"vector[index]=fromVector[index][column]",
+    args:["fromVector","column"],
+});
 //const mapVector=generateVectorFunction("returnValue[index]=vector[index]",[])
 PCA.prototype.map=mapMatrix;
 PCA.prototype.cloneMatrix=cloneMatrix;

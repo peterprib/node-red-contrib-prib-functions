@@ -2082,6 +2082,82 @@
         ]
     },
     {
+        "id": "4442914142aea731",
+        "type": "file in",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "int2matrix2x3.npy",
+        "filename": "test/data/int2matrix2x3.npy",
+        "filenameType": "str",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 310,
+        "y": 640,
+        "wires": [
+            [
+                "d9a04503.7fc3a8",
+                "b1411e5351c0347e"
+            ]
+        ]
+    },
+    {
+        "id": "e8f8458f9e31476a",
+        "type": "inject",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 640,
+        "wires": [
+            [
+                "4442914142aea731"
+            ]
+        ]
+    },
+    {
+        "id": "b1411e5351c0347e",
+        "type": "transform",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "actionSource": "npy",
+        "actionTarget": "JSON",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 570,
+        "y": 640,
+        "wires": [
+            [
+                "d9a04503.7fc3a8"
+            ],
+            []
+        ]
+    },
+    {
         "id": "4bed6788.398bc8",
         "type": "Load Injector",
         "z": "cf804fb2.6df8c",

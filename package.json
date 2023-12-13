@@ -22,6 +22,7 @@
 	},
 	"scripts": {
 		"test": "mocha \"test/dataAnalysisE*.js\"",
+		"test2": "mocha \"test/transformNum*.js\"",
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'"
 	},
 	"repository": {

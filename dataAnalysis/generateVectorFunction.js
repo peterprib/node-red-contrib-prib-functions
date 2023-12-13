@@ -3,7 +3,7 @@ function generatedVectorFunction(arg1) {
     Object.assign(this,{
         args:[],
         debug:false,
-        returnValue:this
+        returnValue:"this"
     },arg1);
     const extendedArgs=["startOffset=0","endOffset=vector.length-1,returnValue="+this.returnValue]
     const functionCode=
