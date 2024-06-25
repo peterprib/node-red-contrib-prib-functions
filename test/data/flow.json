@@ -2,7 +2,7 @@
     {
         "id": "0ff935c8a42f26ae",
         "type": "tab",
-        "label": "Flow 1",
+        "label": "Monitory System",
         "disabled": false,
         "info": "",
         "env": []
@@ -107,6 +107,31 @@
         "disabled": false,
         "info": "",
         "env": []
+    },
+    {
+        "id": "c1d0d1b5be0f10d4",
+        "type": "Monitor System",
+        "z": "0ff935c8a42f26ae",
+        "name": "",
+        "metrics": "gaugeMemory,resourceUsage,chartLineResource",
+        "x": 180,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ac811c5f2be19993",
+        "type": "Monitor System",
+        "z": "0ff935c8a42f26ae",
+        "name": "",
+        "metrics": "freeMemory,totalMemory,chartMemoryUsage",
+        "graphs": null,
+        "x": 600,
+        "y": 180,
+        "wires": [
+            []
+        ]
     },
     {
         "id": "17012eaf.209341",

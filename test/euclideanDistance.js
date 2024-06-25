@@ -1,8 +1,8 @@
-const assert=require('assert');
+onst assert=require('assert');
 const should=require("should");
 const ed=require("../dataAnalysis/euclideanDistance.js");
 require("../dataAnalysis/forNestedEach");
-
+c
 describe('euclideanDistance', function() { 
 	it("array forNestedEach", function(done) {
 		const atest=[1,2,3,4];

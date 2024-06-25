@@ -2,7 +2,7 @@
     {
         "id": "0ff935c8a42f26ae",
         "type": "tab",
-        "label": "Flow 1",
+        "label": "Monitory System",
         "disabled": false,
         "info": "",
         "env": []
@@ -107,6 +107,31 @@
         "disabled": false,
         "info": "",
         "env": []
+    },
+    {
+        "id": "c1d0d1b5be0f10d4",
+        "type": "Monitor System",
+        "z": "0ff935c8a42f26ae",
+        "name": "",
+        "metrics": "gaugeMemory,chartLineResource",
+        "x": 180,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "ac811c5f2be19993",
+        "type": "Monitor System",
+        "z": "0ff935c8a42f26ae",
+        "name": "",
+        "metrics": "freeMemory,totalMemory,chartMemoryUsage",
+        "graphs": null,
+        "x": 600,
+        "y": 180,
+        "wires": [
+            []
+        ]
     },
     {
         "id": "17012eaf.209341",
@@ -2097,7 +2122,8 @@
         "y": 640,
         "wires": [
             [
-                "d9a04503.7fc3a8"
+                "d9a04503.7fc3a8",
+                "b1411e5351c0347e"
             ]
         ]
     },
@@ -2128,6 +2154,32 @@
             [
                 "4442914142aea731"
             ]
+        ]
+    },
+    {
+        "id": "b1411e5351c0347e",
+        "type": "transform",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "actionSource": "npy",
+        "actionTarget": "JSON",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 570,
+        "y": 640,
+        "wires": [
+            [
+                "d9a04503.7fc3a8"
+            ],
+            []
         ]
     },
     {

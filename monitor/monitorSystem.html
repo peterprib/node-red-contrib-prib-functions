@@ -1,0 +1,198 @@
+<script type="text/javascript">
+    const nodeNameURL="MonitorSystem";
+    const geval=eval
+    try{
+        const url=nodeNameURL+"/svgHTML"
+        console.log("fetching "+url)
+        const xhr = new XMLHttpRequest()
+        xhr.open("GET", url)
+        xhr.onload = () => {
+            console.log("fetched "+url)
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                try{
+                    geval?.(xhr.response)
+                } catch(ex){
+                    console.log("fetch: "+xhr.status);
+                }
+            } else {
+                console.error("fetch: "+xhr.status);
+            }
+        }
+        xhr.send()
+    } catch(ex) {
+        console.error("fetch: " +ex.message)
+    }   
+    const nodeSvg={}
+    const nodeDetails={}
+    let svgUpdate=false
+    function drawAll() {
+        Object.keys(nodeDetails).forEach(id=>{
+            try{drawBase(id)} catch(ex) {console.error("draw "+id+" "+ex.stack)}
+        })
+    }
+    function drawBase(id) {
+        const svgBase=nodeSvg[id]
+        if(svgBase.element==null) {
+            svgBase.element=document.getElementById(id)
+            if(svgBase.element==null) return
+        }
+        if(svgBase.g) svgBase.g.remove()
+        try{
+            drawSVGElement(svgBase.element,
+                {action:"g",id:"_systemMonitor","font-size":10,style:"z-index:99999;",children:nodeDetails[id]},
+                id
+            )
+        } catch(ex) {
+            svgUpdate=false
+            console.error(ex.message + " for "+JSON.stringify(nodeDetails[id]))
+        }
+    }
+    function refreshState(){
+        const action=svgUpdate==true?"getDataUpdateSVG":"getDataSVG"
+        $.get( "/"+nodeNameURL+"/"+action+"/" )
+	        .done(function(json) {
+                Object.assign(nodeDetails,json)
+                try{
+                    drawAll()
+                    svgUpdate=true
+                } catch (ex) {
+                    svgUpdate=false
+                }
+            }).fail(function( jqXHR, textStatus, error ) {
+                console.error("Monitor System refresh state failed: "+jqXHR.status+" "+textStatus+ " error "+error)
+			});
+    }
+    if(!systemMonitor)
+      var systemMonitor=setInterval(refreshState, 1000)
+    /*globals RED */
+    RED.nodes.registerType('Monitor System', {
+        category: 'Monitor',
+        color: '#fdeea2',
+        defaults: {
+            name: {value: "",required:false},
+            metrics: {value: null,required:true},
+            graphs: {value: null,required:true}
+        },
+	    inputs:0,
+        inputLabels: "in",
+        outputs:1,
+        outputLabels: ["out"],
+        icon: "icons8-heart-monitor-40.png",
+        label: function() {
+            console.error("*****+++++")
+            if(!nodeSvg.hasOwnProperty(this.id)) {
+                nodeSvg[this.id]={element:document.getElementById(this.id),actions:[{action:"text",x:0 ,y:60 ,children:["Waiting Refresh"]}]}
+            }
+            drawBase(this.id)
+            return this.name||this._("Monitor System");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+            $("#node-input-metrics").typedInput({type:"metrics", types:[{
+                value: "metrics",
+                multiple: true,
+                options: [
+                    { value: "freeMemory", label: "Free Memory"},
+                    { value: "totalMemory", label: "Total Memory"},
+                    { value: "gaugeMemory", label: "Gauge Memory"},
+                    { value: "chartMemoryUsage", label: "Chart Memory"},
+                    { value: "heapStatistics", label: "Heap Statistics"},
+                    { value: "heapCodeStatistics", label: "Heap Code Statistics"},
+                    { value: "heapSpaceStatistics", label: "Heap Space Statistics"},
+                    { value: "loadAvg", label: "Load Avg"},
+                    { value: "memoryUsage", label: "Memory Usage"},
+                    { value: "resourceUsage", label: "Resource Usage"},
+                    { value: "chartLineResource", label: "Resource Chart"},
+                 ]
+            }]})
+        },
+        oneditsave: function() {
+        },
+        oneditresize: function() {
+        },
+        resizeRule : function(file,newWidth) {
+        },
+        button: {
+            enabled: function() {
+                return !this.changed;
+            },
+           	onclick: function() {
+                if (this.changed) {
+                    return RED.notify(RED._("workflow undeployed changes"),"warning");
+                }
+                let label=this._def.label.call(this);
+                if (label.length > 30) {
+                    label = label.substring(0,50)+"...";
+                }
+                label=label.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                const node=this;
+                function sendCommand(element,action) {
+                	$(element).dialog("close");
+                	$.get( "/"+nodeNameURL+"/"+node.id+"/"+action )
+			        .done(function(json) {
+            		    RED.notify(node._(nodeNameURL+" signal success",{label:label}),{type:"success",id:"Load Injector"});
+            		   	$('<div></div>').appendTo('body').html(json2html(json))
+            		   	.dialog({
+      						modal: true,
+      						title: (node.name||nodeNameURL)+" "+action,
+      						zIndex: 10000,
+      						autoOpen: true,
+   							width: 'auto',
+   							resizable: false,
+							buttons: {
+								close: function (event, ui) {
+					    			$(this).remove();
+								}
+							}
+						});
+                	}).fail(function( jqXHR, textStatus, error ) {
+                   		if (jqXHR.status === 404) {
+     			           	RED.notify(node._(nodeNameURL+" signal not deployed"),"error");
+                		} else if (jqXHR.status === 500) {
+   				           	RED.notify(node._(nodeNameURL+" signal inject failed with error "+(jqXHR.responseText||textStatus||error||"")),"error");
+                		} else if (jqXHR.status === 0) {
+ 							RED.notify(node._(nodeNameURL+" signal no response"),"error");
+                   		} else {
+							RED.notify(node._(nodeNameURL+" signal unexpected status:"+jqXHR.status+" message:"+jqXHR.responseText||textStatus+" "+error),"error");
+						}
+					});
+                }
+                $('<div></div>').appendTo('body').html('<div>Choose Action</div>')
+  				.dialog({
+      				modal: true, title: (node.name||'Monitor System'), zIndex: 10000, autoOpen: true,
+   					width: 'auto', resizable: false,
+					buttons: {
+						"Start": function () {
+							sendCommand(this,"Start");
+						},
+						"Stop": function () {
+							sendCommand(this,"Stop");
+						}
+					},
+					close: function (event, ui) {
+				    	$(this).remove();
+					}
+				});
+            }
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="Monitor System">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-metrics"><i class="fa fa-tag"></i> Metrics</label>
+        <input type="text" id="node-input-metrics">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="Monitor System">
+    <p>Displays counts of flows in diagram
+	</p>
+</script>
+

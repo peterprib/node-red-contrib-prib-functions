@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "3.0.2-git",
+        "version": "3.1.5-git",
         "local": false,
         "user": false,
         "nodes": {
@@ -94,6 +94,17 @@
                 "user": false,
                 "module": "node-red",
                 "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\@node-red\\nodes\\core\\common\\90-comment.js"
+            },
+            "global-config": {
+                "name": "global-config",
+                "types": [
+                    "global-config"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red",
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\@node-red\\nodes\\core\\common\\91-global-config.js"
             },
             "unknown": {
                 "name": "unknown",
@@ -418,7 +429,7 @@
     },
     "node-red-contrib-logger": {
         "name": "node-red-contrib-logger",
-        "version": "0.0.6",
+        "version": "0.0.8",
         "local": false,
         "user": false,
         "nodes": {
@@ -437,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.19.2",
+        "version": "0.20.1",
         "local": true,
         "user": true,
         "nodes": {
@@ -518,6 +529,17 @@
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorflow.js"
             },
+            "monitorSystem": {
+                "name": "monitorSystem",
+                "types": [
+                    "monitorSystem"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorSystem.js"
+            },
             "os": {
                 "name": "os",
                 "types": [
@@ -561,6 +583,25 @@
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
+            }
+        }
+    },
+    "node-red-node-data-generator": {
+        "name": "node-red-node-data-generator",
+        "version": "1.0.1",
+        "local": true,
+        "user": true,
+        "nodes": {
+            "data-generator": {
+                "name": "data-generator",
+                "types": [
+                    "data-generator"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-node-data-generator",
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-node-data-generator\\datagenerator.js"
             }
         }
     }
