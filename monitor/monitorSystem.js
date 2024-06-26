@@ -25,8 +25,8 @@ const resourceLabels={
   //  involuntaryContextSwitches: "Involuntary Context Switches" // This field is not supported on Window
   }
 
-const chartLine=new svgObject.Chart({type:"line",labels:["RSS: Resident Set Size","Heap Total","Heap Used","External","Array Buffer"]})
-
+const chartLine=new svgObject.Chart({type:"line",
+    labels:["RSS: Resident Set Size","Heap Total","Heap Used","External","Array Buffer","Free Memory","Total Memory"]})
 const getPoints=(samples,metrics,metric,...properties)=>{
     const points=[],size=Math.min(samples,metrics.length)
     for(let i=0; i<size ; i++){
@@ -101,11 +101,15 @@ const svcTextLine=(metric,value)=>{
 const svcTextLineUpdate=(metric,value)=>{
     return {action:"update",id:metric,children:[metricLabel[metric]+": "+(typeof value== "object"?JSON.stringify(value):value)]}
 }
+
+const mappingMemory=["freeMemory","memoryUsage.","totalMemory",]
+
 const getPointsMemory=()=>{
     const points=[],size=Math.min(11,metrics.length)
     for(let i=0; i<size ; i++){
-        const m=metrics[i].memoryUsage
-        points.push([m.rss,m.heapTotal,m.heapUsed,m.external,m.arrayBuffers])
+        const mi=metrics[i]
+        const m=mi.memoryUsage
+        points.push([m.rss,m.heapTotal,m.heapUsed,m.external,m.arrayBuffers,mi.freeMemory,mi.totalMemory])
     }
     return points
 }
