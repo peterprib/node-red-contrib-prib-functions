@@ -1,6 +1,6 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.19.2",
+	"version": "0.20.1",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"avsc": "^5.6.1",
@@ -9,7 +9,7 @@
 		"node": ">=0.6.13",
 		"node-red-contrib-logger": "latest",
 		"node-red-contrib-noderedbase": ">=0.0.16",
-		"xlsx": "^0.17.0"
+		"xlsx": "*"
 	},
 	"devDependencies": {
 		"@node-red/runtime": ">=1.2.8",
@@ -23,6 +23,9 @@
 	"scripts": {
 		"test": "mocha \"test/dataAnalysisE*.js\"",
 		"test2": "mocha \"test/transformNum*.js\"",
+		"test00": "mocha \"test/00*.js\"",
+		"test04": "mocha \"test/04*.js\"",
+		
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'"
 	},
 	"repository": {
@@ -76,6 +79,7 @@
 		"matrix",
 		"maximum",
 		"mean",
+		"memory",
 		"median",
 		"minimun",
 		"model",
@@ -102,6 +106,7 @@
 		"stddev",
 		"spawn",
 		"spawn process",
+		"system",
 		"testing",
 		"test",
 		"translate",
@@ -130,6 +135,7 @@
 			"load-injector": "testing/load-injector.js",
 			"matrix": "matrix/matrixNode.js",
 			"monitorflow": "monitor/monitorflow.js",
+			"monitorSystem": "monitor/monitorSystem.js",
 			"os": "nodejs/os.js",
 			"spawnProcess": "spawnProcess/spawnProcess.js",
 			"test": "testing/test.js",
