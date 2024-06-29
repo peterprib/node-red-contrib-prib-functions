@@ -113,7 +113,7 @@
         "type": "Monitor System",
         "z": "0ff935c8a42f26ae",
         "name": "",
-        "metrics": "gaugeMemory,chartLineResource",
+        "metrics": "gaugeMemory,resourceUsage,chartLineResource",
         "x": 180,
         "y": 240,
         "wires": [

@@ -532,7 +532,7 @@
             "monitorSystem": {
                 "name": "monitorSystem",
                 "types": [
-                    "monitorSystem"
+                    "Monitor System"
                 ],
                 "enabled": true,
                 "local": true,

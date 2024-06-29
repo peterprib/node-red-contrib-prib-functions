@@ -1801,6 +1801,8 @@
         "runtime": "60",
         "payload": "",
         "payloadType": "date",
+        "topic": "",
+        "topicType": "str",
         "x": 150,
         "y": 40,
         "wires": [
