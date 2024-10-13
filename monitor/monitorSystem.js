@@ -162,7 +162,7 @@ function getJson(){
 function updateJson(){
     return nodes.reduce((p,node)=>{
         try{
-            p[node.id]=node.getSendDataUpdate(metrics[0])
+            if(metrics[0]) p[node.id]=node.getSendDataUpdate(metrics[0])
         } catch (ex) {
           logger.active&&logger.sendErrorAndStackDump("failed for "+node.id,ex)
         }

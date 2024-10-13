@@ -189,7 +189,141 @@ describe('product', function(){
 		done();
 	});
 });	
-
+describe('arrayDifference', function(){
+	require("../dataAnalysis/arrayDifference.js");
+	it("empty", function(done){
+		const result=[].difference();
+		console.log(result)
+		assert.deepEqual(result,[])
+		done();
+	});
+	it("1 value", function(done){
+		const result=[1].difference();
+		console.log(result)
+		assert.deepEqual(result,[])
+		done();
+	});
+	it("zero", function(done){
+		const result=[1,1,1,1,1].difference();
+		console.log(result)
+		assert.deepEqual(result,[0,0,0,0])
+		done();
+	});
+	it("equal 1", function(done){
+		const result=[0,1,2,3,4].difference();
+		console.log(result)
+		assert.deepEqual(result,[1,1,1,1])
+		done();
+	});
+	it("variance", function(done){
+		const result=[0,0,1,3,6].difference();
+		console.log(result)
+		assert.deepEqual(result,[0,1,2,3])
+		done();
+	});
+});
+describe('arrayDifferenceSecondOrder', function(){
+	require("../dataAnalysis/arrayDifferenceSecondOrder.js");
+	it("empty", function(done){
+		const result=[].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[])
+		done();
+	});
+	it("1 value", function(done){
+		const result=[1].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[])
+		done();
+	});
+	it("2 values", function(done){
+		const result=[1,2].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[])
+		done();
+	});
+	it("zero", function(done){
+		const result=[1,1,1].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[1-1-1+1]) //[0]
+		done();
+	});
+	it("zero x 2", function(done){
+		const result=[1,1,1,1].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[0,0])
+		done();
+	});
+	it("one", function(done){
+		const result=[0,1,2].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[(0-1)-(1-2)]) 
+		done();
+	});
+	it("one x 2", function(done){
+		const result=[0,1,2,3].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[(0-1)-(1-2),(1-2)-(2-3)])
+		done();
+	});
+	it("variance", function(done){
+		const result=[1,2,3,5,9].differenceSecondOrder();
+		console.log(result)
+		assert.deepEqual(result,[(1-2)-(2-3),(2-3)-(3-5),(3-5)-(5-9)]) 
+		done();
+	});
+	it("differenceSecondOrder=difference(1)", function(done){
+		const result1=[1,2,3,5,9].differenceSecondOrder();
+		const result2=[1,2,3,5,9].difference(1);
+		console.log(result1,result2)
+		assert.deepEqual(result1,result2) 
+		done();
+	});
+});
+describe('arrayDifferenceSeasonal', function(){
+	require("../dataAnalysis/arrayDifferenceSeasonal.js");
+	it("value=[]", function(done){
+		const result=[].differenceSeasonal();
+		assert.deepEqual(result,[])
+		const result1=[].differenceSeasonal(2);
+		assert.deepEqual(result1,[])
+		const result11=[].differenceSeasonal(1,1);
+		assert.deepEqual(result11,[])
+		done();
+	});
+	it("value=[1]", function(done){
+		const v=[1]
+		const result=v.differenceSeasonal();
+		assert.deepEqual(result,[])
+		const result1=v.differenceSeasonal(2);
+		assert.deepEqual(result1,[])
+		const result11=v.differenceSeasonal(1,1);
+		assert.deepEqual(result11,[])
+		done();
+	});
+	it("value=[1,2]", function(done){
+		const v=[1,2]
+		const result=v.differenceSeasonal();
+		assert.deepEqual(result,[1])
+		const result1=v.differenceSeasonal(2);
+		assert.deepEqual(result1,[])
+		const result11=v.differenceSeasonal(1,1);
+		assert.deepEqual(result11,[])
+		done();
+	});
+	it("value=[1,2,3,1,2,3] lag 3", function(done){
+		const v=[1,2,3,1,2,3]
+		const result=v.differenceSeasonal(3);
+		assert.deepEqual(result,[0,0,0])
+		done();
+	});
+	it("value=[1,2,3,2,3,4] lag 3", function(done){
+		const v=[1,2,3,2,3,4]
+		const result=v.differenceSeasonal(3);
+		assert.deepEqual(result,[1,1,1])
+		done();
+	});
+});
 describe('arrayForEachRange', function(){
 	require("../dataAnalysis/arrayForEachRange.js");
 	it("array 2 to 3", function(done){
@@ -221,6 +355,15 @@ describe('arrayReduceRange', function(){
 	it("array ", function(done){
 		const result=[0,1,2,3,4].reduceRange(2,3,(a,value,i,vector)=>a+value);
 		assert.deepEqual(result,2+3)
+		done();
+	});
+});
+describe('arrayRandom', function(){
+	require("../dataAnalysis/arrayRandom.js");
+	it("array 3", function(done){
+		const result=[0,1,2,3,4].random();
+		console.log(result)
+		assert.notDeepEqual(result,[0,1,2,3,4])
 		done();
 	});
 });	

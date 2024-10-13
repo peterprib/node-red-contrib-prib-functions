@@ -1151,7 +1151,7 @@
         "dataProperty": "msg.payload",
         "dataProperties": [],
         "x": 390,
-        "y": 260,
+        "y": 280,
         "wires": [
             [
                 "d71f02b6.07e4a",
@@ -1173,7 +1173,7 @@
         "dataProperty": "msg.payload",
         "dataProperties": [],
         "x": 390,
-        "y": 300,
+        "y": 340,
         "wires": [
             [
                 "5d469222.b4431c",
@@ -1255,7 +1255,7 @@
         "dataProperty": "msg.payload",
         "dataProperties": [],
         "x": 400,
-        "y": 340,
+        "y": 400,
         "wires": [
             [
                 "80a318a1.8fe578",
@@ -1276,7 +1276,7 @@
         "dataProperty": "",
         "dataProperties": [],
         "x": 400,
-        "y": 380,
+        "y": 460,
         "wires": [
             [
                 "9b53372d.9fcc28",
@@ -1299,7 +1299,7 @@
         "dataProperty": "msg.payload",
         "dataProperties": [],
         "x": 390,
-        "y": 420,
+        "y": 520,
         "wires": [
             [
                 "838e4106.d42d1",
@@ -1349,8 +1349,8 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 610,
-        "y": 420,
+        "x": 630,
+        "y": 520,
         "wires": []
     },
     {
@@ -1365,8 +1365,8 @@
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 440,
-        "y": 460,
+        "x": 420,
+        "y": 580,
         "wires": [
             [
                 "ac835c8.491cba",
@@ -1386,8 +1386,8 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 680,
-        "y": 460,
+        "x": 660,
+        "y": 580,
         "wires": []
     },
     {
@@ -1401,8 +1401,8 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 670,
-        "y": 500,
+        "x": 650,
+        "y": 620,
         "wires": []
     },
     {
@@ -1417,8 +1417,8 @@
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 430,
-        "y": 500,
+        "x": 410,
+        "y": 640,
         "wires": [
             [
                 "40e08530.b2fc2c",
@@ -1459,8 +1459,8 @@
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 440,
-        "y": 580,
+        "x": 420,
+        "y": 760,
         "wires": [
             [
                 "8ce2398a.805488",
@@ -1481,8 +1481,8 @@
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 440,
-        "y": 540,
+        "x": 420,
+        "y": 700,
         "wires": [
             [
                 "3cb6979e.12f878",
@@ -1503,7 +1503,7 @@
         "complete": "result",
         "targetType": "msg",
         "x": 680,
-        "y": 540,
+        "y": 700,
         "wires": []
     },
     {
@@ -1518,7 +1518,7 @@
         "complete": "result",
         "targetType": "msg",
         "x": 680,
-        "y": 580,
+        "y": 760,
         "wires": []
     },
     {
@@ -1533,8 +1533,8 @@
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 390,
-        "y": 620,
+        "x": 370,
+        "y": 820,
         "wires": [
             [
                 "8706b576.2b83e8",
@@ -1555,7 +1555,7 @@
         "complete": "result",
         "targetType": "msg",
         "x": 630,
-        "y": 620,
+        "y": 820,
         "wires": []
     },
     {
@@ -1589,8 +1589,8 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 660,
-        "y": 660,
+        "x": 640,
+        "y": 880,
         "wires": []
     },
     {
@@ -1599,14 +1599,15 @@
         "z": "11cc261f.ec82da",
         "name": "deltaNormalised",
         "action": "deltaNormalised",
+        "columns": "",
         "outputs": 2,
         "outliersStdDevs": "3",
         "term": "3",
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 420,
-        "y": 660,
+        "x": 400,
+        "y": 880,
         "wires": [
             [
                 "254df734.5b5628",
@@ -1626,8 +1627,8 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 640,
-        "y": 700,
+        "x": 620,
+        "y": 940,
         "wires": []
     },
     {
@@ -1641,8 +1642,10 @@
         "tostatus": false,
         "complete": "result",
         "targetType": "msg",
-        "x": 660,
-        "y": 740,
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 640,
+        "y": 1000,
         "wires": []
     },
     {
@@ -1657,8 +1660,8 @@
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 400,
-        "y": 700,
+        "x": 380,
+        "y": 940,
         "wires": [
             [
                 "6b313397.1721dc",
@@ -1673,17 +1676,19 @@
         "z": "11cc261f.ec82da",
         "name": "standardization",
         "action": "standardize",
+        "columns": "",
         "outputs": 2,
         "outliersStdDevs": "3",
         "term": "3",
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload",
         "dataProperties": [],
-        "x": 420,
-        "y": 740,
+        "x": 400,
+        "y": 1000,
         "wires": [
             [
-                "ce485240.bb0fa"
+                "ce485240.bb0fa",
+                "1ffd982aa6657013"
             ],
             []
         ]
@@ -1700,8 +1705,8 @@
         "keyProperty": "msg.topic",
         "dataProperty": "msg.payload.data",
         "dataProperties": [],
-        "x": 420,
-        "y": 800,
+        "x": 1140,
+        "y": 40,
         "wires": [
             [
                 "89fa71fb.d157d"
@@ -1720,12 +1725,117 @@
         "resultType": "num",
         "resultProperty": "msg.result",
         "topic": "",
-        "x": 150,
-        "y": 800,
+        "x": 870,
+        "y": 40,
         "wires": [
             [
                 "1dd23162.47096f"
             ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "1ffd982aa6657013",
+        "type": "Data Analysis",
+        "z": "11cc261f.ec82da",
+        "name": "difference",
+        "action": "difference",
+        "columns": "",
+        "outputs": 2,
+        "outliersBase": "avg",
+        "outliersStdDevs": "3",
+        "term": "10",
+        "keyProperty": "msg.topic",
+        "dataProperty": "msg.payload",
+        "dataProperties": [
+            "msg.payload[0]",
+            "msg.payload[1]"
+        ],
+        "x": 380,
+        "y": 1060,
+        "wires": [
+            [
+                "41453a54a3914a81"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "41453a54a3914a81",
+        "type": "Data Analysis",
+        "z": "11cc261f.ec82da",
+        "name": "difference seasonal",
+        "action": "differenceSeasonal",
+        "columns": "",
+        "lag": "2",
+        "outputs": 2,
+        "outliersBase": "avg",
+        "outliersStdDevs": "3",
+        "term": "10",
+        "keyProperty": "msg.topic",
+        "dataProperty": "msg.payload",
+        "dataProperties": [
+            "msg.payload[0]",
+            "msg.payload[1]"
+        ],
+        "x": 410,
+        "y": 1120,
+        "wires": [
+            [
+                "25c998531bce6e6b"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "25c998531bce6e6b",
+        "type": "Data Analysis",
+        "z": "11cc261f.ec82da",
+        "name": "diifference second order",
+        "action": "differenceSecondOrder",
+        "columns": "",
+        "lag": "",
+        "outputs": 2,
+        "outliersBase": "avg",
+        "outliersStdDevs": "3",
+        "term": "10",
+        "keyProperty": "msg.topic",
+        "dataProperty": "msg.payload",
+        "dataProperties": [
+            "msg.payload[0]",
+            "msg.payload[1]"
+        ],
+        "x": 430,
+        "y": 1180,
+        "wires": [
+            [
+                "3b47871eb15d2f72"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "3b47871eb15d2f72",
+        "type": "Data Analysis",
+        "z": "11cc261f.ec82da",
+        "name": "difference seasonal second order",
+        "action": "differenceSeasonalSecondOrder",
+        "columns": "",
+        "lag": "2",
+        "outputs": 2,
+        "outliersBase": "avg",
+        "outliersStdDevs": "3",
+        "term": "10",
+        "keyProperty": "msg.topic",
+        "dataProperty": "msg.payload",
+        "dataProperties": [
+            "msg.payload[0]",
+            "msg.payload[1]"
+        ],
+        "x": 460,
+        "y": 1240,
+        "wires": [
             [],
             []
         ]
@@ -1801,6 +1911,8 @@
         "runtime": "60",
         "payload": "",
         "payloadType": "date",
+        "topic": "",
+        "topicType": "str",
         "x": 150,
         "y": 40,
         "wires": [

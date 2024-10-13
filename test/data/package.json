@@ -5,6 +5,7 @@
     "private": true,
     "dependencies": {
         "node-red-contrib-prib-functions": "file:../..",
-        "node-red-node-data-generator": "~1.0.1"
+        "node-red-node-data-generator": "~1.0.1",
+        "node-red-project": "file:"
     }
 }

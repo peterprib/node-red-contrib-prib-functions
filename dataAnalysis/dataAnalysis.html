@@ -7,6 +7,7 @@
             name: {value:"",required:false},
 		    action: {value:"avg",required:true},
 		    columns:{value:"",required:false},
+		    lag: {value:1,required:true},
 		    outputs: {value:(["realtime","realtimePredict"].includes(this.action)?3:2),required:true},
 		    outliersBase: {value:"avg",required:false},
 		    outliersStdDevs: {value:"3",required:false},
@@ -45,50 +46,56 @@
         		}
            	});
 	       	$("#node-input-action").change(function() {
-        		 if(["distances","distancesMax","distancesMin"].includes( $(this).val() )) {
+				if(["differenceSeasonal","differenceSeasonalSecondOrder"].includes( $(this).val() )) {
+        			$(".form-row-http-in-lag").show(); 
+        		} else {
+        			$(".form-row-http-in-lag").hide();
+        		}
+        		if(["distances","distancesMax","distancesMin"].includes( $(this).val() )) {
         			$(".form-row-http-in-columns").show(); 
-        		 } else {
+        		} else {
         			$(".form-row-http-in-columns").hide();
-        		 }
+        		}
         		 if(["movingAvgSimple","movingAvgWeighted","movingAvgExponential","realtime","realtimePredict"].includes( $(this).val() )) {
         			$(".form-row-http-in-term").show(); 
-        		 } else {
+        		} else {
         			$(".form-row-http-in-term").hide();
-        		 }
-        		 if(["movingAvgExponential"].includes( $(this).val() )) {
+        		}
+        		if(["movingAvgExponential"].includes( $(this).val() )) {
         			$("#node-input-term").attr({min:0,max:1,step:0.1});
 					if(node.term<0 || node.term>1) $("#node-input-term").val(0.5);
 	       			$("#node-input-term").change(function() {
 						if(node.term<0) $(this).val(0);
 						if(node.term>1) $(this).val(1);
 					});
-        		 } else {
+        		} else {
         			$("#node-input-term").attr({min:1,max:100,step:1});
 	       			$("#node-input-term").change(function() {
 						if(node.term<1) $(this).val(1);
 						if(node.term>100) $(this).val(100);
 					});
-        		 }        		 
-        		 if(["realtime","realtimePredict"].includes( $(this).val() )) {
+        		}        		 
+        		if(["realtime","realtimePredict"].includes( $(this).val() )) {
 	        		node.outputs=3;
            			$(".form-row-http-in-keyProperty").show();
            			$(".form-row-http-in-outliersStdDevs").show();
            			$(".form-row-http-in-outliersBase").show();
 					$("#node-input-outliersStdDevs").change();
-           		 } else {
+           		} else {
            			node.outputs=2;
            			$(".form-row-http-in-keyProperty").hide();
            			$(".form-row-http-in-outliersStdDevs").hide();
            			$(".form-row-http-in-outliersBase").hide();
-        		 }        		 
-        		 if(["pearsonR","covariance","corelationship"].includes( $(this).val() )) {
+        		}        		 
+        		if(["pearsonR","covariance","corelationship"].includes( $(this).val() )) {
            			$(".node-input-dataProperties-container-row").show();
            			$(".form-row-http-in-dataProperty").hide();
-           		 } else {
+           		} else {
            			$(".node-input-dataProperties-container-row").hide();
            			$(".form-row-http-in-dataProperty").show();
-        		 }        		 
+        		}        		 
 				$("#node-input-term").change();
+				$("#node-input-lag").change();
         	});
 	       	
   	    	node.dataProperties.forEach((r)=>addDataProperty(r));
@@ -148,6 +155,10 @@
             <option value="corelationship">Corelationship</option>
             <option value="deltas">Deltas</option>
             <option value="deltaNormalised">Deltas Normalised</option>
+			<option value="difference">Difference</option>
+			<option value="differenceSeasonal">Difference Seasonal</option>
+			<option value="differenceSeasonalSecondOrder">Difference Seasonal Second Order</option>
+			<option value="differenceSecondOrder">Difference Second Order</option>
             <option value="distances">Euclidean Distances</option>
             <option value="distancesMax">Euclidean Distances Max</option>
             <option value="distancesMin">Euclidean Distances Min</option>
@@ -162,6 +173,7 @@
             <option value="movingAvgExponential">Moving Average Exponential (EMA/EWMA)</option>
             <option value="normalize">Normalise</option>
             <option value="pearsonR">Pearson Product Moment Correlation (PPMC)</option>
+			<option value="randomise">Randomise</option>
             <option value="range">Range</option>
             <option value="realtime">RealTime Metrics</option>
             <option value="realtimePredict">RealTime Metrics + predicts</option>
@@ -178,6 +190,11 @@
     <div class="form-row form-row-http-in-columns hide">
         <label for="node-input-columns"><i class="icon-bookmark"></i> Columns</label>
         <input type="text" id="node-input-columns" placeholder="columns">
+    </div>
+    
+	<div class="form-row form-row-http-in-lag hide">
+        <label for="node-input-lag"><i class="icon-bookmark"></i> Lag</label>
+        <input type="number" id="node-input-lag" placeholder="lag" min="1" max="10000" step="1">
     </div>
 
     <div class="form-row form-row-http-in-term hide">

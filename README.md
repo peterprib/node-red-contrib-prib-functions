@@ -44,6 +44,9 @@ Single value metrics:
 Array metrics:
 * Deltas
 * Deltas Normalised
+* difference
+* difference seasonal
+* difference seasonal second order
 * Moving Average Simple (SMA)
 * Moving Average Cumulative (CMA)
 * Moving Average Weighted (WMA)
@@ -53,8 +56,9 @@ Array metrics:
 
 Array data
 * distances 
-* minimum distance(s) between points
-* maximum distance(s) between points
+* distance(s) minimum between points
+* distance(s) maximum between points
+
 
 ![Data Analysis](documentation/DataAnalysis.JPG "Data Analysis")
 

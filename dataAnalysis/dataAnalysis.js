@@ -2,6 +2,11 @@ const logger = new (require("node-red-contrib-logger"))("Data Analysis");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
 require("./arrayLast");
+require("./arrayDifference")
+require("./arrayDifferenceSeasonal")
+require("./arrayDifferenceSeasonalSecondOrder")
+require("./arrayDifferenceSecondOrder")
+require("./arrayRandom")
 const ed=require("./euclideanDistance.js");
 require("./forNestedEach");
 
@@ -157,6 +162,10 @@ functions={
 	},
 	distancesMin: (d,term,node)=>ed.minDistances(d,getColumns(node)),
 	distancesMax: (d,term,node)=>ed.maxDistances(d,getColumns(node)),
+	difference: (d)=>d.difference(),
+	differenceSeasonal: (d,term,node)=>d.differenceSeasonal(node.lag),
+	differenceSeasonalSecondOrder: (d,term,node)=>d.differenceSeasonalSecondOrder(node.lag),
+	differenceSecondOrder: (d)=>d.differenceSecondOrder(),
 	max: (d)=> Math.max(...d),
 	median:(d)=>{
 		const i=Math.floor(d.length/2);
@@ -313,7 +322,7 @@ module.exports = function (RED) {
 			}
 			switch (node.action) {
 			case "realtime":
-					node.outliersStdDevs=Number.parseInt(node.outliersStdDevs,10)||3;
+				node.outliersStdDevs=Number.parseInt(node.outliersStdDevs,10)||3;
 				if(![1,2,3].includes(node.outliersStdDevs)) throw Error("outlier std deviation "+node.outliersStdDevs+" not 1,2 or 3");
 				const outliersFunction=(node.outliersBase||"avg")=="median";
 				node.log("realtime outliersBase set avg "+outliersFunction);
