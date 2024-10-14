@@ -5,9 +5,9 @@
                 let i=this.length-lag-1
                 if(i<1) return new object()
                 const result=new object(i)
-                let lastDiff=this[i-1]-this[i-1]
+                let lastDiff=this[i+lag-1]-this[i-1]
                 while(--i>=0){
-                    const newDiff=this[iLag-1]-this[i-1]
+                    const newDiff=this[i+lag-1]-this[i-1]
                     result[i]=lastDiff-newDiff
                     lastDiff=newDiff
                 }
