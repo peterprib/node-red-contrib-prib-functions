@@ -23,6 +23,7 @@ function evalInFunction(node,propertyName){
 		const property=node[propertyName];
 		if(property==null) throw Error("no value for "+propertyName);
 		const propertyType=propertyName+"-type";
+		if(! (propertyType in node)) return evalFunction(propertyName,"()=>node."+property) 
 		switch (node[propertyType]){
 		case "num":
 		case "json":
@@ -86,7 +87,11 @@ module.exports = function (RED) {
 			}	
 			node.argFunction=[];
 			node.args.forEach(property=>{
-				node.argFunction.push(evalInFunction(node,property).bind(this));
+				try{
+					node.argFunction.push(evalInFunction(node,property).bind(this));
+				} catch(ex) {
+					throw Error("args "+property+" "+ex.message)
+				}
 			})
 			function baseProcess(msg){
 				const sourceIn=node.getSource(msg);
@@ -99,14 +104,15 @@ module.exports = function (RED) {
 				node.setData.apply(node,[result,msg]);
 			}
 			function createProcess(msg){
-				const sourceIn=node.getSource(msg);
-				if(sourceIn==null) throw Error("source data not found");
-				const sourceMatrix=(sourceIn instanceof Matrix?sourceIn.clone():new Matrix(sourceIn));
+				if(logger.active) logger.sendInfo({label:"create",arg:{rowsMax:node.row,columns:node.column}});
+				const sourceMatrix=new Matrix({rowsMax:node.rows,columns:node.columns,dataType:node.dataType});
+				if(!(node.initialState in sourceMatrix)) throw Error("Invalid initial state "+node.initialState);
+				sourceMatrix[node.initialState]()
 				node.setData.apply(node,[sourceMatrix,msg]);
 			}
 			function defineProcess(msg){
 				if(logger.active) logger.sendInfo({label:"define",arg:{rows:node.row,columns:node.column}});
-				const sourceMatrix=new Matrix({rows:node.rows,columns:node.columns});
+				const sourceMatrix=new Matrix({rows:node.rows,columns:node.columns,dataType:node.dataType});
 				node.setData.apply(node,[sourceMatrix,msg]);
 			}
 			function defineEmptyProcess(msg){
@@ -152,6 +158,7 @@ module.exports = function (RED) {
 				node.msgProcess(msg);
 				node.send(msg);
 			} catch(ex) {
+				error(node,ex,"Invalid "+ex.message)
 				msg.error=ex.message;
 				node.send([null,msg]);
 				if(logger.active) logger.send({label:"error",node:node.id,action:node.action,exception:ex.message,stack:ex.stack});

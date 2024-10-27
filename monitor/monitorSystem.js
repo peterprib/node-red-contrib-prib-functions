@@ -155,7 +155,7 @@ let metrics=[]
 const nodes=[]
 function getJson(){
     return nodes.reduce((p,node)=>{
-        p[node.id]=node.getSendData(metrics[0])
+        p[node.id]=metrics.length?node.getSendData(metrics[0]):null
         return p;
     },{})
 }

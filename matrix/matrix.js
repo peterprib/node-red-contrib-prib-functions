@@ -1,8 +1,54 @@
 const logger = new (require("node-red-contrib-logger"))("Matrix");
 logger.sendInfo("Copyright 2022 Jaroslav Peter Prib");
 
+const typedArrays= {Array:Array,Int8Array:Int8Array,Uint8Array:Uint8Array,Uint8ClampedArray:Uint8ClampedArray,Int16Array:Int16Array,Uint16Array:Uint16Array,
+  Int32Array:Int32Array,Uint32Array:Uint32Array,Float32Array:Float32Array,
+  Float64Array:Float64Array,BigInt64Array:BigInt64Array,BigUint64Array:BigUint64Array}
+
+  Object.keys(typedArrays).map(t=>typedArrays[t]).forEach(object=>{
+    if(object.prototype.setAll==null)
+        Object.defineProperty(object.prototype, "setAll", {
+            value(call,size=this.length) {
+                let i=size
+                while(i) this[--i]=call();
+                return this;
+            },
+            writable: true,
+            configurable: true
+        })
+	if(object.prototype.setOne==null)
+			Object.defineProperty(object.prototype, "setOne", {
+				value(call,size=this.length) {
+					let i=size
+					while(i) this[--i]=1;
+					return this;
+				},
+				writable: true,
+				configurable: true
+			})
+	if(object.prototype.setZero==null)
+        Object.defineProperty(object.prototype, "setZero", {
+            value(call,size=this.length) {
+                let i=size
+                while(i) this[--i]=0;
+                return this;
+            },
+            writable: true,
+            configurable: true
+        })
+    if(object.prototype.setRandom==null)
+        Object.defineProperty(object.prototype, "setRandom", {
+            value(size=this.length) {
+				return this.setAll(Math.random,size)
+            },
+            writable: true,
+            configurable: true
+        })
+})
+
 const zeroFloat32Value=1e-6;
-function Matrix(rows,columns,fill) {
+function Matrix(rows,columns,fill,dataType="Float32Array") {
+	this.dataType=dataType
 	if(rows instanceof Array) {
 		this.rows=rows.length;
 		if(this.rows==0) throw Error("expected rows")
@@ -15,11 +61,19 @@ function Matrix(rows,columns,fill) {
 	} 
 	if(rows instanceof Object) {
 		Object.assign(this,rows);
+		this.dataType??="Float32Array"
 	} else {
 		this.rows=rows;
 		this.columns=columns;
 	}
+	if(this.columns) this.columns=parseInt(this.columns);
+	if(this.rows)this.rows=parseInt(this.rows)
+	if(this.rowsMax) this.rowsMax=parseInt(this.rowsMax)
 	this.createVector();
+	if(fill) {
+		if(fill instanceof Function) this.setAll(fill)
+		else this.vector.set(fill)
+	}  
 	return this;
 }
 Matrix.prototype.add=function(matrix){
@@ -52,7 +106,7 @@ Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1,startColumn=0,endColumn=
 	return this;
 }
 Matrix.prototype.backwardSubstitution=function(){
-	const vector=new Float32Array(this.rows);
+	const vector=new typedArrays[this.dataType](this.rows);
 	for(let row=this.rows-1; row>=0; row--) {
 		vector[row] = this.get(row,this.rows);
 		for(let column=row+1; column<this.rows; column++)	{
@@ -101,15 +155,17 @@ Matrix.prototype.createVector=function(){
 			this.sizeMax=this.rowsMax*this.columns;
 		}
 		if(this.columns==null) throw Error("columns not specified")
-		this.size=this.rows*this.columns
-		if(this.sizeMax==null) this.sizeMax=this.size
 	} else {
 		if(this.columns==null) throw Error("columns not specified")
+		if(this.columns==0) throw Error("columns = 0")
 		if(this.rows==null){
 			this.rows=0;
 		}  	
 	}
-	this.vector=new Float32Array(this.sizeMax);
+	this.size=this.rows*this.columns
+	if(this.sizeMax==null) this.sizeMax=this.size
+	if(this.sizeMax==null) throw Error("max size not specified or calculated")
+	this.vector=new typedArrays[this.dataType](this.sizeMax);
 	return this;
 }
 Matrix.prototype.divideCell=function(row,column,value){
@@ -472,7 +528,6 @@ Matrix.prototype.multiplyRow=function(row,factor){
 	return this;
 }
 Matrix.prototype.norm=function(){
-
 	return Math.sqrt(this.reduce((aggregate,cell)=>aggregate+cell*cell))
 }
 Matrix.prototype.reduce=function(call,aggregate=0){
@@ -560,9 +615,38 @@ Matrix.prototype.set=function(row,column,value){
 	this.vector[this.getIndex(row,column)]=value;
 	return this;
 }
+Matrix.prototype.setAll=function(call){
+	for(let offset=0,row=0;row<this.rows;row++) {
+		for(let column=0;column<this.columns;column++) {
+			this.vector[offset]=call.apply(this,[row,column,this.vector[offset],this.vector,offset,this]);
+			offset++
+		}
+	}
+	this.rows=this.rowsMax
+	this.size=this.sizeMax
+	return this;
+}
 Matrix.prototype.setDeterminant=function(){
 	this.determinant=this.getDeterminantUsingRowEchelonForm();
 	return this.determinant;
+}
+Matrix.prototype.setIdentity=function(){
+	if(this.columns!=this.rowsMax) throw Error("number of columns not equal rows")
+	this.setZero()
+	for(let offset=0;offset<this.size;offset+=this.columns+1) this.vector[offset]=1;
+	return this;
+}
+Matrix.prototype.setWithFunction=function(f){
+	this.vector[f](this.sizeMax)
+	this.rows=this.rowsMax
+	this.size=this.sizeMax;
+	return this;
+}
+Matrix.prototype.setOne=function(){
+    return this.setWithFunction("setOne")
+}
+Matrix.prototype.setRandom=function(){
+    return this.setWithFunction("setRandom")
 }
 Matrix.prototype.setRow=function(vector,row){
 	this.vector.set(vector, row*this.columns);
@@ -570,7 +654,9 @@ Matrix.prototype.setRow=function(vector,row){
 }
 Matrix.prototype.setRunningSum=function(){
 	this.forEachCellLowerTriangle((cell,row,column,vector,offset,object)=>vector[offset]=1);
-	return this;
+}
+Matrix.prototype.setZero=function(){
+	return this.setWithFunction("setZero")
 }
 Matrix.prototype.substract=function(matrix){
 	this.forEachCellPairSet(matrix,(cellA,cellB)=>cellA-cellB)
@@ -610,5 +696,4 @@ Matrix.prototype.transpose=function(){
 	this.forEachCell((cell,row,column)=>matrix.set(column,row,cell))
 	return matrix;
 }
-
 module.exports=Matrix;

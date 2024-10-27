@@ -44,6 +44,7 @@
             )
         } catch(ex) {
             svgUpdate=false
+            if(ex.message.startsWith("element id not found")) return
             console.error(ex.message + " for "+JSON.stringify(nodeDetails[id]))
         }
     }
@@ -79,7 +80,7 @@
         outputLabels: ["out"],
         icon: "icons8-heart-monitor-40.png",
         label: function() {
-            console.error("*****+++++")
+            console.log("*****+++++")
             if(!nodeSvg.hasOwnProperty(this.id)) {
                 nodeSvg[this.id]={element:document.getElementById(this.id),actions:[{action:"text",x:0 ,y:60 ,children:["Waiting Refresh"]}]}
             }

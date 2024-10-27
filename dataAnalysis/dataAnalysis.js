@@ -69,10 +69,10 @@ EMA.prototype.sample=function(value) {
 	return this;
 }
 
-function setDataPoint(value,term,node,dp) {
-	if(logger.active) logger.send({label:"setDataPoint",value:value,term,dp});
-	if(!dp.values) {
-		Object.assign(dp,{
+function setDataPoint(value,term,node,dataPoint) { 
+	if(logger.active) logger.send({label:"setDataPoint",value:value,term,dataPoint});
+	if(!dataPoint.values) {
+		Object.assign(dataPoint,{
 			values:[],
 			avg:0,
 			count:0,
@@ -83,43 +83,44 @@ function setDataPoint(value,term,node,dp) {
 			sum:0,
 			sumSquared:0,
 			sumCubed:0,
-			term:term,
+			term:term??node.term,
 			weightedMovingSum:0,
 			exponentialWeightedMoving:[new EMA(0.25),new EMA(0.5),new EMA(0.75)]
 		});
-	}
-	;
-	const count=++dp.count,values=dp.values;
+	};
+	const count=++dataPoint.count,values=dataPoint.values;
 	values.push(value);
-	dp.isMaxSize=(values.length>dp.term);
-	dp.removedValue=(dp.isMaxSize?values.shift():0);
-	const removedValue=dp.removedValue;
-	dp.max=Math.max(dp.max||value,value);
-	dp.min=Math.min(dp.min||value,value);
-	dp.range=dp.max-dp.min;
-	dp.sum+=value;
-	dp.sumSquared+=Math.pow(value,2);
-	dp.sumCubed+=Math.pow(value,3);
-	dp.movingSum+=value-removedValue;
-	dp.movingSumSquared+=Math.pow(value,2)-Math.pow(removedValue,2);
-	dp.movingSumCubed+=Math.pow(value,3)-Math.pow(removedValue,3);
-	dp.avg=dp.sum/count;
-	const avg=dp.avg;
-	dp.normalised=dp.range ? (value-avg)/dp.range : 0;
-	dp.movingAvg=dp.movingSum/values.length;
-	dp.variance=dp.sumSquared/count - Math.pow(avg,2);
-	dp.stdDev=Math.sqrt(dp.variance);
-	dp.movingVariance=dp.movingSumSquared/values.length - Math.pow(dp.movingAvg,2);
-	dp.movingStdDev=Math.sqrt(dp.movingVariance);
-	dp.median=functions.median(values);
-	dp.standardized=( (value-avg)/dp.stdDev )||0;
-	dp.movingStandardized=( (value-dp.movingAvg)/dp.movingStdDev )||0;
-	dp.skewness=(dp.sumCubed-3*avg*dp.variance-Math.pow(avg,3))/dp.variance*dp.stdDev;
-	dp.movingSkewness=(dp.movingSumCubed-3*dp.movingAvg*dp.movingVariance-Math.pow(dp.movingAvg,3))/dp.movingVariance*dp.stdDev;
-	dp.outlier=node.outliersFunction(node,dp,value);
-	dp.weightedMovingSum+=count*value;
-	dp.weightedMovingAvg=(dp.weightedMovingAvg*2/count)/(count+1);
-	dp.exponentialWeightedMoving.forEach(c=>c.sample(value));
+	const movingTerm=Math.min(values.length,dataPoint.term)
+	dataPoint.isMaxSize=(values.length>dataPoint.maxSize);
+	dataPoint.removedMovingValue=(dataPoint.isMaxSize?values[values.length-dataPoint.term]:0);
+	dataPoint.removedValue=(dataPoint.isMaxSize?values.shift():0);
+	const removedMovingValue=dataPoint.removedMovingValue;
+	dataPoint.max=Math.max(dataPoint.max||value,value);
+	dataPoint.min=Math.min(dataPoint.min||value,value);
+	dataPoint.range=dataPoint.max-dataPoint.min;
+	dataPoint.sum+=value;
+	dataPoint.sumSquared+=Math.pow(value,2);
+	dataPoint.sumCubed+=Math.pow(value,3);
+	dataPoint.movingSum+=value-removedMovingValue;
+	dataPoint.movingSumSquared+=Math.pow(value,2)-Math.pow(removedMovingValue,2);
+	dataPoint.movingSumCubed+=Math.pow(value,3)-Math.pow(removedMovingValue,3);
+	dataPoint.avg=dataPoint.sum/count;
+	const avg=dataPoint.avg;
+	dataPoint.normalised=dataPoint.range ? (value-avg)/dataPoint.range : 0;
+	dataPoint.movingAvg=dataPoint.movingSum/movingTerm;
+	dataPoint.variance=dataPoint.sumSquared/count - Math.pow(avg,2);
+	dataPoint.stdDev=Math.sqrt(dataPoint.variance);
+	dataPoint.movingVariance=dataPoint.movingSumSquared/movingTerm - Math.pow(dataPoint.movingAvg,2);
+	dataPoint.movingStdDev=Math.sqrt(dataPoint.movingVariance);
+	dataPoint.median=functions.median(values);
+	dataPoint.standardized=( (value-avg)/dataPoint.stdDev )||0;
+	dataPoint.movingStandardized=( (value-dataPoint.movingAvg)/dataPoint.movingStdDev )||0;
+	dataPoint.skewness=(dataPoint.sumCubed-3*avg*dataPoint.variance-Math.pow(avg,3))/dataPoint.variance*dataPoint.stdDev;
+	dataPoint.movingSkewness=(dataPoint.movingSumCubed-3*dataPoint.movingAvg*dataPoint.movingVariance-Math.pow(dataPoint.movingAvg,3))/dataPoint.movingVariance*dataPoint.stdDev;
+	dataPoint.outlier=node.outliersFunction(node,dataPoint,value);
+	dataPoint.weightedMovingSum+=count*value;
+	dataPoint.weightedMovingAvg=(dataPoint.weightedMovingAvg*2/count)/(count+1);
+	dataPoint.exponentialWeightedMoving.forEach(c=>c.sample(value));
 }
 function getColumns(node) {
 	if(node.columns) {
@@ -223,9 +224,9 @@ functions={
 			}
 		}
 		node.samples++;
-		for(let v,dp,i=0; i<node.dataProperties.length; i++) {
-			v=d[i];
-			dp=node.dataPoints[i];
+		for(let i=0; i<node.dataProperties.length; i++) {
+			const v=d[i];
+			const dp=node.dataPoints[i];
 			dp.sum+=v;
 			dp.sumSquared+=v*v;
 			for(let j=i+1; j<node.dataProperties.length; j++) {
@@ -280,9 +281,22 @@ functions={
 		}
 		setDataPoint(d.value,term,node,dp);
 		if(dp.delta) {
-			setDataPoint(d.value-dp.values[dp.values.length-2],term,node,dp.delta);
+			if(dp.values.length>1)
+				setDataPoint(d.value-dp.values[dp.values.length-2],term,node,dp.delta);
 		} else {
 			dp.delta={};
+		}
+		if(node.lag>1) {
+			const vectorSize=dp.values.length
+			if(dp.lag) {
+				if(node.lag<=vectorSize){
+				  setDataPoint(d.value-dp.values[vectorSize-node.lag],term,node,dp.lag)
+				  const values=dp.lag.values
+				  if(values.length>1) setDataPoint(values[values.length-1]-values[values.length-2],term,node,dp.lag.delta)
+				}
+			} else {
+				dp.lag={delta:{}}
+			}
 		}
 		return dp;
 	},
@@ -310,11 +324,15 @@ module.exports = function (RED) {
 	function dataAnalysisNode(n) {
 		RED.nodes.createNode(this, n);
 		const node=Object.assign(this,
-			{outliersStdDevs:3,crossNormalisedDeltas:crossNormalisedDeltas.bind(this)},
+			{outliersStdDevs:3,crossNormalisedDeltas:crossNormalisedDeltas.bind(this),lag:1,term:3},
 			n,
 			{maxErrorDisplay:10,dataPoint:{}}
 		);
 		try{
+			node.lag=Number(node.lag)
+			if(Number(node.term)==NaN)throw Error("term not a number, value:"+JSON.stringify(node.term))
+			node.term=Number(node.term)
+			node.maxSize=Math.max(node.term,node.lag)
 			if(functions.hasOwnProperty(node.action)) {
 				node.actionfunction=functions[node.action];
 			} else {
@@ -349,6 +367,7 @@ module.exports = function (RED) {
 			node.getData=eval(node.getDatafunction);
 			node.status({fill:"green",shape:"ring",text:"Ready"});
 		} catch(ex) {
+			if(logger.active) logger.send({label:"initialise error",action:node.action,message:ex.message,stack:ex.stack});
 			logger.send({label:"initialise error",node:n});
 			node.error(ex);
 			node.status({fill:"red",shape:"ring",text:"Invalid setup "+ex.message});
@@ -388,6 +407,7 @@ module.exports = function (RED) {
 						throw Error("unknown");
 					}
 				} catch(ex) {
+					if(logger.active) logger.send({label:"error input",action:node.action,message:ex.message,stack:ex.stack});
 					node.error(msg.topic+" failed "+ex.message);
 				}
 	 			return;
@@ -404,10 +424,10 @@ module.exports = function (RED) {
 					break;
 				}
 			} catch(ex) {
-				if(logger.active) logger.send({label:"error input",action:node.action,message:ex.message,stack:ex.stack});
 				msg.error=ex.message;
 				if(node.maxErrorDisplay) {
 					--node.maxErrorDisplay;
+					logger.send({label:"error input",action:node.action,message:ex.message,stack:ex.stack});
 					if(node.action=="realtime") {
 						node.error(node.action+" error: "+ex.message);
 					} else {

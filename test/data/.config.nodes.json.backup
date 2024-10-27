@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "3.1.11",
+        "version": "3.1.14",
         "local": false,
         "user": false,
         "nodes": {
@@ -448,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.20.2",
+        "version": "0.20.4",
         "local": true,
         "user": true,
         "nodes": {

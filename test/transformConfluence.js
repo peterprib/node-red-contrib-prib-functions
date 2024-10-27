@@ -1,4 +1,4 @@
-const should = require("should");
+//const should = require("should");
 const helper = require("node-red-node-test-helper");
 const transformNode = require("../transform/transform.js");
 const Buffer=require('buffer').Buffer;

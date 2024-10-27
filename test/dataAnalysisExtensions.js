@@ -1,5 +1,4 @@
 const assert=require('assert');
-const should=require("should");
 const m2x2=[[11,12],[21,22]]
 const m2x3=[[11,12,13],[21,22,23]]
 

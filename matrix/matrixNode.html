@@ -7,18 +7,20 @@
 			name: {value:null},
 			action: {value: "create",required:true},
 			args: {value:[]},
-			arg: {value:null},"arg-type": {value:"msg"},
 			call:{value:null},
-			column: {value:null},"column-type": {value:"num"},
-			columns: {value:null},"columns-type": {value:"num"},
+			column: {value:2},"column-type": {value:"num"},
+			columns: {value:2},"columns-type": {value:"num"},
+			dataType: {value:"Float32Array"},"columns-type": {value:"Float32Array"},
 			end: {value:null},"end-type": {value:"num"},
 			factor: {value:null},"factor-type": {value:"num"},
+			initialState:{value:"setZero"},
 			matrix: {value:"payload"},"matrix-type": {value:"msg"},
 			precision: {value:3},"precision-type": {value:"num"},
 			row: {value:3},"row-type": {value:"num"},
 			rows: {value:3},"rows-type": {value:"num"},
 			rowTarget: {value:null},"rowTarget-type": {value:"num"},
 			source: {value:"_matrix"},"source-type": {value:"msg"},
+			sourceArray: {value:"payload"},"sourceArray-type": {value:"msg,json,flow,global"},
 			start: {value:null},"start-type": {value:"num"},
 			target: {value:"_matrix"},"target-type": {value:"msg"},
 			value: {value:"payload"},"value-type": {value:"msg"},
@@ -35,70 +37,70 @@
 			return this.name || ("Matrix "+this.action||"*** new ***");
 		},
 		oneditprepare: function() {
+			console.log("+++")
 			const node=this;
 			node.properties=[];
 			node.editors=[];
 			const actions={
-				define:{label:"Define",show:["target"],args:["rows","columns"]},
-				defineEmpty:{label:"Define Empty",show:["target"],args:["rows","columns"]},
-				create:{label:"Create",show:["target"],args:[]},
-                createLike:{label:"Create Like",show:["source","target"],args:[]},
-                clone:{label:"Clone",show:["source","target"],args:[]},
                 add:{label:"Add",show:["source"],args:["matrix"]},
                 addRow:{label:"Add Row",show:["source"],args:["row","vector"]},
 				addRow2Row:{label:"Add Row to Row",show:["source"],args:["row","target","factor","start","end"]},
                 addCell:{label:"Add to Cell",show:["source"],args:["row","column","value"]},
-                subtractCell:{label:"Subtract Cell",show:["source","target"],args:["row","column","value"]},
-                multiple:{label:"Multiple",show:["source","target"],args:[]},
-                multipleCell:{label:"Multiple Cell",show:["source","target"],args:["rows","columns","value"]},
-                divideCell:{label:"Divide Cell",show:["source"],args:["rows","columns","value"]},
-                divideRow:{label:"Divide Row",show:["source"],args:["row","factor","start","end"]},
-                transpose:{label:"Transpose",show:["source","target"],args:[]},
-                getAdjoint:{label:"Adjoint",show:["source","target"],args:[]},
-                getCofactor:{label:"Cofactor",show:["source","target"],args:[]},
-                getComplementMinor:{label:"Complement Minor",show:["source","target"],args:[]},
-				getIdentity:{label:"Identity",show:["source","target"],args:[]},
-				getInverse:{label:"Inverse",show:["source","target"],args:[]},
-				getInverseAdjointMethod:{label:"Inverse (Adjoint Method)",show:["source","target"],args:[]},
-				getInverseGaussJordan:{label:"Inverse (Gauss Jordan Method)",show:["source","target"],args:[]},
-				norm:{label:"Norm",show:["source","target"],args:[]},
-				getDeterminant:{label:"Determinant",show:["source","target"],args:[]},
-				getDeterminantUsingCofactor:{label:"Determinant (Cofactor)",show:["source","target"],args:[]},
-				getDeterminantUsingCofactor:{label:"Determinant (Row Echelon Form)",show:["source","target"],args:[]},
                 backwardSubstitution:{label:"Backward Substitution",show:["source"],args:[]},
-				forwardElimination:{label:"Forward Elimination",show:["source"],args:[]},
-				gaussianElimination:{label:"Gaussian Elimination",show:["source"],args:[]},
-				reducedRowEchelonForm:{label:"Reduced Row EchelonForm",show:["source"],args:[]},
-				rowEchelonForm:{label:"Row Echelon Form",show:["source"],args:[]},
-                equalsNearly:{label:"Nearly Equals",show:["source"],args:[]},
-				testIsSquare:{label:"Is Square",show:["source"],args:[]},
-				get:{label:"Get Cell",show:["source","target"],args:[]},
-				sumRow:{label:"Sum Row",show:["source","target"],args:[]},
-				swapRows:{label:"Swap Rows",show:["source"],args:[]},
-				toArray:{label:"To Array Object",show:["source","target"],args:[]},
-				runningSum:{label:"Running Sum",show:["source","target"],args:[]},
-				getVandermonde:{label:"Vandermonde",show:["target"],args:["vector","columns"]},
-				create:{label:"Create",show:[,"target"],args:["rows","columns"]},
+				create:{label:"Create",         show:["target"],args:["initialState","rows","columns","dataType"]},
+                createLike:{label:"Create Like",show:["source","target"],args:[]},
+                clone:{label:"Clone",show:["source","target"],args:[]},
 				createForEachCellPairSet:{label:"Create Pair Set Cells",show:["source","target"],args:["matrix","call"],default:{call:"(baseCellValue,matrixCellValue)=>{}"}},
+				define:{label:"Define",show:["target"],args:["rows","columns","dataType"]},
+				defineEmpty:{label:"Define Empty",show:["target"],args:["rows","columns","dataType"]},
+				divideCell:{label:"Divide Cell",show:["source"],args:["rows","columns","value"]},
+                divideRow:{label:"Divide Row",show:["source"],args:["row","factor","start","end"]},
+                equalsNearly:{label:"Nearly Equals",show:["source"],args:[]},
+				fillArray:{label:"Fill",show:["source"],args:["matrix"]},
+				findColumnRow:{label:"Find in Column",show:["source"],args:["column","call","start","end"],default:{call:"()=>{}"}},
 				findRowColumn:{label:"Find in Row",show:["source"],args:["row","call","start","end"],default:{call:"(value,row,column,offset,vector)=>true"}},
 				forRowCells:{label:"Row Cells",show:["source"],args:["row","call","start","end"],default:{call:"()=>{}"}},
-				fillArray:{label:"fill",show:["source"],args:["matrix"]},
-				findColumnRow:{label:"Find in Column",show:["source"],args:["column","call","start","end"],default:{call:"()=>{}"}},
 				forColumnCells:{label:"Column Cells",show:["source"],args:["column","call","start","end"],default:{call:"()=>{}"}},
 				forEachCell:{label:"For Each Cell",show:["source"],args:["call"],default:{call:"()=>{}"}},
 				forEachRow:{label:"For Each Row",show:["source"],args:["call"],default:{call:"()=>{}"}},
 				forEachCellPairSet:{label:"For Each Cell Pair Set",show:["source"],args:["matrix","call"],default:{call:"()=>{}"}},
+				forwardElimination:{label:"Forward Elimination",show:["source"],args:[]},
+				gaussianElimination:{label:"Gaussian Elimination",show:["source"],args:[]},
+				get:{label:"Get Cell",show:["source","target"],args:[]},
+                getAdjoint:{label:"Adjoint",show:["source","target"],args:[]},
+                getCofactor:{label:"Cofactor",show:["source","target"],args:[]},
+                getComplementMinor:{label:"Complement Minor",show:["source","target"],args:[]},
+				getDeterminant:{label:"Determinant",show:["source","target"],args:[]},
+				getDeterminantUsingCofactor:{label:"Determinant (Cofactor)",show:["source","target"],args:[]},
+				getDeterminantUsingCofactor:{label:"Determinant (Row Echelon Form)",show:["source","target"],args:[]},
+				getIdentity:{label:"Identity",show:["source","target"],args:[]},
+				getInverse:{label:"Inverse",show:["source","target"],args:[]},
+				getInverseAdjointMethod:{label:"Inverse (Adjoint Method)",show:["source","target"],args:[]},
+				getInverseGaussJordan:{label:"Inverse (Gauss Jordan Method)",show:["source","target"],args:[]},
 				getIndex:{label:"Get Vector Offset",show:["source","target"],args:["row","column"]},
-				getZeroed:{label:"Get Zeroed",show:["source","target"],args:["row","column"]},
-				getMatrix:{label:"get Sub Matrix",show:["source","target"],args:["row","column","rows","columns"]},
+				getMatrix:{label:"Get Sub Matrix",show:["source","target"],args:["row","column","rows","columns"]},
 				getRow:{label:"Get Row",show:["source","target"],args:["row"]},
+				getVandermonde:{label:"Vandermonde",show:["target"],args:["vector","columns"]},
+				getZeroed:{label:"Get Zeroed",show:["source","target"],args:["row","column"]},
 				maxAbsColumn:{label:"Column Maximum Absolute",show:["source","target"],args:["column","start"]},
 				maxColumn:{label:"Column Max",show:["source","target"],args:["column","start"]},
+                multiple:{label:"Multiple",show:["source","target"],args:[]},
+                multipleCell:{label:"Multiple Cell",show:["source","target"],args:["rows","columns","value"]},
 				multiplyRow:{label:"Multiply Row",show:["source"],args:["row","factor"]},
+				norm:{label:"Norm",show:["source","target"],args:[]},
 				reduceRow:{label:"Reduce Row",show:["source","target"],args:["row","call","value"],default:{call:"(agregatevalue,cellValue,row,column)=>agregatevalue+cellValue"}},
+				reduce:{label:"Reduce Cells",show:["source","target"],args:["call","value"],default:{call:"()=>{}"}},
+				reducedRowEchelonForm:{label:"Reduced Row EchelonForm",show:["source"],args:[]},
+				rowEchelonForm:{label:"Row Echelon Form",show:["source"],args:[]},
+				runningSum:{label:"Running Sum",show:["source","target"],args:[]},
 				set:{label:"Set Cell",show:["source"],args:["row","column","value"]},
 				setRow:{label:"Set Row",show:["source"],args:["vector","row"]},
-				reduce:{label:"Reduce Cells",show:["source","target"],args:["call","value"],default:{call:"()=>{}"}}
+                subtractCell:{label:"Subtract Cell",show:["source","target"],args:["row","column","value"]},
+				sumRow:{label:"Sum Row",show:["source","target"],args:[]},
+				swapRows:{label:"Swap Rows",show:["source"],args:[]},
+				testIsSquare:{label:"Is Square",show:["source"],args:[]},
+				toArray:{label:"To Array Object",show:["source","target"],args:[]},
+                transpose:{label:"Transpose",show:["source","target"],args:[]}
 			};
 			const baseDiv=$("#node-inputDynamicBase");
 			function defineProperty(property,...types) {
@@ -118,16 +120,46 @@
 					const inputNode=$('<input type="text" id="node-input-'+property.name+'"/>').val(node[property.name]);
 					const typeNode=$('<input type="hidden" id="node-input-'+property.name+'-type"/>');
 					element.append([inputNode,typeNode]);
-					const typeValue=node[property.name+"-type"];
-					if(typeValue) typeNode.val(typeValue);
-					$("#node-input-"+property.name).typedInput({
-	  					type:typeValue||types[0],
-    					types:types,
-    					typeField: "#node-input-"+property.name+"-type"
-					});
+					if(types[0] instanceof Array) {
+						$("#node-input-"+property.name).typedInput({
+							type:property.name, 
+							types:[{value: property.name,
+    							options: types[0]
+							}]})
+					} else {
+						const typeValue=node[property.name+"-type"];
+					    if(typeValue) typeNode.val(typeValue);
+						$("#node-input-"+property.name).typedInput({
+	  						type:typeValue||types[0],
+    						types:types,
+    						typeField: "#node-input-"+property.name+"-type"
+						});
+					}
 				}
 			}
-			defineProperty({name:"source"	,label:"Source"		,icon:"crosshairs"},"msg","flow","global");
+			defineProperty({name:"initialState",label:"Initially"	,icon:"tag"},[
+        		{ value: "setZero", label: "Zeros"},
+        		{ value: "setRandom", label: "Random Numbers"},
+        		{ value: "setIdentity", label: "Identity"},
+				{ value: "setOne", label: "all 1"},
+				]);
+
+			defineProperty({name:"dataType",label:"number Type"	,icon:"tag"},[
+				{ value: "Float32Array", label: "float32	-3.4e38 to 3.4e38" },
+				{ value: "Float64Array", label: "double/float64	-1.8e308 to 1.8e308" },				{ value: "Int8Array", label: "byte -128 to 122" },
+				{ value: "Uint8Array", label: "octet 0 to 255" },
+				{ value: "Uint8ClampedArray", label: "octet clamped 0 to 255" },
+				{ value: "Int16Array", label: "short -32768 to 32767" },
+				{ value: "Uint16Array", label: "short unsigned  0 to 65535" },
+				{ value: "Int32Array", label: "	long -2147483648 to 2147483647" },
+				{ value: "Uint32Array", label: "long unsgined 0 to 4294967295" },
+				{ value: "BigInt64Array", label: "bigint 2**-263 to 2**263" },
+				{ value: "BigUint64Array", label: "bigint unsigned 0 to 2**264" },
+			]);
+
+
+
+			defineProperty({name:"source"	,label:"Source"		,icon:"crosshairs"},"msg","json","flow","global");
 			defineProperty({name:"arg"		,label:"Argument"	,icon:"tag"},"num","json","msg","flow","global","env");
 			defineProperty({name:"matrix"	,label:"Matrix"		,icon:"th"},"msg","flow","global");
 			defineProperty({name:"target"	,label:"Target"		,icon:"save"},"msg","flow","global");
@@ -145,8 +177,10 @@
 			defineProperty({name:"vector"	,label:"Vector"		,icon:"ellipsis-h"},"json","msg","flow","global");
 			defineProperty({name:"call"		,label:"Call"		,icon:"js",mode:"javascript"},"edit");
 
-			const options=Object.keys(actions).reduce((previousValue,property)=>previousValue.concat({value:property,label:actions[property].label}),
-				[]);
+			const options=Object.keys(actions)
+				.sort((a,b) => actions[a].label<actions[b].label?-1:0)
+				.reduce((previousValue,property)=>previousValue.concat({value:property,label:actions[property].label}),
+					[]);
 			const actionNode=$("#node-input-action");
 			actionNode.typedInput({
     			types: [{
@@ -154,7 +188,7 @@
             		options: options
 				}]
 			});
-	actionNode.change(function() {
+			actionNode.change(function() {
 				action=$(this).val();
 				node.args=[];
 				node.properties.forEach(property=>$(".form-row-http-in-"+property).hide());
@@ -162,7 +196,6 @@
 				node.args=actionDef.args;
 				node.args.forEach(property=>$(".form-row-http-in-"+property).show());
 				actionDef.show.forEach(property=>$(".form-row-http-in-"+property).show());
-
 			});
 		},
 		oneditsave: function() {

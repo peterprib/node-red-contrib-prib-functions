@@ -4,29 +4,28 @@
 
 *   Data Analysis  - statistical metrics that has real time option
 *   Matrix
-*	Transform
-*	Test
+*   Transform
+*   Test
 *   Load Injector
-*	Monitor Flow
-*	append
-*	Spawn Process
-*	Host Available
-*	node.js os metrics
-*	Levenshtein Distance
+*   Monitor Flow
+*   append
+*   Spawn Process
+*   Host Available
+*   node.js os metrics
+*   Levenshtein Distance
 
 ------------------------------------------------------------
 
 ## Data Analysis
 
 Real time metrics which are recalculated on single of data point and posted in msg.result.
-Key and value can be selected from msg.payload.
+Key and value can be selected from msg.payload. Includes lag (seasonal) along with delta(defference).
 Sending message with topic"@stats" places message with all stats on second port.
 If realtime metrics then a third port is shown where the message is sent if it is an outlier
 being outside 3 standard deviations from mean. This can be changed to median and number of deviations.
 
 ![Data Analysis Realtime](documentation/DataAnalysisRealtime.JPG "Data Analysis Realtime")
 ![Data Analysis Pearson R](documentation/DataAnalysisPearsonR.JPG "Data Analysis Pearson R")
-
 
 A set of data analysis functions that can be run over an array of data
 
@@ -78,7 +77,7 @@ example:
 
 Define a matrix and perform various functions
 
- * Define / Define Empty / Create / Create Like/ clone"
+ * Define / Define Empty / Create / Create Like/ clone
  * Add / Add Row to Row / Add to Cell / Add Row / Subtract Cell
  * Multiple / Multiple Cell / Divide Cell / Divide Row
  * Transpose
@@ -110,48 +109,48 @@ Messages generates a message for each row or record.
 
 Transformations:
 
-*	Array to CSV
-*	Array to HTML
-*	Array to ISO8385
-*	Array to Messages
-*	Array to xlsx / xlsx object (excel uses [xlsx][7])  
-*	AVRO to JSON (uses [avsc][6])
+*   Array to CSV
+*   Array to HTML
+*   Array to ISO8385
+*   Array to Messages
+*   Array to xlsx / xlsx object (excel uses [xlsx][7])  
+*   AVRO to JSON (uses [avsc][6])
 *   Buffer to comprossed 
-*	Confluence to JSON
+*   Confluence to JSON
 *   Compressed to Buffer
 *   Compressed to String
 *   COmpressed to JSON
-*	CSV to Array
-*	CSV to HTML
-*	CSV to Messages
-*	CSVWithHeader to Array
-*	CSVWithHeader to HTML
-*	CSVWithHeader to JSON
-*	ISO8385 to Array
-*	ISO8385 to JSON
-*	JSON to Array
-*	JSON to Confluence
-*	JSON to CSV
-*	JSON to AVRO (uses [avsc][6])
-*	JSON to ISO8385
-*	JSON to Messages
-*	JSON to String
-*	JSON to xlsx / xlsx object (excel uses [xlsx][7])  
-*	JSON to XML (uses [fast-xml-parser][4])
-*	String to JSON
-*	path to Basename
-*	path to Dirname
-*	path to Extname
-*	path to Format
-*	path to Is Absolute
-*	path to Join
-*	path to Parse
-*	path to Normalize
-*	path to Resolve
-*	snappy compress (uses [snappy][5], must install separately)
-*	snappy uncompress (uses [snappy][5], must install separately)
-*	xlsx / xlsx object to array/JSON (excel uses [xlsx][7])  
-*	XML to JSON (uses [fast-xml-parser][4])
+*   CSV to Array
+*   CSV to HTML
+*   CSV to Messages
+*   CSVWithHeader to Array
+*   CSVWithHeader to HTML
+*   CSVWithHeader to JSON
+*   ISO8385 to Array
+*   ISO8385 to JSON
+*   JSON to Array
+*   JSON to Confluence
+*   JSON to CSV
+*   JSON to AVRO (uses [avsc][6])
+*   JSON to ISO8385
+*   JSON to Messages
+*   JSON to String
+*   JSON to xlsx / xlsx object (excel uses [xlsx][7])  
+*   JSON to XML (uses [fast-xml-parser][4])
+*   String to JSON
+*   path to Basename
+*   path to Dirname
+*   path to Extname
+*   path to Format
+*   path to Is Absolute
+*   path to Join
+*   path to Parse
+*   path to Normalize
+*   path to Resolve
+*   snappy compress (uses [snappy][5], must install separately)
+*   snappy uncompress (uses [snappy][5], must install separately)
+*   xlsx / xlsx object to array/JSON (excel uses [xlsx][7])  
+*   XML to JSON (uses [fast-xml-parser][4])
 
 Note, snappy needs to be installed separately as can have issues with auto install as build binaries.
 
@@ -219,7 +218,6 @@ Test example:
 
 ![Load Injector example](documentation/LoadInjectorTest.JPG "Load Injector example")
 
-
 ------------------------------------------------------------
 
 ## Monitor Flow
@@ -232,23 +230,6 @@ Rate sampled every second and provides rate last second / 10 seconds / 1 minute 
 Test example:
 
 ![Monitor Flow example](documentation/MonitorFlowTest.JPG "Monitor Flow example")
-
-------------------------------------------------------------
-
-## Spawn Process
-
-Spawn process as per node.js manual with ability to set working directory, environment variables
-and argument passed to process. STDOUT and STDERR are sent as individual messages.
-RC port is sent a message on closure.
-Takes in messages that starts a process with ability to add environment values.
-Message can be sent to kill the process.    
-
-![Spawn Process](documentation/SpawnProcess.JPG "Spawn Process")
-
-Test example:
-
-![Spawn Process example](documentation/SpawnProcessTest.JPG "Spawn Process example")
-
 
 ------------------------------------------------------------
 
@@ -266,6 +247,18 @@ Test example:
 
 ------------------------------------------------------------
 
+## Monitor System 
+
+System monitoring metrics
+
+![Monitor System](documentation/monitorSystem.JPG "Monitor System")
+
+Test example:
+
+![Monitor System example](documentation/monitorSystemTest.JPG "Monitor System example")
+
+------------------------------------------------------------
+
 ## os
 
 The metrics from node.js os
@@ -275,6 +268,22 @@ The metrics from node.js os
 Test example:
 
 ![os example](documentation/osTest.JPG "os example")
+
+------------------------------------------------------------
+
+## Spawn Process
+
+Spawn process as per node.js manual with ability to set working directory, environment variables
+and argument passed to process. STDOUT and STDERR are sent as individual messages.
+RC port is sent a message on closure.
+Takes in messages that starts a process with ability to add environment values.
+Message can be sent to kill the process.    
+
+![Spawn Process](documentation/SpawnProcess.JPG "Spawn Process")
+
+Test example:
+
+![Spawn Process example](documentation/SpawnProcessTest.JPG "Spawn Process example")
 
 ------------------------------------------------------------
 
@@ -292,14 +301,15 @@ Test/example flow in test/generalTest.json
 
 # Version
 
+0.21.0 Add lag/seasonal to real time data analystics
+
+0.20.3 Add difference + monitor system
+
 0.19.0 Improve load injector, fix bug in test comparing buffers, add compression tranforms
 
 0.18.0 Add matrix node
 
 0.17.0 Add finished wire to load injector
-
-0.16.0 fix data analysis variance and stddev, add sample, add tests
-
 
 
 # Author

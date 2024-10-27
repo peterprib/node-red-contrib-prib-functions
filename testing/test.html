@@ -153,7 +153,7 @@
 			this.payloadType=setType(this.payloadType);
 			this.resultType=setType(this.resultType);
 			function setInput(t) {
-				let types=['flow','global','str','num','bool','json','bin','date','env'];
+				let types=['flow','global','str','num','bool','json','jsonata','bin','date','env'];
 				if(t=="result") types.push('re');
 				$("#node-input-"+t+"Type").val(this[t+"Type"]);
 				$("#node-input-"+t).typedInput({

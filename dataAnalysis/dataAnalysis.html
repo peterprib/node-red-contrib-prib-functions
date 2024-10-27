@@ -11,7 +11,7 @@
 		    outputs: {value:(["realtime","realtimePredict"].includes(this.action)?3:2),required:true},
 		    outliersBase: {value:"avg",required:false},
 		    outliersStdDevs: {value:"3",required:false},
-		    term: {value:"10",required:false},
+		    term: {value:10,required:false},
 		    keyProperty: {value:"msg.topic",required:false},
 		    dataProperty: {value:"msg.payload",required:false},
 		    dataProperties: {value:["msg.payload[0]","msg.payload[1]"],required:false}
@@ -28,6 +28,7 @@
         },
         oneditprepare: function() {
         	const node=this;
+			node.lag??=1
         	$("#node-input-keyProperty").change(function() {
             	if( [null,""].includes(node.keyProperty) ) {
    	   			 	$(this).val("msg.topic");
@@ -46,7 +47,7 @@
         		}
            	});
 	       	$("#node-input-action").change(function() {
-				if(["differenceSeasonal","differenceSeasonalSecondOrder"].includes( $(this).val() )) {
+				if(["differenceSeasonal","differenceSeasonalSecondOrder","realtime","realtimePredict"].includes( $(this).val() )) {
         			$(".form-row-http-in-lag").show(); 
         		} else {
         			$(".form-row-http-in-lag").hide();
@@ -69,10 +70,17 @@
 						if(node.term>1) $(this).val(1);
 					});
         		} else {
+        			$("#node-input-lag").attr({min:1,max:1000,step:1});
+					$("#node-input-lag").change(function() {
+						const v=$(this).val();
+						if(v<1) $(this).val(1);
+						if(v>1000) $(this).val(1000);
+					});
         			$("#node-input-term").attr({min:1,max:100,step:1});
 	       			$("#node-input-term").change(function() {
-						if(node.term<1) $(this).val(1);
-						if(node.term>100) $(this).val(100);
+						const v=$(this).val()
+						if(v<1) $(this).val(1);
+						if(v>100) $(this).val(100);
 					});
         		}        		 
         		if(["realtime","realtimePredict"].includes( $(this).val() )) {
@@ -94,8 +102,8 @@
            			$(".node-input-dataProperties-container-row").hide();
            			$(".form-row-http-in-dataProperty").show();
         		}        		 
-				$("#node-input-term").change();
 				$("#node-input-lag").change();
+				$("#node-input-term").change();
         	});
 	       	
   	    	node.dataProperties.forEach((r)=>addDataProperty(r));
@@ -248,12 +256,18 @@ Data is not persisted so metrics start from zero sample set on node recycle.
 	<p>
 If real-time stats then a message can send directive instruction in topic: 
 <dl>
-<dt>"@predict <key>"<\dt><dd></dd>Send send predictions to second port for selected key.
-<dt>"@stats"<\dt><dd></dd>send all stored metrics and retained datapoints to second port.
-<dt>"@stats reset"<\dt><dd>Reset all stats and "@stats reset <key>" will reset a particular data point.</dd>
-<dt>"@stats set"<\dt><dd>Set stats with ith msg.payload and "@stats set <a data point>" will set a particular data point with msg.payload.</dd>
+  <dt>"@predict <key>"</dt><dd></dd>Send send predictions to second port for selected key.
+  <dt>"@stats"</dt><dd></dd>send all stored metrics and retained datapoints to second port.
+  <dt>"@stats reset"</dt><dd>Reset all stats and "@stats reset <key>" will reset a particular data point.</dd>
+  <dt>"@stats set"</dt><dd>Set stats with ith msg.payload and "@stats set &lt;a data point&gt;" will set a particular data point with msg.payload.</dd>
 </dl>
 	</p>
+<dl>
+	<dt>Lag</dt><dd>If greater that 1 generates seasonal difference with degree lag</dd>
+	<dt>Term</dt><dd>The depth of moving Average</dd>
+</dl>
+	<p>
+ 	</p>
 	<p>
 	Outliers are not within:
 		<ul>	
