@@ -158,6 +158,13 @@ describe('sum', function(){
 		done();
 	});
 });	
+describe('average', function(){
+	require("../dataAnalysis/arrayAverage.js");
+	it("array 1 to 4", function(done){
+		assert.deepEqual([1,2,3,4].average(),(1+2+3+4)/4)
+		done();
+	});
+});	
 describe('sumSquared', function(){
 	require("../dataAnalysis/arraySumSquared.js");
 	it("array 1 to 4", function(done){
@@ -468,4 +475,17 @@ describe('pca', function(){
 		console.log(multiplyMatrix(matrix,3,2,[[1,1],[1,1]]));
 		done();
 	})
+	describe('autocovariance', function(){ //autocorrelation
+		require("../dataAnalysis/autocorrelation.js");
+		const data=[0.05,0.01,-0.02,0.03,-0.04,0.06,0.02,-0.01,-0.03,0.04]
+		it("autocovariance", function(done){
+			assert.deepEqual(data.autocovariance(1).toFixed(5),-0.00046)
+			done();
+		});
+		it("autocorrelation", function(done){
+			assert.deepEqual(data.autocorrelation(1).toFixed(2),-0.38)
+			done();
+		});
+
+	});	
 });

@@ -1,6 +1,7 @@
 const logger = new (require("node-red-contrib-logger"))("Data Analysis");
 logger.sendInfo("Copyright 2020 Jaroslav Peter Prib");
 
+require("./autocorrelation.js");
 require("./arrayLast");
 require("./arrayDifference")
 require("./arrayDifferenceSeasonal")
@@ -129,6 +130,8 @@ function getColumns(node) {
 	}
 }
 functions={
+	autocovariance:(d,term,node)=>d.autocovariance(node.lag),
+	autocorrelation:(d,term,node)=>d.autocorrelation(node.lag),
 	avg:(d)=>functions.sum(d)/d.length,
 	arrayMax:(d)=>{  // not tested
 		let max=[],indices

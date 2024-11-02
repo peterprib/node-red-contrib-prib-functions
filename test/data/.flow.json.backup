@@ -1239,6 +1239,102 @@
         ]
     },
     {
+        "id": "b7da7a9e30699c6f",
+        "type": "Data Analysis",
+        "z": "cf595649.931658",
+        "name": "",
+        "action": "autocorrelation",
+        "columns": "",
+        "lag": 1,
+        "outputs": 2,
+        "outliersBase": "avg",
+        "outliersStdDevs": "3",
+        "term": 10,
+        "keyProperty": "msg.topic",
+        "dataProperty": "msg.payload",
+        "dataProperties": [
+            "msg.payload[0]",
+            "msg.payload[1]"
+        ],
+        "x": 520,
+        "y": 420,
+        "wires": [
+            [
+                "542b732966669deb"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "114d327f05e06720",
+        "type": "test",
+        "z": "cf595649.931658",
+        "name": "autocovariance data",
+        "errorFactor": "",
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "[0.05,0.01,-0.02,0.03,-0.04,0.06,0.02,-0.01,-0.03,0.04]",
+        "payloadType": "json",
+        "result": "-0.38",
+        "resultType": "num",
+        "resultProperty": "msg.result",
+        "topic": "",
+        "x": 160,
+        "y": 420,
+        "wires": [
+            [
+                "b7da7a9e30699c6f"
+            ],
+            [
+                "da932227f003cc83"
+            ],
+            [
+                "74920ca767d590ba"
+            ]
+        ]
+    },
+    {
+        "id": "da932227f003cc83",
+        "type": "debug",
+        "z": "cf595649.931658",
+        "name": "error",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 710,
+        "y": 340,
+        "wires": []
+    },
+    {
+        "id": "542b732966669deb",
+        "type": "Monitor Flow",
+        "z": "cf595649.931658",
+        "name": "",
+        "x": 390,
+        "y": 340,
+        "wires": [
+            [
+                "114d327f05e06720"
+            ]
+        ]
+    },
+    {
+        "id": "74920ca767d590ba",
+        "type": "Monitor Flow",
+        "z": "cf595649.931658",
+        "name": "",
+        "x": 370,
+        "y": 500,
+        "wires": [
+            []
+        ]
+    },
+    {
         "id": "ffd72c7.5d152d",
         "type": "Host Available",
         "z": "955f4808.fd1898",
@@ -1668,7 +1764,7 @@
         "type": "matrix",
         "z": "ae9957f07bd56e1b",
         "name": "",
-        "action": "define",
+        "action": "defineEmpty",
         "args": [
             "rows",
             "columns",
@@ -1705,7 +1801,7 @@
         "value-type": "msg",
         "vector": "payload",
         "vector-type": "msg",
-        "x": 290,
+        "x": 310,
         "y": 260,
         "wires": [
             [

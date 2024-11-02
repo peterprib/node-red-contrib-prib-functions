@@ -37,7 +37,7 @@ function equalObjects(obj1,obj2,errorFactor,callEquals=()=>true,callNotEquals=()
 	if( Number.isNaN(obj1) && obj2==="NaN") return callEquals();
 	const obj1type=typeof obj1;
 	if(  obj1type != typeof obj2 ) return callNotEquals();
-	if(errorFactor &&  obj1type=="number") return (Math.abs(obj2-obj1)/obj2)<errorFactor; 
+	if(errorFactor &&  obj1type=="number") return (Math.abs(obj2-obj1)/obj2)<errorFactor?callEquals():callNotEquals(); 
 	if( !(obj1 instanceof Object) ) return callNotEquals(); 
 	if( Object.keys(obj1).length !== Object.keys(obj2).length ) return callNotEquals();
 	try{

@@ -30,6 +30,8 @@ being outside 3 standard deviations from mean. This can be changed to median and
 A set of data analysis functions that can be run over an array of data
 
 Single value metrics:
+* autocorrelation
+* Autocovariance
 * Average/Mean
 * Maximum
 * Median
@@ -300,6 +302,8 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+
+0.22.0 Add autocovariance + autocorealationship to real time data analystics, improves test
 
 0.21.0 Add lag/seasonal to real time data analystics
 

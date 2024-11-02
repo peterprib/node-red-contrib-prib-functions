@@ -47,7 +47,7 @@
         		}
            	});
 	       	$("#node-input-action").change(function() {
-				if(["differenceSeasonal","differenceSeasonalSecondOrder","realtime","realtimePredict"].includes( $(this).val() )) {
+				if(["autocovariance","autocorrelation","differenceSeasonal","differenceSeasonalSecondOrder","realtime","realtimePredict"].includes( $(this).val() )) {
         			$(".form-row-http-in-lag").show(); 
         		} else {
         			$(".form-row-http-in-lag").hide();
@@ -158,6 +158,8 @@
     <div class="form-row">
         <label for="node-input-action"><i class="fa fa-list-ul"></i> Method</label>
         <select id="node-input-action" placeholder="action">
+            <option value="autocovariance">Autocovariance</option>
+            <option value="autocorrelation">Autocorrelation</option>
             <option value="avg">Average</option>
             <option value="covariance">Covariance</option>
             <option value="corelationship">Corelationship</option>
