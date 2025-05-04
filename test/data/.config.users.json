@@ -13,9 +13,10 @@
                 "view-show-welcome-tours": true
             },
             "tours": {
-                "welcome": "3.1.5-git"
+                "welcome": "4.0.5-git"
             }
         },
-        "menu-menu-item-sidebar": true
+        "menu-menu-item-sidebar": true,
+        "menu-menu-item-palette": true
     }
 }

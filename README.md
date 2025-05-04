@@ -111,53 +111,104 @@ Messages generates a message for each row or record.
 
 Transformations:
 
-*   Array to CSV
-*   Array to HTML
-*   Array to ISO8385
-*   Array to Messages
-*   Array to xlsx / xlsx object (excel uses [xlsx][7])  
+*   Array to
+    * CSV
+    * HTML
+    * ISO8385
+    * Messages
+    * xlsx / xlsx object (excel uses [xlsx][7])  
 *   AVRO to JSON (uses [avsc][6])
-*   Buffer to comprossed 
+*   Buffer to compressed 
 *   Confluence to JSON
-*   Compressed to Buffer
-*   Compressed to String
-*   COmpressed to JSON
-*   CSV to Array
-*   CSV to HTML
-*   CSV to Messages
-*   CSVWithHeader to Array
-*   CSVWithHeader to HTML
-*   CSVWithHeader to JSON
+*   Compressed to
+    * Buffer
+    * String
+    * JSON
+*   CSV to
+    * Array
+    * HTML
+    * Messages
+*   CSVWithHeader to
+    * Array
+    * HTML
+    * JSON
+*   Date to
+    * is between
+    * ISO string 
+    * locale string
+    * range limit
 *   ISO8385 to Array
 *   ISO8385 to JSON
-*   JSON to Array
-*   JSON to Confluence
-*   JSON to CSV
-*   JSON to AVRO (uses [avsc][6])
-*   JSON to ISO8385
-*   JSON to Messages
-*   JSON to String
-*   JSON to xlsx / xlsx object (excel uses [xlsx][7])  
-*   JSON to XML (uses [fast-xml-parser][4])
-*   String to JSON
-*   path to Basename
-*   path to Dirname
-*   path to Extname
-*   path to Format
-*   path to Is Absolute
-*   path to Join
-*   path to Parse
-*   path to Normalize
-*   path to Resolve
+*   JSON to 
+    * Array
+    * Confluence
+    * CSV
+    * AVRO (uses [avsc][6])
+    * ISO8385
+    * Messages
+    * String
+    * xlsx / xlsx object (excel uses [xlsx][7])  
+    * XML (uses [fast-xml-parser][4])
+* Number
+    * is between
+    * range limit
+*   path
+    * Basename
+    * Dirname
+    * Extname
+    * Format
+    * Is Absolute
+    * Join
+    * Parse
+    * Normalize
+    * Resolve
 *   snappy compress (uses [snappy][5], must install separately)
 *   snappy uncompress (uses [snappy][5], must install separately)
+*   String to
+    * Append
+    * Array By Delimiter
+    * At
+    * Camelize
+    * Capitalize
+    * Compressed
+    * Char At
+    * Char Code At"
+    * Code Point At
+    * Concat
+    * Date
+    * Delimiter On Case
+    * _ to space
+    * _ to space Capitilize
+    * Drop square bracket prefix
+    * Ends With
+    * Float
+    * Get Word
+    * Integer
+    * is Between
+    * Lower Case
+    * Number
+    * Prepend
+    * JSON
+    * Range Limit
+    * Split
+    * Starts With
+    * Timestamp
+    * Title
+    * Title Grammatical
+    * Trim
+    * Trim End
+    * Trim Start
+    * Upper Case
+    * Xml String Encode
+
+
 *   xlsx / xlsx object to array/JSON (excel uses [xlsx][7])  
 *   XML to JSON (uses [fast-xml-parser][4])
 
 Note, snappy needs to be installed separately as can have issues with auto install as build binaries.
 
 With xlsx object one can use the function in [xlsx][7] against the object in functions node.
-
+"
 Example AVRO with schema
 
 ![Transform AVRO](documentation/transformArvo.jpg "Transform AVRO example")
@@ -302,6 +353,7 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 # Version
+0.23.0 Removes bug in test, more translation
 
 0.22.0 Add autocovariance + autocorealationship to real time data analystics, improves test
 

@@ -1,4 +1,5 @@
 const logger = new (require("node-red-contrib-logger"))("test").sendInfo("Copyright 2020 Jaroslav Peter Prib");
+const assert = require('node:assert')
 
 if(String.prototype.escapeSpecialChars)
 	logger.warn("String.prototype.escapeSpecialChars already defined");
@@ -23,31 +24,62 @@ function escapeSpecialChars(s){
 	}
 }
 function setError(msg,node,err) {
-	msg._test.error=err;
-	node.error(err);
-	node.status({fill:"red",shape:"ring",text:"error"});
-	node.send([null,msg]);
+	msg._test.error=err
+	node.error(err)
+	node.status({fill:"red",shape:"ring",text:"error"})
+	node.send([null,msg])
+}
+function assertObjects(obj1,obj2,errorFactor,callEquals=()=>true,callNotEquals=()=>false) {
+	try{
+		node.assert(obj1,obj2).then(callEquals)
+	} catch(ex) {
+		logger.error(ex.message);
+		callNotEquals(ex.message)
+	}
+/*
+	assert.deepStrictEqual(actual, expected[, message])
+	assert.deepEqual(actual, expected[, message])
+	assert.notDeepEqual(actual, expected[, message])
+	assert.partialDeepStrictEqual(actual, expected[, message])
+	assert.equal(actual, expected[, message])
+	assert.notEqual(actual, expected[, message])
+	assert.strictEqual(actual, expected[, message])
+	assert.notStrictEqual(actual, expected[, message])
+
+	assert.doesNotMatch(string, regexp[, message])
+	assert.match(string, regexp[, message])
+
+	assert.doesNotReject(asyncFn[, error][, message])
+	assert.doesNotThrow(fn[, error][, message])
+	assert.throws(fn[, error][, message])
+	assert.ifError(value)
+	assert.ok(value[, message])
+	assert.rejects(asyncFn[, error][, message])
+*/
 }
 
 function equalObjects(obj1,obj2,errorFactor,callEquals=()=>true,callNotEquals=()=>false) {
-	if( obj1 === obj2 ) return callEquals();
-	if(obj1 instanceof Buffer ) return Buffer.compare(obj1, obj2) === 0
-	if( obj1 === Number.POSITIVE_INFINITY && obj2==="Infinity") return callEquals();
-	if( obj1 === Number.NEGATIVE_INFINITY && obj2==="-Infinity") return callEquals();
-	if( Number.isNaN(obj1) && obj2==="NaN") return callEquals();
-	const obj1type=typeof obj1;
-	if(  obj1type != typeof obj2 ) return callNotEquals();
-	if(errorFactor &&  obj1type=="number") return (Math.abs(obj2-obj1)/obj2)<errorFactor?callEquals():callNotEquals(); 
-	if( !(obj1 instanceof Object) ) return callNotEquals(); 
-	if( Object.keys(obj1).length !== Object.keys(obj2).length ) return callNotEquals();
-	try{
-		for(let key in obj1) {
-			if( !equalObjects(obj1[key],obj2[key],errorFactor) ) return callNotEquals();
+	if(obj1 == obj2) return callEquals()
+	if(obj1 instanceof Buffer) return Buffer.compare(obj1, obj2) === 0?callEquals():callNotEquals("buffers not equal")
+	if(obj1 === Number.POSITIVE_INFINITY && obj2==="Infinity") return callEquals()
+	if(obj1 === Number.NEGATIVE_INFINITY && obj2==="-Infinity") return callEquals()
+	if(Number.isNaN(obj1) && obj2==="NaN") return callEquals()
+	const obj1type=typeof obj1
+	if(obj1type != typeof obj2) return callNotEquals("different data types, "+obj1type+" vs "+typeof obj2)
+	if(obj1type=="boolean") callNotEquals("boolean not equal")
+	if(errorFactor &&  obj1type=="number") return (Math.abs(obj2-obj1)/obj2)<errorFactor?callEquals():callNotEquals("number outside bounds")
+	if( !(obj1 instanceof Object) ) return callNotEquals("different object types")
+	const keys1=Object.keys(obj1).sort()
+	const keys2=Object.keys(obj2).sort()
+	if( keys1.length !== keys2.length ) return callNotEquals("different number of properties")
+	for(const key1 of keys1){
+		try{ 
+			if( !equalObjects(obj1[key1],obj2[key1],errorFactor) ) return callNotEquals()
+		} catch(ex){
+			return callNotEquals(ex.message)
 		}
-	} catch(e) {
-		return callNotEquals();
 	}
-	return callEquals();
+    return callEquals();
 }
 
 const testedOK=(node,msg)=>{
@@ -55,9 +87,10 @@ const testedOK=(node,msg)=>{
 	delete msg._test;
 	node.send([null,null,msg]);
 }
-const testedFailed=(node,msg)=>{
-	msg._test.testedValue=node.getData(msg,node);
-	setError(msg,node,"Test failed");
+const testedFailed=(node,msg,err)=>{
+	msg._test.testedValue=node.getData(msg,node)
+	msg._test.errorDetails=err
+	setError(msg,node,"Test failed")
 }
 
 module.exports = function(RED) {
@@ -94,13 +127,13 @@ module.exports = function(RED) {
 
 					if(node.isJSONata) 
 						return 	RED.util.evaluateJSONataExpression(node.resultExpression,msg,(err,data)=>{
-							if(err) testedFailed(node,msg)
-							else return data?testedOK(node,msg):testedFailed(node,msg)
+							if(err) testedFailed(node,msg,err)
+							else return data?testedOK(node,msg):testedFailed(node,msg,"no data")
 						})
 					
 					node.equalObjects(node.getData(msg,node),msg._test.result,node.errorFactor,
 						()=>testedOK(node,msg),
-						()=>testedFailed(node,msg)
+						(err)=>testedFailed(node,msg,err)
 					);
 
 				} catch(ex){
