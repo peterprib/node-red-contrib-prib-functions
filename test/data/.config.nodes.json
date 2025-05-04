@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "4.0.5-git",
+        "version": "4.0.9-git",
         "local": false,
         "user": false,
         "nodes": {
