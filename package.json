@@ -1,6 +1,6 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.23.0",
+	"version": "0.23.1",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"avsc": ">=5.7.7",
