@@ -1,11 +1,11 @@
 
 <script type="text/javascript">
-	function setInput(t) {
+	const setInput=(t,types=['str','json','env'])=>{
 		$("#node-input-"+t+"Type").val(this[t+"Type"]);
 		$("#node-input-"+t).typedInput({
-			default: 'json',
+			default: types[0],
 			typeField: $("#node-input-"+t+"Type"),
-			types:['str','json','env'],
+			types:types,
 			validate: ()=>{
 			}
 		});
@@ -21,15 +21,28 @@
 		defaults: {
 			name: {value: ""},
 			actionSource: {value:"csv",required:true},
+			deleteSource: {value:true,validate: RED.validators.typedInput("deleteSourceType")},
+			deleteSourceType:{value:"bool"},
 			actionTarget: {value:"JSON",required:true},
 			sourceProperty:{value:"msg.payload"},
 			targetProperty:{value:"msg.payload"},
 			topicProperty:{value:"msg.topic"},
+			index: {value:0},
 			maxMessages: {value:1000},
+			maxDate: {value:null},
+			minDate: {value:null},
+			maxNumber: {value:0},
+			minNumber: {value:0},
+			maxString: {value:""},
+			minString: {value:""},
+			radix: {value:10},
 			schema: {value:schemaExample, validate: RED.validators.typedInput("schemaType")},
 			schemaType: {value:"json"},
 			skipLeading: {value:0},
 			skipTrailing: {value:0},
+			radix: {value:10},
+			string: {value:"", validate: RED.validators.typedInput("stringType")},
+			stringType: {value:"str"},
 			delimiter: {value:",",required:true},
 			compressionType: {value:"gzip"}
 		},
@@ -55,9 +68,11 @@
 				{ value: "Confluence", label: "Confluence"},
 				{ value: "CSVWithHeader", label: "CSV with header"},
 				{ value: "CSV", label: "CSV"},
+				{ value: "Date", label: "Date"},
 				{ value: "ISO8385", label: "ISO 8583"},
 				{ value: "JSON", label: "JSON"},
 				{ value: "npy", label: "npy"},
+				{ value: "Number", label: "Number"},
 				{ value: "NumPyObject", label: "NumPy Obect"},
 				{ value: "String", label: "String"},
 				{ value: "snappy", label: "Snappy"},
@@ -125,6 +140,12 @@
 					options["HTML"]="HTML";
 					options["Messages"]="Messages";
 					break;
+				case 'Date':
+					options["isBetween"]="is between";
+					options["RangeLimit"]="Range Limit"; 
+					options["ISODate"]="YYYY-MM-DD";
+					options["LocalDate"]="Local String";
+					break;
 				case 'ISO8385':
 					options["JSON"]="JSON";
 					options["Array"]="Array";
@@ -150,10 +171,18 @@
 					options["JSON"]="JSON";
 					options["NumPyObject"]="NumPy Object";
 					break;
+				case 'Number':
+					options["Abbreviated"]="Abbreviated";
+					options["RangeLimit"]="Range Limit";
+					options["isBetween"]="is Between";
+					break;
 				case 'NumPyObject':
 					options["JSON"]="JSON";
 					break;
-				
+				case 'Object':
+					options["Coalesce"]="Coalesce";
+					options["Nullif"]="Nullif";
+					break;
 				case 'path':
 					options["Basename"]="basename";
 					options["Dirname"]="dirname";
@@ -168,8 +197,42 @@
 					options["Compress"]="Compress";
 					break;
 				case 'String':
-					options["Compressed"]="Compressed";
+					options["Append"]="Append";
+					options["ArrayusingDelimiter"]="Array By Delimiter";
+					options["At"]="At";
+					options["Camelize"]="Camelize";
+					options["Capitalize"]="Capitalize";
+   					options["Compressed"]="Compressed";
+				   	options["CharAt"]="Char At";
+					options["CharCodeAt"]="Char Code At";
+					options["CodePointAt"]="Code Point At";
+					options["Concat"]="Concat";
+					options["Date"]="Date";
+					options["DateLocal"]="Date Local";
+					options["DelimiterOnCase"]="Delimiter On Case";
+					options["Deunderscore"]="_ to space";
+					options["DeunderscoreCapitilize"]="_ to space Capitilize";
+					options["DropSquareBracketPrefix"]="Drop square bracket prefix";
+					options["EndsWith"]="Ends With";
+					options["Float"]="Float";
+					options["GetWord"]="Get Word";
+					options["Integer"]="Integer";
+					options["isBetween"]="is Between";
+					options["LowerCase"]="Lower Case";
+					options["Number"]="Number";
+					options["Prepend"]="Prepend";
 					options["JSON"]="JSON";
+					options["RangeLimit"]="Range Limit";
+					options["Split"]="Split";
+					options["StartsWith"]="Starts With";
+					options["Timestamp"]="Timestamp";
+					options["Title"]="Title";
+					options["TitleGrammatical"]="Title Grammatical";
+					options["Trim"]="Trim";
+					options["TrimEnd"]="Trim End";
+					options["TrimStart"]="Trim Start";
+					options["UpperCase"]="Upper Case";
+					options["XmlStringEncode"]="Xml String Encode";
 					break;
 				case 'XLSX':
 					options["XLSXObject"]="XLSX Object";
@@ -199,14 +262,22 @@
 			$("#node-input-actionTarget").change(function() {
 				const actionTarget=$(this).val();
 				const actionSource=$("#node-input-actionSource").val();
-				if(!["Confluence","AVRO"].includes(actionSource)){
-					$(".form-row-http-in-schema").hide();
-				}
-				$(".form-row-http-in-maxMessages").hide();
-				if(!['CSV','CSVWithHeader'].includes(actionTarget)) {
-					$(".form-row-http-in-csv").hide();
-				}
 				$(".form-row-http-in-compressionType").hide();
+				$(".form-row-http-in-csv").hide();
+				$(".form-row-http-in-delimiter").hide();
+				$(".form-row-http-in-index").hide();
+				$(".form-row-http-in-length").hide();
+				$(".form-row-http-in-maxMessages").hide();
+				$(".form-row-http-in-maxDate").hide();
+				$(".form-row-http-in-maxNumber").hide();
+				$(".form-row-http-in-maxString").hide();
+				$(".form-row-http-in-minDate").hide();
+				$(".form-row-http-in-minNumber").hide();
+				$(".form-row-http-in-minString").hide();
+				$(".form-row-http-in-radix").hide();
+				$(".form-row-http-in-schema").hide();
+				$(".form-row-http-in-string").hide();
+
 				switch (actionTarget) {
 				case 'AVRO':
 				case 'Confluence':
@@ -215,15 +286,42 @@
 				case 'Compressed':
 					$(".form-row-http-in-compressionType").show();
 					break;
-				case 'CSV':
-					$(".form-row-http-in-csv").show();
-					break;
 				case 'Messages':
 					$(".form-row-http-in-maxMessages").show();
 					break;
+				case 'Integer':
+					$(".form-row-http-in-radix").show();
+					break;
+				case 'At':
+				case 'CharAt':
+				case 'CharCodeAt': 
+				case 'CodePointAt':
+				case 'GetWord':
+					$(".form-row-http-in-index").show();
+					break;
+				case 'EndsWith':
+				case 'StartsWith':
+				case 'Append':
+				case 'Prepend':
+				case 'Concat':
+				case 'Split':
+					$(".form-row-http-in-string").show();
+					break;
+				case 'CSV':
+				case 'DelimiterOnCase':
+				case 'ArrayByDelimiter':
+ 					$(".form-row-http-in-delimiter").show();
+					break;
+				case 'RangeLimit':
+				case 'isBetween':
+ 					$(".form-row-http-in-max"+actionSource).show();
+ 					$(".form-row-http-in-min"+actionSource).show();
+					break;
 				}
 			}).change();
+			setInput.apply(this,["deleteSource",["bool"]]);
 			setInput.apply(this,["schema"]);
+			setInput.apply(this,["string",["str","msg","flow","global","env","node"]]);
 		},
 		oneditsave: function() {
 		},
@@ -239,11 +337,16 @@
 		<input type="text" id="node-input-name" placeholder="Name">
 	</div>
 	<div class="form-row form-row-http-in-sourceProperty show">
-		<label for="node-input-sourceProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Source Property </label>
+		<label for="node-input-sourceProperty" style="white-space: nowrap"> Source Property </label>
 		<input type="text" id="node-input-sourceProperty" placeholder="msg.payload">
 	</div>
+	<div class="form-row form-row-http-in-deleteSource show">
+		<label for="node-input-deleteSource"><span data-i18n="common.label.string">    Delete?</span></label>
+		<input type="text" id="node-input-deleteSource" style="width:70%">
+		<input type="hidden" id="node-input-deleteSourceType">
+	</div>
 	<div class="form-row form-row-http-in-targetProperty show">
-		<label for="node-input-targetProperty" style="white-space: nowrap"><i class="icon-bookmark"></i> Target Property </label>
+		<label for="node-input-targetProperty" style="white-space: nowrap"> Target Property </label>
 		<input type="text" id="node-input-targetProperty" placeholder="msg.payload">
 	</div>
 	<div class="form-row form-row-http-in-topicProperty show">
@@ -259,9 +362,13 @@
 		<select id="node-input-actionTarget" placeholder="actionTarget">
 		</select>
 	</div>
-	<div class="form-row form-row-http-in-csv hide">
+	<div class="form-row form-row-http-in-delimiter hide">
 		<label for="node-input-delimiter"><i class="icon-bookmark"></i> Delimiter</label>
 		<input type="text" id="node-input-delimiter" placeholder="delimiter" size="1" minlength="1">
+	</div>
+	<div class="form-row form-row-http-in-index hide">
+		<label for="node-input-index"><i class="icon-bookmark"></i> Index</label>
+		<input type="number" id="node-input-index" placeholder="index" min="-10000" max="10000" step="1">
 	</div>
 	<div class="form-row form-row-http-in-skip hide">
 		<label for="node-input-skipLeading"><i class="icon-bookmark"></i> Skip Leading</label>
@@ -271,7 +378,39 @@
 	</div>
 	<div class="form-row form-row-http-in-maxMessages hide">
 		<label for="node-input-maxMessages"><i class="icon-bookmark"></i> Max Messages</label>
-		<input type="number" id="node-input-maxMessages" placeholder="maxMessages" min="1" max="10000" step="100">
+		<input type="number" id="node-input-maxMessages" placeholder="maxMessages" min="1" max="36" step="1">
+	</div>
+	<div class="form-row form-row-http-in-minNumber hide">
+		<label for="node-input-minNumber"><i class="icon-bookmark"></i> Min</label>
+		<input type="number" id="node-input-minNumber" placeholder="min">
+	</div>
+	<div class="form-row form-row-http-in-maxNumber hide">
+		<label for="node-input-maxNumber"><i class="icon-bookmark"></i> Max</label>
+		<input type="number" id="node-input-maxNumber" placeholder="max">
+	</div>
+	<div class="form-row form-row-http-in-minString hide">
+		<label for="node-input-minString"><i class="icon-bookmark"></i> Min</label>
+		<input type="text" id="node-input-minString" placeholder="min">
+	</div>
+	<div class="form-row form-row-http-in-maxString hide">
+		<label for="node-input-maxString"><i class="icon-bookmark"></i> Max</label>
+		<input type="text" id="node-input-maxString" placeholder="max">
+	</div>
+	<div class="form-row form-row-http-in-minDate hide">
+		<label for="node-input-minDate"><i class="icon-bookmark"></i> Min</label>
+		<input type="date" id="node-input-minDate" placeholder="min">
+	</div>
+	<div class="form-row form-row-http-in-maxDate hide">
+		<label for="node-input-maxDate"><i class="icon-bookmark"></i> Max</label>
+		<input type="date" id="node-input-maxDate" placeholder="max">
+	</div>
+	<div class="form-row form-row-http-in-length hide">
+		<label for="node-input-length"><i class="icon-bookmark"></i> Length</label>
+		<input type="number" id="node-input-length" placeholder="length" min="1" max="1000" step="1">
+	</div>
+	<div class="form-row form-row-http-in-radix hide">
+		<label for="node-input-radix"><i class="icon-bookmark"></i> Radix</label>
+		<input type="number" id="node-input-radix" placeholder="radix" min="2" max="10000" step="100">
 	</div>
 	<div class="form-row form-row-http-in-schema hide">
 		<label for="node-input-schema"><i class="fa fa-envelope"></i> <span data-i18n="common.label.schema"> Schema </span></label>
@@ -281,6 +420,11 @@
 	<div class="form-row form-row-http-in-compressionType hide">
 		<label for="node-input-compressionType"><i class="fa fa-envelope"></i> <span data-i18n="common.label.compressionType"> Type </span></label>
 		<input type="text" id="node-input-compressionType">
+	</div>
+	<div class="form-row form-row-http-in-string hide">
+		<label for="node-input-string"><i class="fa fa-bookmark"></i> <span data-i18n="common.label.string"> String</span></label>
+		<input type="text" id="node-input-string" style="width:70%">
+		<input type="hidden" id="node-input-stringType">
 	</div>
 
 </script>
