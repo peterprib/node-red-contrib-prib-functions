@@ -118,6 +118,14 @@
         "env": []
     },
     {
+        "id": "e45553957f2b6fab",
+        "type": "tab",
+        "label": "transform json",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "460ae66eec4b7f8a",
         "type": "tab",
         "label": "transform string",
@@ -3130,44 +3138,6 @@
         ]
     },
     {
-        "id": "2ce3786.acae688",
-        "type": "transform",
-        "z": "d9c7ae0e.cb9a9",
-        "name": "",
-        "actionSource": "JSON",
-        "actionTarget": "String",
-        "delimiter": ",",
-        "x": 580,
-        "y": 60,
-        "wires": [
-            [
-                "5ac2ef6c.d0953"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "5ac2ef6c.d0953",
-        "type": "test",
-        "z": "d9c7ae0e.cb9a9",
-        "name": "",
-        "payload": "{\"a\":1,\"b\":1}",
-        "payloadType": "json",
-        "result": "{\"a\":1,\"b\":1}",
-        "resultType": "str",
-        "resultProperty": "msg.payload",
-        "topic": "",
-        "x": 300,
-        "y": 120,
-        "wires": [
-            [
-                "2ce3786.acae688"
-            ],
-            [],
-            []
-        ]
-    },
-    {
         "id": "d9a04503.7fc3a8",
         "type": "debug",
         "z": "d9c7ae0e.cb9a9",
@@ -3218,28 +3188,6 @@
                 "df3844b8.d62658"
             ],
             []
-        ]
-    },
-    {
-        "id": "b61d362a.9b7288",
-        "type": "inject",
-        "z": "d9c7ae0e.cb9a9",
-        "name": "",
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 80,
-        "y": 40,
-        "wires": [
-            [
-                "5ac2ef6c.d0953",
-                "df3844b8.d62658",
-                "1996fa8b.414205"
-            ]
         ]
     },
     {
@@ -3309,8 +3257,31 @@
         "z": "d9c7ae0e.cb9a9",
         "name": "",
         "actionSource": "ISO8385",
-        "actionTarget": "Array",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "JSON",
+        "sourceProperty": "",
+        "targetProperty": "",
+        "topicProperty": "",
+        "JSONataSource": "",
+        "JSONataTarget": "",
+        "index": "",
+        "maxMessages": "",
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": "",
+        "minNumber": "",
+        "maxString": "",
+        "minString": "",
+        "radix": "",
+        "schema": "",
+        "schemaType": "str",
+        "skipLeading": "",
+        "skipTrailing": "",
+        "string": "",
+        "stringType": "str",
         "delimiter": ",",
+        "compressionType": "setGzip",
         "x": 510,
         "y": 420,
         "wires": [
@@ -3338,8 +3309,8 @@
         "actionSource": "JSON",
         "actionTarget": "HTML",
         "delimiter": ",",
-        "x": 520,
-        "y": 500,
+        "x": 540,
+        "y": 320,
         "wires": [
             [
                 "d9a04503.7fc3a8"
@@ -3424,6 +3395,184 @@
         ]
     },
     {
+        "id": "7d7f98d9f9c42629",
+        "type": "link call",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "links": [
+            "2605139b45f1f105"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 340,
+        "y": 820,
+        "wires": [
+            [
+                "39f69c675d39c38c"
+            ]
+        ]
+    },
+    {
+        "id": "93648bfe54fe290b",
+        "type": "inject",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 740,
+        "wires": [
+            [
+                "455bee5a8bfcd16f"
+            ]
+        ]
+    },
+    {
+        "id": "44ba2e4231a7cf77",
+        "type": "link call",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "links": [
+            "e057797d0b796145"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 670,
+        "y": 100,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "455bee5a8bfcd16f",
+        "type": "link call",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "links": [
+            "ef3c3bb841e5b85a"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 320,
+        "y": 740,
+        "wires": [
+            [
+                "52839bfb05b91f4c"
+            ]
+        ]
+    },
+    {
+        "id": "810e0fa7d63baab2",
+        "type": "link call",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "links": [
+            "e057797d0b796145"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 350,
+        "y": 940,
+        "wires": [
+            [
+                "6bda6a7cf990884d"
+            ]
+        ]
+    },
+    {
+        "id": "6bda6a7cf990884d",
+        "type": "debug",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "Done",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 960,
+        "wires": []
+    },
+    {
+        "id": "52839bfb05b91f4c",
+        "type": "Monitor Flow",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "x": 550,
+        "y": 740,
+        "wires": [
+            [
+                "11ca1573aaaf8288"
+            ]
+        ]
+    },
+    {
+        "id": "39f69c675d39c38c",
+        "type": "Monitor Flow",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "x": 550,
+        "y": 820,
+        "wires": [
+            [
+                "6fe703fe6cf5f12d"
+            ]
+        ]
+    },
+    {
+        "id": "6fe703fe6cf5f12d",
+        "type": "link call",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "links": [
+            "8bc4d0adfbe612e5"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 330,
+        "y": 880,
+        "wires": [
+            [
+                "810e0fa7d63baab2"
+            ]
+        ]
+    },
+    {
+        "id": "11ca1573aaaf8288",
+        "type": "link call",
+        "z": "d9c7ae0e.cb9a9",
+        "name": "",
+        "links": [
+            "0c1e0f0f3543e49e"
+        ],
+        "linkType": "static",
+        "timeout": "30",
+        "x": 340,
+        "y": 780,
+        "wires": [
+            [
+                "7d7f98d9f9c42629"
+            ]
+        ]
+    },
+    {
         "id": "93c7047f87bbf964",
         "type": "debug",
         "z": "5866424ac23291eb",
@@ -3457,7 +3606,7 @@
         "skipTrailing": 0,
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 450,
+        "x": 630,
         "y": 280,
         "wires": [
             [
@@ -3483,7 +3632,7 @@
         "skipTrailing": 0,
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 460,
+        "x": 640,
         "y": 360,
         "wires": [
             [
@@ -3506,7 +3655,7 @@
         "resultType": "str",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 170,
+        "x": 350,
         "y": 360,
         "wires": [
             [
@@ -3534,7 +3683,7 @@
         "resultType": "json",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 160,
+        "x": 340,
         "y": 440,
         "wires": [
             [
@@ -3577,7 +3726,7 @@
         "stringType": "str",
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 460,
+        "x": 640,
         "y": 440,
         "wires": [
             [
@@ -3602,7 +3751,7 @@
         "resultType": "json",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 170,
+        "x": 350,
         "y": 520,
         "wires": [
             [
@@ -3611,7 +3760,9 @@
             [
                 "93c7047f87bbf964"
             ],
-            []
+            [
+                "3c77d5233e994214"
+            ]
         ]
     },
     {
@@ -3631,7 +3782,7 @@
         "skipTrailing": 0,
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 460,
+        "x": 640,
         "y": 520,
         "wires": [
             [
@@ -3656,7 +3807,7 @@
         "resultType": "str",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 170,
+        "x": 350,
         "y": 40,
         "wires": [
             [
@@ -3687,7 +3838,7 @@
         "skipTrailing": 0,
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 450,
+        "x": 630,
         "y": 40,
         "wires": [
             [
@@ -3712,7 +3863,7 @@
         "resultType": "str",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 150,
+        "x": 330,
         "y": 120,
         "wires": [
             [
@@ -3743,7 +3894,7 @@
         "skipTrailing": 0,
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 450,
+        "x": 630,
         "y": 120,
         "wires": [
             [
@@ -3771,7 +3922,7 @@
         "skipTrailing": 0,
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 460,
+        "x": 640,
         "y": 200,
         "wires": [
             [
@@ -3796,7 +3947,7 @@
         "resultType": "str",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 170,
+        "x": 350,
         "y": 200,
         "wires": [
             [
@@ -3824,7 +3975,7 @@
         "resultType": "str",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 170,
+        "x": 350,
         "y": 280,
         "wires": [
             [
@@ -3837,6 +3988,31 @@
                 "238111a6a4d2eb17"
             ]
         ]
+    },
+    {
+        "id": "ef3c3bb841e5b85a",
+        "type": "link in",
+        "z": "5866424ac23291eb",
+        "name": "transform array",
+        "links": [],
+        "x": 105,
+        "y": 40,
+        "wires": [
+            [
+                "16fb26ead524acd9"
+            ]
+        ]
+    },
+    {
+        "id": "3c77d5233e994214",
+        "type": "link out",
+        "z": "5866424ac23291eb",
+        "name": "transform array finished",
+        "mode": "return",
+        "links": [],
+        "x": 555,
+        "y": 620,
+        "wires": []
     },
     {
         "id": "49b2ad130416e0a0",
@@ -4595,7 +4771,8 @@
                 "3113b8a9e4b92296"
             ],
             [
-                "a411a1f479258d72"
+                "a411a1f479258d72",
+                "d8e481b0d9a11465"
             ]
         ]
     },
@@ -4639,6 +4816,31 @@
         ]
     },
     {
+        "id": "2605139b45f1f105",
+        "type": "link in",
+        "z": "1374c39ae82adb4e",
+        "name": "transform date",
+        "links": [],
+        "x": 75,
+        "y": 160,
+        "wires": [
+            [
+                "d96341af5b44e199"
+            ]
+        ]
+    },
+    {
+        "id": "d8e481b0d9a11465",
+        "type": "link out",
+        "z": "1374c39ae82adb4e",
+        "name": "trans form date finish",
+        "mode": "return",
+        "links": [],
+        "x": 1235,
+        "y": 680,
+        "wires": []
+    },
+    {
         "id": "ee2d5b0149699bfd",
         "type": "transform",
         "z": "65b5beda2b73b7b5",
@@ -4671,7 +4873,7 @@
         "type": "debug",
         "z": "65b5beda2b73b7b5",
         "name": "debug",
-        "active": true,
+        "active": false,
         "tosidebar": true,
         "console": false,
         "tostatus": false,
@@ -4915,7 +5117,9 @@
             [
                 "10a0adbf5535121a"
             ],
-            []
+            [
+                "84bf5aaa74b38e59"
+            ]
         ]
     },
     {
@@ -4955,6 +5159,284 @@
             [
                 "d38095883a4a54ac",
                 "8137c393bddb08a1"
+            ]
+        ]
+    },
+    {
+        "id": "0c1e0f0f3543e49e",
+        "type": "link in",
+        "z": "65b5beda2b73b7b5",
+        "name": "transform compress",
+        "links": [],
+        "x": 75,
+        "y": 40,
+        "wires": [
+            [
+                "d38095883a4a54ac"
+            ]
+        ]
+    },
+    {
+        "id": "84bf5aaa74b38e59",
+        "type": "link out",
+        "z": "65b5beda2b73b7b5",
+        "name": "transform compress finished",
+        "mode": "return",
+        "links": [],
+        "x": 305,
+        "y": 760,
+        "wires": []
+    },
+    {
+        "id": "5ac2ef6c.d0953",
+        "type": "test",
+        "z": "e45553957f2b6fab",
+        "name": "",
+        "errorFactor": "",
+        "escapeString": false,
+        "payload": "{\"a\":1,\"b\":1}",
+        "payloadType": "json",
+        "result": "{\"a\":1,\"b\":1}",
+        "resultType": "json",
+        "resultProperty": "msg.payload",
+        "topic": "",
+        "x": 280,
+        "y": 100,
+        "wires": [
+            [
+                "2ce3786.acae688"
+            ],
+            [
+                "039806dcd68d6ff2"
+            ],
+            [
+                "d49331e9f6193c4f"
+            ]
+        ]
+    },
+    {
+        "id": "2ce3786.acae688",
+        "type": "transform",
+        "z": "e45553957f2b6fab",
+        "name": "",
+        "actionSource": "JSON",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "JSON",
+        "sourceProperty": "",
+        "targetProperty": "",
+        "topicProperty": "",
+        "JSONataSource": "",
+        "JSONataTarget": "",
+        "index": "",
+        "maxMessages": "",
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": "",
+        "minNumber": "",
+        "maxString": "",
+        "minString": "",
+        "radix": "",
+        "schema": "",
+        "schemaType": "str",
+        "skipLeading": "",
+        "skipTrailing": "",
+        "string": "",
+        "stringType": "str",
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 640,
+        "y": 20,
+        "wires": [
+            [
+                "5ac2ef6c.d0953"
+            ],
+            [
+                "039806dcd68d6ff2"
+            ]
+        ]
+    },
+    {
+        "id": "d49331e9f6193c4f",
+        "type": "test",
+        "z": "e45553957f2b6fab",
+        "name": "",
+        "errorFactor": "",
+        "escapeString": false,
+        "payload": "{\"in\":{\"a\":1,\"b\":1}}",
+        "payloadType": "json",
+        "result": "1",
+        "resultType": "num",
+        "resultProperty": "msg.payload",
+        "topic": "",
+        "x": 270,
+        "y": 240,
+        "wires": [
+            [
+                "670969e02ee29ad1"
+            ],
+            [
+                "039806dcd68d6ff2"
+            ],
+            [
+                "5e2a7ceef9de11bf"
+            ]
+        ]
+    },
+    {
+        "id": "670969e02ee29ad1",
+        "type": "transform",
+        "z": "e45553957f2b6fab",
+        "name": "",
+        "actionSource": "JSON",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "JSON",
+        "sourceProperty": "",
+        "targetProperty": "",
+        "topicProperty": "",
+        "JSONataSource": "in.a",
+        "JSONataSourceType": "jsonata",
+        "JSONataTarget": "",
+        "JSONataTargetType": "jsonata",
+        "index": "",
+        "maxMessages": "",
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": "",
+        "minNumber": "",
+        "maxString": "",
+        "minString": "",
+        "radix": "",
+        "schema": "",
+        "schemaType": "str",
+        "skipLeading": "",
+        "skipTrailing": "",
+        "string": "",
+        "stringType": "str",
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 640,
+        "y": 160,
+        "wires": [
+            [
+                "d49331e9f6193c4f"
+            ],
+            [
+                "039806dcd68d6ff2"
+            ]
+        ]
+    },
+    {
+        "id": "039806dcd68d6ff2",
+        "type": "debug",
+        "z": "e45553957f2b6fab",
+        "name": "error",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 220,
+        "wires": []
+    },
+    {
+        "id": "b02379a693c4f95d",
+        "type": "link out",
+        "z": "e45553957f2b6fab",
+        "name": "link out 4",
+        "mode": "return",
+        "links": [],
+        "x": 545,
+        "y": 380,
+        "wires": []
+    },
+    {
+        "id": "8bc4d0adfbe612e5",
+        "type": "link in",
+        "z": "e45553957f2b6fab",
+        "name": "transform json",
+        "links": [],
+        "x": 75,
+        "y": 40,
+        "wires": [
+            [
+                "5ac2ef6c.d0953"
+            ]
+        ]
+    },
+    {
+        "id": "5e2a7ceef9de11bf",
+        "type": "test",
+        "z": "e45553957f2b6fab",
+        "name": "",
+        "errorFactor": "",
+        "escapeString": false,
+        "payload": "{\"in\":{\"a\":1,\"b\":1}}",
+        "payloadType": "json",
+        "result": "1",
+        "resultType": "num",
+        "resultProperty": "msg.payload",
+        "topic": "",
+        "x": 290,
+        "y": 360,
+        "wires": [
+            [
+                "96f0fb80a916acba"
+            ],
+            [
+                "039806dcd68d6ff2"
+            ],
+            [
+                "b02379a693c4f95d"
+            ]
+        ]
+    },
+    {
+        "id": "96f0fb80a916acba",
+        "type": "transform",
+        "z": "e45553957f2b6fab",
+        "name": "",
+        "actionSource": "JSON",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "JSON",
+        "sourceProperty": "",
+        "targetProperty": "",
+        "topicProperty": "",
+        "JSONataSource": "",
+        "JSONataSourceType": "jsonata",
+        "JSONataTarget": "in.a",
+        "JSONataTargetType": "jsonata",
+        "index": "",
+        "maxMessages": "",
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": "",
+        "minNumber": "",
+        "maxString": "",
+        "minString": "",
+        "radix": "",
+        "schema": "",
+        "schemaType": "str",
+        "skipLeading": "",
+        "skipTrailing": "",
+        "string": "",
+        "stringType": "str",
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 660,
+        "y": 280,
+        "wires": [
+            [
+                "5e2a7ceef9de11bf"
+            ],
+            [
+                "039806dcd68d6ff2"
             ]
         ]
     },
@@ -5006,13 +5488,15 @@
         "resultType": "str",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 140,
+        "x": 240,
         "y": 40,
         "wires": [
             [
                 "47a287530ed838e7"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "8d8bb2e1192b3a8c"
             ]
@@ -5031,8 +5515,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 930,
-        "y": 2140,
+        "x": 890,
+        "y": 80,
         "wires": []
     },
     {
@@ -5055,7 +5539,9 @@
             [
                 "517c89e4609e0e70"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "f78d540c53a64514"
             ]
@@ -5149,7 +5635,9 @@
             [
                 "88582559dcf028bb"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "270a0e8c4f3d5172"
             ]
@@ -5175,7 +5663,9 @@
             [
                 "daeadb001d8ec243"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "c64612fcd16ee4c2"
             ]
@@ -5235,7 +5725,9 @@
             [
                 "4314006f6dc95d97"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "7c1ffb0b49742528"
             ]
@@ -5351,12 +5843,20 @@
         "actionSource": "String",
         "deleteSource": "true",
         "deleteSourceType": "bool",
-        "actionTarget": "Date",
+        "actionTarget": "DateLocal",
         "sourceProperty": "msg.payload.a",
         "targetProperty": "msg.payload.b",
         "topicProperty": "msg.topic",
+        "JSONataSource": "",
+        "JSONataTarget": "",
         "index": "1",
         "maxMessages": 1000,
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": "",
+        "minNumber": "",
+        "maxString": "",
+        "minString": "",
         "radix": 10,
         "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
         "schemaType": "str",
@@ -5366,7 +5866,7 @@
         "stringType": "str",
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 490,
+        "x": 510,
         "y": 600,
         "wires": [
             [
@@ -5389,8 +5889,18 @@
         "sourceProperty": "msg.payload.a",
         "targetProperty": "msg.payload.b",
         "topicProperty": "msg.topic",
+        "JSONataSource": "",
+        "JSONataSourceType": "jsonata",
+        "JSONataTarget": "",
+        "JSONataTargetType": "jsonata",
         "index": "1",
         "maxMessages": 1000,
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": "",
+        "minNumber": "",
+        "maxString": "",
+        "minString": "",
         "radix": 10,
         "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
         "schemaType": "str",
@@ -5567,7 +6077,9 @@
             [
                 "5a4cf5bbdd78ca08"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "2a5e51b612e3b1f8"
             ]
@@ -5593,7 +6105,9 @@
             [
                 "d950412c4738c78f"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "dc4920acde5f87e4"
             ]
@@ -5605,21 +6119,23 @@
         "z": "460ae66eec4b7f8a",
         "name": "",
         "errorFactor": 0,
-        "escapeString": true,
+        "escapeString": false,
         "infiniteIsNull": false,
         "payload": "{\"a\":\"1/1/2001\"}",
         "payloadType": "json",
-        "result": "{\"b\":978267600000}",
-        "resultType": "json",
+        "result": "$boolean(b.toLocaleDateString()=\"01/01/2001\")",
+        "resultType": "jsonata",
         "resultProperty": "msg.payload",
         "topic": "",
-        "x": 190,
+        "x": 170,
         "y": 600,
         "wires": [
             [
                 "072e7d19acea716f"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "71bde3f27fe075fc"
             ]
@@ -5701,7 +6217,9 @@
             [
                 "4c20187ba4f4d732"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "186e62ee33add8f7"
             ]
@@ -5753,7 +6271,9 @@
             [
                 "fd3ddc020e4e4dd5"
             ],
-            [],
+            [
+                "925117734d8e96b5"
+            ],
             [
                 "dcc18294163735c9"
             ]
@@ -6714,167 +7234,41 @@
             [
                 "925117734d8e96b5"
             ],
-            []
-        ]
-    },
-    {
-        "id": "2a9b4180.1b8ffe",
-        "type": "inject",
-        "z": "924bb2b7.03fd1",
-        "name": "json xcel worksheets",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{\"worksheet1\":[[11,12],[21,22],[31,32]],\"worksheet2\":[[11,12],[21,22]]}",
-        "payloadType": "json",
-        "x": 110,
-        "y": 60,
-        "wires": [
             [
-                "b99caf39.d57c9"
+                "bee4fdd51ea59704"
             ]
         ]
     },
     {
-        "id": "b99caf39.d57c9",
-        "type": "transform",
-        "z": "924bb2b7.03fd1",
-        "name": "",
-        "actionSource": "Array",
-        "actionTarget": "XLSX",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.xlsx",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 380,
-        "y": 60,
+        "id": "e057797d0b796145",
+        "type": "link in",
+        "z": "460ae66eec4b7f8a",
+        "name": "transform string in",
+        "links": [],
+        "x": 55,
+        "y": 40,
         "wires": [
             [
-                "e234842f.2946a8",
-                "7bde11d2.378e6"
-            ],
-            [
-                "3db2b919.ea68d6"
+                "9ec96a604b0f3e20"
             ]
         ]
     },
     {
-        "id": "7bde11d2.378e6",
-        "type": "transform",
-        "z": "924bb2b7.03fd1",
-        "name": "",
-        "actionSource": "Array",
-        "actionTarget": "XLSXObject",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.xlsxobject",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 360,
-        "y": 120,
-        "wires": [
-            [
-                "8e6f5298.ccab4"
-            ],
-            [
-                "3db2b919.ea68d6"
-            ]
-        ]
-    },
-    {
-        "id": "8e6f5298.ccab4",
-        "type": "transform",
-        "z": "924bb2b7.03fd1",
-        "name": "",
-        "actionSource": "XLSX",
-        "actionTarget": "Array",
-        "sourceProperty": "msg.xlsx",
-        "targetProperty": "msg.array",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 380,
-        "y": 180,
-        "wires": [
-            [
-                "3db2b919.ea68d6"
-            ],
-            [
-                "3db2b919.ea68d6"
-            ]
-        ]
-    },
-    {
-        "id": "e234842f.2946a8",
-        "type": "transform",
-        "z": "924bb2b7.03fd1",
-        "name": "",
-        "actionSource": "XLSX",
-        "actionTarget": "XLSXObject",
-        "sourceProperty": "msg.xlsx",
-        "targetProperty": "msg.xlsx2xlsxObject",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "x": 660,
-        "y": 60,
-        "wires": [
-            [
-                "5312687f.3fff48"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "5312687f.3fff48",
-        "type": "debug",
-        "z": "924bb2b7.03fd1",
-        "name": "base",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 870,
-        "y": 60,
+        "id": "bee4fdd51ea59704",
+        "type": "link out",
+        "z": "460ae66eec4b7f8a",
+        "name": "transform string",
+        "mode": "return",
+        "links": [],
+        "x": 335,
+        "y": 2340,
         "wires": []
     },
     {
         "id": "3db2b919.ea68d6",
         "type": "debug",
         "z": "924bb2b7.03fd1",
-        "name": "",
+        "name": "error",
         "active": true,
         "tosidebar": true,
         "console": false,
@@ -6883,8 +7277,232 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 870,
-        "y": 160,
+        "x": 730,
+        "y": 420,
         "wires": []
+    },
+    {
+        "id": "32a48f00e9c32747",
+        "type": "Monitor Flow",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "x": 590,
+        "y": 20,
+        "wires": [
+            [
+                "7794ab9c1ff64390"
+            ]
+        ]
+    },
+    {
+        "id": "4e471cf4f77579e9",
+        "type": "link out",
+        "z": "924bb2b7.03fd1",
+        "name": "transform xlsx finish",
+        "mode": "return",
+        "links": [],
+        "x": 745,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "0e4f57304e89edb8",
+        "type": "test",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "{\"worksheet1\":[[11,12],[21,22],[31,32]],\"worksheet2\":[[11,12],[21,22]]}",
+        "payloadType": "json",
+        "result": "{\"worksheet1\":[[11,12],[21,22],[31,32]],\"worksheet2\":[[11,12],[21,22]]}",
+        "resultType": "json",
+        "resultProperty": "msg.payload",
+        "topic": "",
+        "x": 260,
+        "y": 40,
+        "wires": [
+            [
+                "32a48f00e9c32747"
+            ],
+            [
+                "3db2b919.ea68d6"
+            ],
+            [
+                "4e471cf4f77579e9"
+            ]
+        ]
+    },
+    {
+        "id": "7794ab9c1ff64390",
+        "type": "transform",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "actionSource": "Array",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "XLSX",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "JSONataSource": "",
+        "JSONataSourceType": "jsonata",
+        "JSONataTarget": "",
+        "JSONataTargetType": "jsonata",
+        "index": 0,
+        "maxMessages": 1000,
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": 0,
+        "minNumber": 0,
+        "maxString": "",
+        "minString": "",
+        "radix": 10,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "str",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "string": "",
+        "stringType": "str",
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 520,
+        "y": 140,
+        "wires": [
+            [
+                "69cf00efd482d012"
+            ],
+            [
+                "3db2b919.ea68d6"
+            ]
+        ]
+    },
+    {
+        "id": "000cda4258683bde",
+        "type": "transform",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "actionSource": "XLSX",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "XLSXObject",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "JSONataSource": "",
+        "JSONataSourceType": "jsonata",
+        "JSONataTarget": "",
+        "JSONataTargetType": "jsonata",
+        "index": 0,
+        "maxMessages": 1000,
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": 0,
+        "minNumber": 0,
+        "maxString": "",
+        "minString": "",
+        "radix": 10,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "str",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "string": "",
+        "stringType": "str",
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 380,
+        "y": 220,
+        "wires": [
+            [
+                "7208e9201d7f1fcf"
+            ],
+            [
+                "3db2b919.ea68d6"
+            ]
+        ]
+    },
+    {
+        "id": "dd556f2fb8c84838",
+        "type": "transform",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "actionSource": "XLSXObject",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "JSON",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "JSONataSource": "",
+        "JSONataSourceType": "jsonata",
+        "JSONataTarget": "",
+        "JSONataTargetType": "jsonata",
+        "index": 0,
+        "maxMessages": 1000,
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": 0,
+        "minNumber": 0,
+        "maxString": "",
+        "minString": "",
+        "radix": 10,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "str",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "string": "",
+        "stringType": "str",
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 160,
+        "y": 320,
+        "wires": [
+            [
+                "0e4f57304e89edb8"
+            ],
+            [
+                "3db2b919.ea68d6"
+            ]
+        ]
+    },
+    {
+        "id": "7208e9201d7f1fcf",
+        "type": "Monitor Flow",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "x": 750,
+        "y": 220,
+        "wires": [
+            [
+                "dd556f2fb8c84838"
+            ]
+        ]
+    },
+    {
+        "id": "69cf00efd482d012",
+        "type": "Monitor Flow",
+        "z": "924bb2b7.03fd1",
+        "name": "",
+        "x": 750,
+        "y": 140,
+        "wires": [
+            [
+                "000cda4258683bde"
+            ]
+        ]
+    },
+    {
+        "id": "6ed524d3e461526d",
+        "type": "link in",
+        "z": "924bb2b7.03fd1",
+        "name": "transform xlsx",
+        "links": [],
+        "x": 45,
+        "y": 40,
+        "wires": [
+            [
+                "0e4f57304e89edb8"
+            ]
+        ]
     }
 ]

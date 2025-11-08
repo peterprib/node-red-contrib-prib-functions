@@ -448,9 +448,9 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.23.0",
-        "local": true,
-        "user": true,
+        "version": "0.23.2",
+        "local": false,
+        "user": false,
         "nodes": {
             "append": {
                 "name": "append",
@@ -458,10 +458,10 @@
                     "append"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
             },
             "dataAnalysis": {
                 "name": "dataAnalysis",
@@ -469,10 +469,10 @@
                     "Data Analysis"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\dataAnalysis\\dataAnalysis.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\dataAnalysis\\dataAnalysis.js"
             },
             "hostAvailable": {
                 "name": "hostAvailable",
@@ -480,10 +480,10 @@
                     "Host Available"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\testing\\hostAvailable.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\testing\\hostAvailable.js"
             },
             "levenshteinDistance": {
                 "name": "levenshteinDistance",
@@ -491,10 +491,10 @@
                     "Levenshtein Distance"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\levenshteinDistance\\levenshteinDistanceNode.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\levenshteinDistance\\levenshteinDistanceNode.js"
             },
             "load-injector": {
                 "name": "load-injector",
@@ -502,10 +502,10 @@
                     "Load Injector"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\testing\\load-injector.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\testing\\load-injector.js"
             },
             "matrix": {
                 "name": "matrix",
@@ -513,10 +513,10 @@
                     "matrix"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\matrix\\matrixNode.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\matrix\\matrixNode.js"
             },
             "monitorflow": {
                 "name": "monitorflow",
@@ -524,10 +524,10 @@
                     "Monitor Flow"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorflow.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorflow.js"
             },
             "monitorSystem": {
                 "name": "monitorSystem",
@@ -535,10 +535,10 @@
                     "Monitor System"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorSystem.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorSystem.js"
             },
             "os": {
                 "name": "os",
@@ -546,10 +546,10 @@
                     "os"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\nodejs\\os.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\nodejs\\os.js"
             },
             "spawnProcess": {
                 "name": "spawnProcess",
@@ -557,10 +557,10 @@
                     "Spawn Process"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\spawnProcess\\spawnProcess.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\spawnProcess\\spawnProcess.js"
             },
             "test": {
                 "name": "test",
@@ -568,10 +568,10 @@
                     "test"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\testing\\test.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\testing\\test.js"
             },
             "transform": {
                 "name": "transform",
@@ -579,29 +579,10 @@
                     "transform"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
-            }
-        }
-    },
-    "node-red-node-data-generator": {
-        "name": "node-red-node-data-generator",
-        "version": "1.0.1",
-        "local": true,
-        "user": true,
-        "nodes": {
-            "data-generator": {
-                "name": "data-generator",
-                "types": [
-                    "data-generator"
-                ],
-                "enabled": true,
-                "local": true,
-                "user": false,
-                "module": "node-red-node-data-generator",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-node-data-generator\\datagenerator.js"
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
             }
         }
     }

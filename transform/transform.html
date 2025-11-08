@@ -27,6 +27,10 @@
 			sourceProperty:{value:"msg.payload"},
 			targetProperty:{value:"msg.payload"},
 			topicProperty:{value:"msg.topic"},
+			JSONataSource:{value:null,validate:v=>v==null||RED.validators.typedInput("JSONataSourceType")},
+			JSONataSourceType:{value:"jsonata"},
+			JSONataTarget:{value:null,validate:v=>v==null||RED.validators.typedInput("JSONataTargetType")},
+			JSONataTargetType:{value:"jsonata"},
 			index: {value:0},
 			maxMessages: {value:1000},
 			maxDate: {value:null},
@@ -104,6 +108,7 @@
 				$(".form-row-http-in-skip").hide();
 				$(".form-row-http-in-schema").hide();
 				$(".form-row-http-in-compressionType").hide();
+				$(".form-row-http-in-JSONataSource").hide();
 				if(!['CSV','CSVWithHeader'].includes(actionSource)) {
 					$(".form-row-http-in-csv").hide();
 				}
@@ -151,6 +156,7 @@
 					options["Array"]="Array";
 					break;
 				case 'JSON':
+					$(".form-row-http-in-JSONataSource").show();
 					options["Array"]="Array";
 					options["AVRO"]="AVRO";
 					options["Compressed"]="Compressed";
@@ -277,7 +283,7 @@
 				$(".form-row-http-in-radix").hide();
 				$(".form-row-http-in-schema").hide();
 				$(".form-row-http-in-string").hide();
-
+				$(".form-row-http-in-JSONataTarget").hide();
 				switch (actionTarget) {
 				case 'AVRO':
 				case 'Confluence':
@@ -317,8 +323,14 @@
  					$(".form-row-http-in-max"+actionSource).show();
  					$(".form-row-http-in-min"+actionSource).show();
 					break;
+				case 'JSON':
+ 					$(".form-row-http-in-max"+actionSource).show();
+				$(".form-row-http-in-JSONataTarget").show();
+					break;
 				}
 			}).change();
+			setInput.apply(this,["JSONataSource",["jsonata"]]);
+			setInput.apply(this,["JSONataTarget",["jsonata"]]);
 			setInput.apply(this,["deleteSource",["bool"]]);
 			setInput.apply(this,["schema"]);
 			setInput.apply(this,["string",["str","msg","flow","global","env","node"]]);
@@ -357,10 +369,20 @@
 		<label for="node-input-actionSource"><i class="fa fa-list-ul"></i> Source Type </label>
 		<input type="text" id="node-input-actionSource">
 	</div>
+	<div class="form-row form-row-http-in-JSONataSource hide">
+		<label for="node-input-JSONataSource"><i class="fa fa-bookmark"></i> <span data-i18n="common.label.string"> JSONata Source</span></label>
+		<input type="text" id="node-input-JSONataSource" style="width:70%">
+		<input type="hidden" id="node-input-JSONataSourceType">
+	</div>
 	<div class="form-row">
 		<label for="node-input-actionTarget"><i class="fa fa-list-ul"></i> Target Type </label>
 		<select id="node-input-actionTarget" placeholder="actionTarget">
 		</select>
+	</div>
+	<div class="form-row form-row-http-in-JSONataTarget hide">
+		<label for="node-input-JSONataTarget"><i class="fa fa-bookmark"></i> <span data-i18n="common.label.string"> JSONata Target</span></label>
+		<input type="text" id="node-input-JSONataTarget" style="width:70%">
+		<input type="hidden" id="node-input-JSONataTargetType">
 	</div>
 	<div class="form-row form-row-http-in-delimiter hide">
 		<label for="node-input-delimiter"><i class="icon-bookmark"></i> Delimiter</label>
@@ -426,7 +448,6 @@
 		<input type="text" id="node-input-string" style="width:70%">
 		<input type="hidden" id="node-input-stringType">
 	</div>
-
 </script>
 
 <script type="text/x-red" data-help-name="transform">

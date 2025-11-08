@@ -10,6 +10,7 @@ const regexCSV=/,(?=(?:(?:[^"]*"){2})*[^"]*$)/,
 	process=require('process');
 let  avsc,snappy,xmlParser,json2xmlParser,XLSX,compressor;
 const {ISO8583BitMapId,ISO8583BitMapName}=require("./ISO8583BitMap");
+const { callbackify } = require("util");
 let ISO8583,ISO8583message;
 const XMLoptions = {
 //	    attributeNamePrefix : "@_",
@@ -31,63 +32,31 @@ const XMLoptions = {
 	};
 const makeDateType=data=>(data instanceof Date?	data:new Date(data))
 const error=(node,ex,shortMessage)=>{
+	if(!ex) ex =Error("no exception/error")
 	if(logger.active) logger.send({label:"transformNode catch",shortMessage:shortMessage,error:ex.message,stack:ex.stack});
 	node.error(ex.message);
-	node.status({fill:"red",shape:"ring",text:(shortMessage||ex.message).substr(0,50)});
+	node.status({fill:"red",shape:"ring",text:(shortMessage??ex.message??"unknown error").substr(0,50)});
 }
 const getAvroTransformer=(node,schema)=>{
 	try{
-		return avsc.Type.forSchema(node.schemas[schema]);
+		return avsc.Type.forSchema(node.schemas[schema])
 	} catch(ex){
-		if(node.schemas.hasOwnProperty(schema)) throw ex;
-		throw Error("schema not found for "+schema);
+		if(node.schemas.hasOwnProperty(schema)) throw ex
+		throw Error("schema not found for "+schema)
 	}
 }
+const xlsx2=require("./xlsx2")
 
-const addWorksheet2JSON=(object,worksheet,workbook,options)=>{
-	object[worksheet]=XLSX.utils.sheet_to_json(workbook.Sheets[worksheet],options);
-	if(options.header) object[worksheet].shift();
-	if(logger.active) logger.send({label:"addWorksheet2JSON",object:object,worksheet:worksheet})
-	return object;
+const ConfluenceToJSON=(RED,node,msg,data,callback)=>{
+	if(!Buffer.isBuffer(data)) data=Buffer.from(data)
+	const magicByte=data.readUInt8()
+	if(magicByte!==0) throw Error("expected magic byte and not found, found "+magicByte)
+	if(data.length<5) throw Error("missing schema, data length "+data.length)
+	const schema=data.readInt32BE(1)
+	const avroTransformer=getAvroTransformer(node,schema)
+	callback(RED,node,msg,data,{schema:schema,data:avroTransformer.fromBuffer(data.subarray(5))})
 }
-const XLSXObjectToJSON=(RED,node,msg,data)=>data.SheetNames.reduce((a,worksheet)=>addWorksheet2JSON(a,worksheet,data),{})
-const XLSXToArray=(RED,node,msg,data)=>XLSXObjectToArray(RED,node,msg,XLSXToXLSXObject(RED,node,msg,data))
-const XLSXToJSON=(RED,node,msg,data)=>XLSXObjectToJSON(RED,node,msg,XLSXToXLSXObject(RED,node,msg,data))
-const XLSXToXLSXObject=(RED,node,msg,data)=>XLSX.read(data, {raw:true,type: 'buffer' })
-const XLSXObjectToArray=(RED,node,msg,data)=>data.SheetNames.reduce((a,worksheet)=>addWorksheet2JSON(a,worksheet,data,{header:1,raw:true}),{})
-const JSONToXLSX=(RED,node,msg,data)=>XLSX.write(JSONToXLSXObject(RED,node,msg,data), {bookType:"xlsx", type:'buffer'})
-const JSONToXLSXObject=(RED,node,msg,data)=>{
-	const workbook = XLSX.utils.book_new();
-	for(const worksheet in data) {
-		const  ws=XLSX.utils.json_to_sheet(data[worksheet]);
-		XLSX.utils.book_append_sheet(workbook, ws, worksheet);
-	}
-	return workbook;
-}
-const ArrayToXLSX=(RED,node,msg,data)=>XLSX.write(ArrayToXLSXObject(RED,node,msg,data), {bookType:"xlsx", type:'buffer'})
-const ArrayToXLSXObject=(RED,node,msg,data)=>{
-	const workbook = XLSX.utils.book_new();
-	if(Array.isArray(data)) {
-		const  ws=XLSX.utils.aoa_to_sheet(data);
-		XLSX.utils.book_append_sheet(workbook, ws,"worksheet 1");
-		return workbook;
-	} 
-	for(const worksheet in data) {
-		const  ws=XLSX.utils.aoa_to_sheet(data[worksheet]);
-		XLSX.utils.book_append_sheet(workbook, ws, worksheet);
-	}
-	return workbook;
-}
-const ConfluenceToJSON=(RED,node,msg,data)=>{
-	if(!Buffer.isBuffer(data)) data=Buffer.from(data);
-	const magicByte=data.readUInt8();
-	if(magicByte!==0) throw Error("expected magic byte and not found, found "+magicByte);
-	if(data.length<5) throw Error("missing schema, data length "+data.length);
-	const schema=data.readInt32BE(1);
-	const avroTransformer=getAvroTransformer(node,schema);
-	return {schema:schema,data:avroTransformer.fromBuffer(data.subarray(5))};
-}
-const JSONToConfluence=(RED,node,msg,data)=>{
+const JSONToConfluence=(RED,node,msg,data,callback)=>{
 		if(!data.schema) throw Error("property schema not defined");
 		if(!data.data) throw Error("property data not defined");
 		const header=Buffer.alloc(5);
@@ -95,7 +64,7 @@ const JSONToConfluence=(RED,node,msg,data)=>{
 		header.writeInt32BE(data.schema, 1);
 		const transformer=getAvroTransformer(node,data.schema);
 		const avro=transformer.toBuffer(data.data);
-		return Buffer.concat([header,avro]);
+		callback(RED,node,msg,data,Buffer.concat([header,avro]))
 }
 function SendArray(RED,node,msg,array){
 	if(logger.active) logger.send({label:"SendArray",size:array.length});
@@ -183,11 +152,36 @@ const Array2csv=(node,data)=>{
 		})
 		return properties.join(node.delimiter)+"\n"+rows.join("\n");
 	}
-	return data .map(r=>JSON.stringify(r)).join("/n");
+	return data.map(r=>JSON.stringify(r)).join("/n");
 }
+const JSON2Array=data=>{
+	if(data instanceof Object){
+		let a=[];
+		properties=Object.keys(data)
+		for(const p of properties) {
+			a.push([p,JSON2Array(data[p])]);
+		}
+		return a;
+	}
+	return [data]
+}
+const JSON2HTML=(data,level=0)=>{
+	if(Array.isArray(data)) {
+		return data.length?"<table><tr>"+data.map((r)=>JSON2HTML(r,++level)).join("</tr><tr>")+"</tr><table>":"";
+	}
+	if(data instanceof Object){
+		let a=[];
+		for(let p in data) {
+			a.push("<td style='vertical-align: top;'>"+escape(p)+":</td><td>"+functions.JSONToHTML(data[p],++level)+"</td>");
+		}
+		return "<table><tr>"+a.join("</tr><tr>")+"</tr><table>";
+	}
+	return escape(data);
+}
+
 const functions={
-	ArrayToCSV: (RED,node,msg,data)=>data.map(c=>JSON.stringify(c)).join("\n"),
-	ArrayToHTML: (RED,node,msg,data)=>
+	ArrayToCSV: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.map(c=>JSON.stringify(c)).join("\n")),
+	ArrayToHTML: (RED,node,msg,data,callback)=>callback(RED,node,msg,
 		"<table>"+ array2tag(data,"tr",(c)=>(
 			Array.isArray(c)?
 				array2tag(c,"td",(cc)=>
@@ -197,9 +191,9 @@ const functions={
 					):
 				"<![CDATA["+c+"]]>"
 			)
-		)+"</table>",
-	ArrayToISO8385: (RED,node,msg,data)=>ISO8583message.packSync(data),
-	ArrayToMessages: (RED,node,msg,data)=>{
+		)+"</table>"),
+	ArrayToISO8385: (RED,node,msg,data,callback)=>callback(RED,node,msg,ISO8583message.packSync(data)),
+	ArrayToMessages: (RED,node,msg,data,callback)=>{
 		if(logger.active) logger.send({label:"ArrayToMessages",arraySize:data.length});
 		if(data.length>node.maxMessages) throw Error("messages to be created "+data.length +"> max: "+node.maxMessages);
 		const newMsgs=[]
@@ -212,84 +206,67 @@ const functions={
 		});
 		node.send([newMsgs])
 	},
-	ArrayToXLSX:ArrayToXLSX,
-	ArrayToXLSXObject:ArrayToXLSXObject,
-	AVROToJSON: (RED,node,msg,data)=>node.avroTransformer.fromBuffer(data), // = {kind: 'CAT', name: 'Albert'}
-	BigIntToRangeLimit: (RED,node,msg,data)=> data?data.rangeLimit(node.minBigIntTyped,node.maxBigIntTyped):node.minBigInt,
-	BufferToCompressed: (RED,node,msg,data)=>compressor.compress(data,
-		(compressed)=>{
-			node.setData(RED,node,msg,compressed);
-			node.send(msg);
-		},
-		(err)=>{
-			error(node,Error(err));
-		}
+	ArrayToXLSX:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.Array2XLSX(data)),
+	ArrayToXLSXObject:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.Array2XLSXObject(data)),
+	AVROToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,node.avroTransformer.fromBuffer(data)), // = {kind: 'CAT', name: 'Albert'}
+	BigIntToRangeLimit: (RED,node,msg,data,callback)=> callback(RED,node,msg,data?data.rangeLimit(node.minBigIntTyped,node.maxBigIntTyped):node.minBigInt),
+	BufferToCompressed: (RED,node,msg,data,callback)=>compressor.compress(data,
+		compressed=>node.setData(RED,node,msg,compressed,callback),
+		err=>error(node,Error(err))
 	),
-	CompressedToBuffer:(RED,node,msg,data)=>compressor.decompress(data,
-		(uncompressed)=>{
-			node.setData(RED,node,msg,uncompressed);
-			node.send(msg);
-		},
-		(err)=>{
-			error(node,Error(err));
-		}
+	CompressedToBuffer:(RED,node,msg,data,callback)=>compressor.decompress(data,
+		uncompressed=>node.setData(RED,node,msg,uncompressed,callback),
+		err=>error(node,Error(err))
 	),
-	CompressedToJSON:(RED,node,msg,data)=>compressor.decompress(data,
-		(uncompressed)=>{
+	CompressedToJSON:(RED,node,msg,data,callback)=>compressor.decompress(data,
+		uncompressed=>{
 			try{
-				node.setData(RED,node,msg,JSON.parse(uncompressed));
-				node.send(msg);
+				node.setData(RED,node,msg,JSON.parse(uncompresse,callback));
 			} catch(ex){
 				msg.error=ex.message
-				node.setData(RED,node,msg,uncompressed);
+				node.setData(RED,node,msg,uncompressed,callback);
 			}
 		},
-		(err)=>{
-			error(node,Error(err));
-		}
+		err=>error(node,Error(err))
 	),
-	CompressedToString:(RED,node,msg,data)=>compressor.decompress(data,
-		(uncompressed)=>{
+	CompressedToString:(RED,node,msg,data,callback)=>compressor.decompress(data,
+		uncompressed=>{
 			try{
-				node.setData(RED,node,msg,uncompressed.toString());
-				node.send(msg);
+				node.setData(RED,node,msg,uncompressed.toString(),callback)
 			} catch(ex){
 				msg.error=ex.message;
-				node.setData(RED,node,msg,uncompressed);
+				node.setData(RED,node,msg,uncompressed,callback)
 			}
 		},
-		(err)=>{
-			error(node,Error(err));
-		}
+		err=>error(node,Error(err))
 	),
 	ConfluenceToJSON: ConfluenceToJSON,
-	CSVToArray: (RED,node,msg,data)=>{
+	CSVToArray: (RED,node,msg,data,callback)=>{
 		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
 		lines.forEach((value, idx) => {
 			lines[idx]=value.split(regexCSV).map((c)=>removeQuotes(c));
 		});
-		return lines;
+		callback(RED,node,msg,lines)
 	},
-	CSVToHTML: (RED,node,msg,data)=>
+	CSVToHTML: (RED,node,msg,data,callback)=>callback(RED,node,msg,
 		"<table>"+ array2tag(csvLines(data,node.skipLeading,node.skipTrailing),"tr",(line)=>
 			array2tag(line.split(regexCSV),"td",(c)=>"<![CDATA["+removeQuotes(c)+"]]>")
-		)+"</table>",
-	CSVToMessages: (RED,node,msg,data)=>{
-		functions.ArrayToMessages(RED,node,msg,csvLines(data,this.skipLeading,this.skipTrailing));
-	},
-	CSVWithHeaderToArray: (RED,node,msg,data)=>{
+		)+"</table>"),
+	CSVToMessages: (RED,node,msg,data,callback)=>functions.ArrayToMessages(RED,node,msg,csvLines(data,this.skipLeading,this.skipTrailing),callback),
+	CSVWithHeaderToArray: (RED,node,msg,data,callback)=>{
 		let r=functions.CSVToArray(RED,node,msg,data);
 		r.shift();
-		return r;	
+		rcallback(RED,node,msg,r)
 	},
-	CSVWithHeaderToHTML: (RED,node,msg,data)=>{
+	CSVWithHeaderToHTML: (RED,node,msg,data,callback)=>{
 		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
 		const header=array2tag(lines.shift().split(regexCSV),"th",(c)=>"<![CDATA["+removeQuotes(c)+"]]>");
-		return "<table><tr>"+header+"</tr>"+array2tag(lines,"tr",(line)=>
-			array2tag(line.split(regexCSV),'td',(c)=>"<![CDATA["+removeQuotes(c)+"]]>")
-		)+"</table>"
+		const result= "<table><tr>"+header+"</tr>"+array2tag(lines,"tr",(line)=>
+				array2tag(line.split(regexCSV),'td',(c)=>"<![CDATA["+removeQuotes(c)+"]]>")
+			)+"</table>"
+		callback(RED,node,msg,result)
 	},
-	CSVWithHeaderToJSON: (RED,node,msg,data)=>{
+	CSVWithHeaderToJSON: (RED,node,msg,data,callback)=>{
 		let lines=csvLines(data,node.skipLeading,node.skipTrailing);
 		let header=lines.shift().split(regexCSV);
 		if(logger.active) logger.send({label:"CSVWithHeaderToJSON",header:header});
@@ -300,163 +277,129 @@ const functions={
 			});
 			lines[idx]=o;
 		});
-		return lines;
+		callback(RED,node,msg,lines)
 	},
-	DateToisBetween: (RED,node,msg,data)=> toDateTypeZulu(data).isBetween(node.minDateTyped,node.maxDateTyped),
-	DateToISODate: (RED,node,msg,data)=> toDateTypeZulu(data).toISOString().slice(0,10),
-	DateToLocalDate: (RED,node,msg,data)=> toDateTypeZulu(data).toLocaleDateString().slice(0,10),
-	DateToRangeLimit: (RED,node,msg,data)=> (data? toDateTypeZulu(data).rangeLimit(node.minDateTyped,node.maxDateTyped):node.minDateTyped),
-	ISO8385ToArray: (RED,node,msg,data)=>ISO8583message.unpackSync(data, data.length),
-	ISO8385ToJSON: (RED,node,msg,data)=>{
+	DateToisBetween: (RED,node,msg,data,callback)=> callback(RED,node,msg,toDateTypeZulu(data).isBetween(node.minDateTyped,node.maxDateTyped)),
+	DateToISODate: (RED,node,msg,data,callback)=> callback(RED,node,msg,toDateTypeZulu(data).toISOString().slice(0,10)),
+	DateToLocalDate: (RED,node,msg,data,callback)=> callback(RED,node,msg,toDateTypeZulu(data).toLocaleDateString().slice(0,10)),
+	DateToRangeLimit: (RED,node,msg,data,callback)=> callback(RED,node,msg,(data? toDateTypeZulu(data).rangeLimit(node.minDateTyped,node.maxDateTyped):node.minDateTyped)),
+	ISO8385ToArray: (RED,node,msg,data,callback)=>callback(RED,node,msg,ISO8583message.unpackSync(data, data.length)),
+	ISO8385ToJSON: (RED,node,msg,data,callback)=>{
 		let j={},d=ISO8583message.unpackSync(data, data.length);
 		d.forEach((r)=>{
 			j[ISO8583BitMapId(r[0]).name]=r[1];
 		});
-		return r;
+		callback(RED,node,msg,r)
 	},
-	JSONToArray: (RED,node,msg,data)=>{
-		if(data instanceof Object){
-			let a=[];
-			properties=Object.keys(data)
-			for(const p of properties) {
-				a.push([p,functions.JSONToArray(RED,node,msg,data[p])]);
-			}
-			return a;
-		}
-		return data;
-	},
-	JSONToAVRO: (RED,node,msg,data)=>node.avroTransformer.toBuffer(data), // Encoded buffer.
-	JSONToCompressed: (RED,node,msg,data)=>compressor.compress(JSON.stringify(data),
-		(compressed)=>{
-			node.setData(RED,node,msg,compressed);
-			node.send(msg);
-		},
-		(err)=>{
-			error(node,Error(err));
-		}
+	JSONToArray: (RED,node,msg,data,callback)=>callback(RED,node,msg,JSON2Array(data)),
+	JSONToAVRO: (RED,node,msg,data,callback)=>callback(RED,node,msg,node.avroTransformer.toBuffer(data)), // Encoded buffer.
+	JSONToCompressed: (RED,node,msg,data,callback)=>compressor.compress(JSON.stringify(data),
+		compressed=>node.setData(RED,node,msg,compressed.callback),
+		err=>error(node,Error(err))
 	),
 	JSONToConfluence:JSONToConfluence,
-	JSONToCSV: (RED,node,msg,data)=>Array2csv(node,data),
-	JSONToHTML: (RED,node,msg,data,level=0)=>{
-		if(Array.isArray(data)) {
-			return data.length?"<table><tr>"+data.map((r)=>functions.JSONToHTML(RED,node,msg,r,++level)).join("</tr><tr>")+"</tr><table>":"";
-		}
-		if(data instanceof Object){
-			let a=[];
-			for(let p in data) {
-				a.push("<td style='vertical-align: top;'>"+escape(p)+":</td><td>"+functions.JSONToHTML(RED,node,msg,data[p],++level)+"</td>");
-			}
-			return "<table><tr>"+a.join("</tr><tr>")+"</tr><table>";
-		}
-		return escape(data);
-	},
-	JSONToISO8385: (RED,node,msg,data)=>{
+	JSONToCSV: (RED,node,msg,data,callback)=>callback(RED,node,msg,Array2csv(node,data)),
+	JSONToHTML: (RED,node,msg,data,callback)=>callback(RED,node,msg,JSON2HTML(data)),
+	JSONToISO8385: (RED,node,msg,data,callback)=>{
 		var d=[];
 		Object.getOwnPropertyNames(data).forEach((v)=>d.push([ISO8583BitMapName[v].id,data[v]]));
 		d.sort((a, b) => a[0] - b[0]);
-		return ISO8583message.packSync(d);
+		callback(RED,node,msg, ISO8583message.packSync(d))
 	},
-	JSONToMessages: (RED,node,msg,data)=>{
+	JSONToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,data),
+	JSONToMessages: (RED,node,msg,data,callback)=>{
 		if(logger.active) logger.send({label:"JSONToMessages",messages:data.length});
 		if(Array.isArray(data)) {
 			new node.SendArray(RED,node,msg,data);
 		} else {
 			const newMsg=RED.util.cloneMessage(msg);
 			newMsg._msgid=newMsg._msgid+":0";
-			node.setData(RED,node,newMsg,data,0)
-			node.send(newMsg);
+			node.setData(RED,node,newMsg,data,callback)
 		}
 	},
-	JSONTonpy: (RED,node,msg,data)=>new NumPy(data).toNpyBuffer(),
-	JSONToNumPyObject: (RED,node,msg,data)=>new NumPy(data),
-	JSONToString: (RED,node,msg,data)=>JSON.stringify(data),
-	JSONToXLSX:JSONToXLSX,
-	JSONToXLSXObject:JSONToXLSXObject,
-	JSONToXML: (RED,node,msg,data)=>json2xmlParser.parse(data),
-	npyToJSON: (RED,node,msg,data)=>new NumPy(data).toSerializable(),
-	npyToNumPyObject: (RED,node,msg,data)=>new NumPy(data),
-	NumPyObjectToJSON: (RED,node,msg,data)=> data.toSerializable(),
-	NumberToAbbreviated: (RED,node,msg,data)=> data?data.isAbbreviated():data,
-	NumberToisBetween: (RED,node,msg,data)=> data.isBetween(node.minNumber,node.maxNumber),
-    NumberToRangeLimit: (RED,node,msg,data)=> data?data.rangeLimit(node.minNumber,node.maxNumber):node.minNumber,
-	ObjectToCoalesce: (RED,node,msg,data)=>coalesce(data,node.value),
-	ObjectToDeepClone: (RED,node,msg,data)=>daat.deepClone(),
-	ObjectToNullif: (RED,node,msg,data)=>nullif(data,node.value),
-	StringToAppend: (RED,node,msg,data)=>data.concat(node.getString(msg)),
-	StringToArrayByDelimiter: (RED,node,msg,data)=>data
+	JSONTonpy: (RED,node,msg,data,callback)=>callback(RED,node,msg,new NumPy(data).toNpyBuffer()),
+	JSONToNumPyObject: (RED,node,msg,data,callback)=>callback(RED,node,msg,new NumPy(data)),
+	JSONToString: (RED,node,msg,data,callback)=>callback(RED,node,msg,JSON.stringify(data)),
+	JSONToXLSX:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.JSON2XLSX(data)),
+	JSONToXLSXObject:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.JSON2XLSXObject(data)),
+	JSONToXML: (RED,node,msg,data,callback)=>callback(RED,node,msg,json2xmlParser.parse(data)),
+	npyToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,new NumPy(data).toSerializable()),
+	npyToNumPyObject: (RED,node,msg,data,callback)=>callback(RED,node,msg,new NumPy(data)),
+	NumPyObjectToJSON: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.toSerializable()),
+	NumberToAbbreviated: (RED,node,msg,data,callback)=> callback(RED,node,msg,data?data.isAbbreviated():data),
+	NumberToisBetween: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.isBetween(node.minNumber,node.maxNumber)),
+    NumberToRangeLimit: (RED,node,msg,data)=> callback(RED,node,msg,data?data.rangeLimit(node.minNumber,node.maxNumber):node.minNumber),
+	ObjectToCoalesce: (RED,node,msg,data,callback)=>callback(RED,node,msg,coalesce(data,node.value)),
+	ObjectToDeepClone: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.deepClone()),
+	ObjectToNullif: (RED,node,msg,data,callback)=>callback(RED,node,msg,nullif(data,node.value)),
+	StringToAppend: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.concat(node.getString(msg))),
+	StringToArrayByDelimiter: (RED,node,msg,data,callback)=>callback(RED,node,msg,data
 	  .split(node.delimiter??',')
 	  .map(entry => entry.trim())
-	  .filter(entry => entry),	
-	StringToAt: (RED,node,msg,data)=>data.At(node.index),
-	StringToCapitalize: (RED,node,msg,data)=> data.capitalize(),
-	StringToCamelize: (RED,node,msg,data)=>data.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase()),
-	StringToCharAt: (RED,node,msg,data)=>data.charAt(node.index),
-	StringToCharCodeAt: (RED,node,msg,data)=>data.charCodeAt(node.index),
-	StringToCodePointAt: (RED,node,msg,data)=>data.codePointAt(node.index),
-	StringToCompressed: (RED,node,msg,data)=>compressor.compress(data,
-		(compressed)=>{
-			node.setData(RED,node,msg,compressed);
-			node.send(msg);
-		},
-		(err)=>{
-			error(node,Error(err));
-		}
+	  .filter(entry => entry)),	
+	StringToAt: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.At(node.index)),
+	StringToCapitalize: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.capitalize()),
+	StringToCamelize: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.toLowerCase().replace(/[^a-zA-Z0-9]+(.)/g, (m, chr) => chr.toUpperCase())),
+	StringToCharAt: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.charAt(node.index)),
+	StringToCharCodeAt: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.charCodeAt(node.index)),
+	StringToCodePointAt: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.codePointAt(node.index)),
+	StringToCompressed: (RED,node,msg,data,callback)=>compressor.compress(data,
+		compressed=>node.setData(RED,node,msg,compressed,callback),
+		err=>error(node,Error(err))
 	),
-	StringToConcat: (RED,node,msg,data)=>data.concat(node.getString(msg)),
-	StringToDate: (RED,node,msg,data)=>toDateTypeZulu(data),
-	StringToDateLocal: (RED,node,msg,data)=>new Date(data),
-	StringToTimestamp: (RED,node,msg,data)=>Date.parse(data),
-	StringToDelimiterOnCase:(RED,node,msg,data)=>data.replace(/[A-Z]/g, (letter, index) => {
-        const lcLet = letter.toLowerCase();
-		const separator= node.delimiter??"-"
-        return index ? separator + lcLet : lcLet;
-      })
-      .replace(/([-_ ]){1,}/g,node.delimiter??"-"),
-	StringToDeunderscore: (RED,node,msg,data)=> data.deunderscore(),
-	StringToDeunderscoreCapitilize: (RED,node,msg,data)=> data.deunderscoreCapitilize(),
-	StringToDropSquareBracketPrefix: (RED,node,msg,data)=> data.dropSquareBracketPrefix(),
-	StringToEndsWith: (RED,node,msg,data)=> data.endsWith(node.getString(msg)),
-	StringToFloat: (RED,node,msg,data)=>parseFloat(data),
-	StringToGetWord: (RED,node,msg,data)=> data.getWord(node.index),
-	StringToInteger: (RED,node,msg,data)=>parseInt(data, node.radix??10),
-	StringToisBetween: (RED,node,msg,data)=> data.isBetween(node.minString,node.maxString),
-	StringToJSON: (RED,node,msg,data)=>JSON.parse(data),
-	StringToLowerCase: (RED,node,msg,data)=> data.toLowerCase(),
-	StringToNumber: (RED,node,msg,data)=>Number(data),
-	StringToPrepend: (RED,node,msg,data)=>node.getString(msg).concat(data),
-    StringToRangeLimit: (RED,node,msg,data)=> data?data.rangeLimit(node.minString,node.maxString):node.minString,
-	StringToReal: (RED,node,msg,data)=> data.toReal(),
-	StringToSplit: (RED,node,msg,data)=>data.split(node.getString(msg)),
-	StringToStartsWith: (RED,node,msg,data)=> data.startsWith(node.getString(msg)),
-	StringToTitle: (RED,node,msg,data)=>data.toTitle(),
-	StringTotTitleGrammatical: (RED,node,msg,data)=>data.toTitleGrammatical(),
-	StringToTrim: (RED,node,msg,data)=>data.trim(),
-	StringToTrimEnd: (RED,node,msg,data)=>data.trimEnd(),
-	StringToTrimStart: (RED,node,msg,data)=>data.trimStart(),
-	StringToUpperCase: (RED,node,msg,data)=> data.toUpperCase(),
-	StringToXmlStringEncode: (RED,node,msg,data)=> data.xmlStringEncode(),
-	pathToBasename: (RED,node,msg,data)=>path.basename(data),
-	pathToDirname: (RED,node,msg,data)=>path.dirname(data),
-	pathToExtname: (RED,node,msg,data)=>path.extname(data),
-	pathToFormat: (RED,node,msg,data)=>path.format(data),
-	pathToIsAbsolute: (RED,node,msg,data)=>path.isAbsolute(data),
-	pathToJoin: (RED,node,msg,...data)=>path.join(...data),
-	pathToParse: (RED,node,msg,data)=>path.parse(data),
-	pathToNormalize: (RED,node,msg,data)=>path.normalize(data),
-	pathToResolve: (RED,node,msg,data)=>path.resolve(data),
-	snappyToCompress: (RED,node,msg,data)=>{
+	StringToConcat: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.concat(node.getString(msg))),
+	StringToDate: (RED,node,msg,data,callback)=>callback(RED,node,msg,toDateTypeZulu(data)),
+	StringToDateLocal: (RED,node,msg,data,callback)=>callback(RED,node,msg,new Date(data)),
+	StringToTimestamp: (RED,node,msg,data,callback)=>callback(RED,node,msg,Date.parse(data)),
+	StringToDelimiterOnCase:(RED,node,msg,data,callback)=>callback(RED,node,msg,
+		data.replace(/[A-Z]/g, (letter, index) => {
+        	const lcLet = letter.toLowerCase();
+			const separator= node.delimiter??"-"
+        	return index ? separator + lcLet : lcLet;
+      	})
+		.replace(/([-_ ]){1,}/g,node.delimiter??"-")
+	),
+	StringToDeunderscore: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.deunderscore()),
+	StringToDeunderscoreCapitilize: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.deunderscoreCapitilize()),
+	StringToDropSquareBracketPrefix: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.dropSquareBracketPrefix()),
+	StringToEndsWith: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.endsWith(node.getString(msg))),
+	StringToFloat: (RED,node,msg,data,callback)=>callback(RED,node,msg,parseFloat(data)),
+	StringToGetWord: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.getWord(node.index)),
+	StringToInteger: (RED,node,msg,data,callback)=>callback(RED,node,msg,parseInt(data, node.radix??10)),
+	StringToisBetween: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.isBetween(node.minString,node.maxString)),
+	StringToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,JSON.parse(data)),
+	StringToLowerCase: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.toLowerCase()),
+	StringToNumber: (RED,node,msg,data,callback)=>callback(RED,node,msg,Number(data)),
+	StringToPrepend: (RED,node,msg,data,callback)=>callback(RED,node,msg,node.getString(msg).concat(data)),
+    StringToRangeLimit: (RED,node,msg,data,callback)=> callback(RED,node,msg,data?data.rangeLimit(node.minString,node.maxString):node.minString),
+	StringToReal: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.toReal()),
+	StringToSplit: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.split(node.getString(msg))),
+	StringToStartsWith: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.startsWith(node.getString(msg))),
+	StringToTitle: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.toTitle()),
+	StringTotTitleGrammatical: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.toTitleGrammatical()),
+	StringToTrim: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.trim()),
+	StringToTrimEnd: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.trimEnd()),
+	StringToTrimStart: (RED,node,msg,data,callback)=>callback(RED,node,msg,data.trimStart()),
+	StringToUpperCase: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.toUpperCase()),
+	StringToXmlStringEncode: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.xmlStringEncode()),
+	pathToBasename: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.basename(data)),
+	pathToDirname: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.dirname(data)),
+	pathToExtname: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.extname(data)),
+	pathToFormat: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.format(data)),
+	pathToIsAbsolute: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.isAbsolute(data)),
+	pathToJoin: (RED,node,msg,data)=>callback(RED,node,msg,path.join(data)),
+	pathToParse: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.parse(data)),
+	pathToNormalize: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.normalize(data)),
+	pathToResolve: (RED,node,msg,data,callback)=>callback(RED,node,msg,path.resolve(data)),
+	snappyToCompress: (RED,node,msg,data,callback)=>{
 		if(logger.active) logger.send({label:"snappyToCompress"});
 		snappy.compress(data, (err, data)=>{ 
 			if(logger.active) logger.send({label:"snappy.compress",error:err})
-			if(err) {
-				error(node,Error(err));
-				return;
-			}
-			node.setData(RED,node,msg,data)
-			node.send(msg);
+			if(err) return error(node,Error(err))
+			node.setData(RED,node,msg,data,callback)
 		})
 	},
-	snappyToUncompress: (RED,node,msg,data)=>{
+	snappyToUncompress: (RED,node,msg,data,callback)=>{
 		if(logger.active) logger.send({label:"snappyToUncompress"});
 		snappy.uncompress(data, { asBuffer: false }, (err, data)=>{
 			if(logger.active) logger.send({label:"snappy.uncompress",error:err});
@@ -464,16 +407,15 @@ const functions={
 				error(node,Error(err));
 				return;
 			}
-			node.setData(RED,node,msg,data)
-			node.send(msg);
+			node.setData(RED,node,msg,data,callback)
 		})
 	},
-	XLSXToArray:XLSXToArray,
-	XLSXObjectToArray:XLSXObjectToArray,
-	XLSXToJSON:XLSXToJSON,
-	XLSXObjectToJSON:XLSXObjectToJSON,
-	XLSXToXLSXObject:XLSXToXLSXObject,
-	XMLToJSON: (RED,node,msg,data)=>xmlParser.parse(data,XMLoptions,true),
+	XLSXToArray:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSX2Array(data)),
+	XLSXObjectToArray:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSXObject2Array(data)),
+	XLSXToJSON:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSX2JSON(data)),
+	XLSXObjectToJSON:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSXObject2JSON(data)),
+	XLSXToXLSXObject:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSX2XLSXObject(data)),
+	XMLToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,xmlParser.parse(data,XMLoptions,true)),
 	invalidArray:(v=>!Array.isArray(v))
 };
 
@@ -488,22 +430,6 @@ const is=(node,value)=>{
 	return node.actionSource==value||node.actionTarget==value;
 }
 let jsonata;
-function JSONataTransform(data,ok,error){
-/*
-(async () => {
-    return result = await expression.evaluate(data);
-})()
-*/
-
-	this.transformFunctionCompiled.evalFunction(data,{},(error, result) => {
-		if(error) {
-		  console.error(error);
-		  return;
-		}
-		console.log("Finished with", result);
-	});
-}
-
 module.exports = function (RED) {
 	function transformNode(n) {
 		RED.nodes.createNode(this,n);
@@ -533,28 +459,32 @@ module.exports = function (RED) {
 			if(['Append','Concat','EndsWith','Prepend','Split','StartsWith'].includes(node.actionTarget)) {
 				typedInput.setGetFunction(RED,node,"string")
 			}
-			node.sendInFunction=["snappy","Compressed"].includes(node.actionSource)||["Messages","Compressed"].includes(node.actionTarget);
-			node.hasNewTopic=![null,""].includes(node.topicProperty);
 			const source=(node.sourceProperty||"msg.payload")
 			const target=(node.targetProperty||"msg.payload")
 			const sourceMap="(RED,node,msg)=>"+source,
 			    deleteSource=typedInput.getValue(RED,node,"deleteSource",true)
-				targetMap="(RED,node,msg,data,index)=>{"+target+"=data;"+
-					(node.sendInFunction && node.hasNewTopic? "msg.topic=node.topicFunction(RED,node,msg,data,index);":"")+
+				targetMap="(RED,node,msg,data,callback)=>{"+target+"=data;"+
+					(node.topicProperty? "msg.topic=node.topicFunction(RED,node,msg,data);":"")+
 					(deleteSource&&source!==target?"delete "+source+";"+"delete "+source+";":"")+
-					(node.sendInFunction ? "" : "node.send(msg);" )+
 					"}",
 				topicMap="(RED,node,msg,data,index)=>"+(node.topicProperty||"msg.topic");
 			logger.sendInfo({label:"mappings",source:sourceMap,deleteSource:deleteSource,target:targetMap,topicMap:topicMap});
-			node.getData=evalFunction("source",sourceMap);
-			node.setData=evalFunction("target",targetMap);
+			const getData=evalFunction("source",sourceMap);
+			node.getData=(RED,node,msg,callback)=>callback(RED,node,msg,getData(RED,node,msg))
+			const setData1=evalFunction("target",targetMap);
+			node.setData=(RED,node,msg,data,callback)=>{
+				setData1(RED,node,msg,data)
+				callback(RED,node,msg,data)
+			}
 			node.topicFunction=evalFunction("topic",topicMap);
 			if(is(node,"AVRO")) {
 				 node.avroTransformer=avsc.Type.forSchema(node.schemaValid);
 			} else if(is(node,"Compressed")) {
-				const CompressionTool = require('compressiontool')
-				compressor=new CompressionTool();
-				compressor[node.compressionType]();
+				if(compressor==null) {
+					const CompressionTool = require('compressiontool')
+					compressor=new CompressionTool();
+					compressor[node.compressionType]();
+				}
 			} else if(is(node,"Confluence")) {
 				node.schemas={};
 				for(const schema in node.schemaValid )
@@ -563,11 +493,6 @@ module.exports = function (RED) {
 			} else if(node.actionSource=="Date") {
 				if(node.maxDate) node.maxDateTyped=toDateTypeZulu(node.maxDate)
 				if(node.minDate) node.minDateTyped=toDateTypeZulu(node.minDate)
-			}
-			if(node.actionTarget=="Compressed"){
-				const CompressionTool = require('compressiontool')
-				compressor=new CompressionTool();
-				compressor[node.compressionType]();
 			}
 		} catch(ex) {
 			logger.error(n);
@@ -586,16 +511,42 @@ module.exports = function (RED) {
 				}
 			}
 		}
-		if(node.transformFunction && is(node,"JSON")) {
+		if(node.actionSource=="JSON" && node.JSONataSource){
 			try{
 				if(!jsonata) jsonata=require('jsonata')
-				node.transformFunctionCompiled = jsonata(node.transformFunction);
+				node.JSONataSourceExpression = jsonata(node.JSONataSource)
+				node.getData1=node.getData
+			    node.getData=(RED,node,msg,callback)=>
+					node.getData1(RED,node,msg,(RED,node,msg,data)=>
+						node.JSONataSourceExpression.evaluate(data,
+							{msg:msg,RED:RED,node:node},
+							(err,response)=>err?error(node,Error(err),err):callback(RED,node,msg,response))
+						)
 			} catch (ex) {
-				error(node,ex,"Transform function error");
-				return;
+				console.log("JSONata source:",node.JSONataSource)
+				error(node,ex,"JSONata source function error")
+				return
 			}
 		}
-
+		if(node.actionTarget=="JSON"&& node.JSONataTarget){
+			try{
+				if(!jsonata) jsonata=require('jsonata')
+				node.JSONataTargetExpression = jsonata(node.JSONataTarget)
+				node.setData1=node.setData
+			    node.setData=(RED,node,msg,data,callback)=>{
+					node.JSONataTargetExpression.evaluate(data,{msg:msg,RED:RED,node:node},
+						(err,data)=>{
+							if(err) error(node,ex,"JSONata target evaluate error")
+							node.setData1(RED,node,msg,data,callback)
+						}
+					) 	
+				} 
+			} catch (ex) {
+				console.log("JSONata Target:",node.JSONataTarget)
+				error(node,ex,"JSONata target function error")
+				return
+			}
+		}
 		const typeValidate="invalid"+node.actionSource;
 		node.invalidSourceType=typeValidate in functions &! ["XLSX","XLSXObject"].includes(node.actionTarget)?functions[typeValidate]:(()=>false);
 		try {
@@ -605,17 +556,22 @@ module.exports = function (RED) {
 			error(node,ex,node.actionSource+"\nto "+node.actionTarget + " not implemented")
 			return;
 		}
-		node.processMsg=node.sendInFunction?this.transform
-			:(RED,node,msg,data)=>node.setData(RED,node,msg,node.transform(RED,node,msg,data));
+//		node.processMsg=node.sendInFunction?this.transform
+//			:(RED,node,msg,data,callback)=>node.setData(RED,node,msg,node.transform(RED,node,msg,data),callback);
 		this.status({fill:"green",shape:"ring",text:"Ready"});
 		node.on("input", function(msg) {
 			if(logger.active) logger.send({label:"input",msgid:msg._msgid,topic:msg.topic});
 			try{
-				const data=node.getData(RED,node,msg);
-				if(node.invalidSourceType(data)) throw Error("expected source data type "+node.actionSource); 
-				node.processMsg(RED,node,msg,data);
+				node.getData(RED,node,msg,(RED,node,msg,data)=>{
+					if(node.invalidSourceType(data)) {
+						msg.error=node.actionSource+" to "+node.actionTarget + " expected source data type "+node.actionSource;
+						error(node,Error(msg.error),"Error(s)");
+						node.send([null,msg]);
+					}
+					node.transform(RED,node,msg,data,(RED,node,msg,dataTransformed)=>node.setData(RED,node,msg,dataTransformed,()=>node.send([msg]) ))
+				})
 			} catch (ex) {
-				if(logger.active) logger.sendErrorAndDump("on input error",ex)
+				logger.sendErrorAndDump("on input error",ex)
 				msg.error=node.actionSource+" to "+node.actionTarget + " " +ex.message;
 				error(node,Error(msg.error),"Error(s)");
 				node.send([null,msg]);

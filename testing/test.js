@@ -74,7 +74,7 @@ function equalObjects(obj1,obj2,errorFactor,callEquals=()=>true,callNotEquals=()
 	if( keys1.length !== keys2.length ) return callNotEquals("different number of properties")
 	for(const key1 of keys1){
 		try{ 
-			if( !equalObjects(obj1[key1],obj2[key1],errorFactor) ) return callNotEquals()
+			if( !equalObjects(obj1[key1],obj2[key1],errorFactor,undefined,err=>{throw Error(err)}) ) return callNotEquals()
 		} catch(ex){
 			return callNotEquals(ex.message)
 		}
@@ -123,17 +123,18 @@ module.exports = function(RED) {
 		node.on("input",function(msg) {
 			if(msg._test) {
 				try{
+					const testData=node.getData(msg,node)
 					if(msg._test.id!==node.id) return setError(msg,node,"Sent by another test "+msg._test.id);
-
 					if(node.isJSONata) 
-						return 	RED.util.evaluateJSONataExpression(node.resultExpression,msg,(err,data)=>{
-							if(err) testedFailed(node,msg,err)
-							else return data?testedOK(node,msg):testedFailed(node,msg,"no data")
+						return 	RED.util.evaluateJSONataExpression(node.resultExpression,testData,(err,data)=>{
+							if(err) return testedFailed(node,msg,err)
+							if(data==null) testedFailed(node,msg,"no data, expecting boolean")
+							return data==true ? testedOK(node,msg) : testedFailed(node,msg,"jsonata not true")
 						})
 					
-					node.equalObjects(node.getData(msg,node),msg._test.result,node.errorFactor,
+					node.equalObjects(testData,msg._test.result,node.errorFactor,
 						()=>testedOK(node,msg),
-						(err)=>testedFailed(node,msg,err)
+						err=>testedFailed(node,msg,"equal object test failure "+err)
 					);
 
 				} catch(ex){

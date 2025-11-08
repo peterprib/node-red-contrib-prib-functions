@@ -1,0 +1,230 @@
+[
+    {
+        "id": "2191763eafdcb9cc",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "33b7593ad51d32b5",
+        "type": "debug",
+        "z": "2191763eafdcb9cc",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1160,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "9a965d2e3c6bc1c1",
+        "type": "http request",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "method": "GET",
+        "ret": "txt",
+        "paytoqs": "ignore",
+        "url": "www.listcorp.com/_api/services/discovery/get-all-companies?rowsPerPage=50&offset=0&sortBy=market_capitalisation&descending=true&exchange=ASX&recentlyListedCompanies=false&etf=false",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": true,
+        "authType": "",
+        "senderr": true,
+        "headers": [
+            {
+                "keyType": "User-Agent",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            },
+            {
+                "keyType": "Accept-Language",
+                "keyValue": "",
+                "valueType": "en-GB, en-US, en;q=0.9",
+                "valueValue": ""
+            }
+        ],
+        "x": 830,
+        "y": 860,
+        "wires": [
+            [
+                "33b7593ad51d32b5"
+            ]
+        ]
+    },
+    {
+        "id": "58aaf44ea2ab2bba",
+        "type": "inject",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 620,
+        "y": 860,
+        "wires": [
+            [
+                "9a965d2e3c6bc1c1"
+            ]
+        ]
+    },
+    {
+        "id": "a6a2c5c4265d3e21",
+        "type": "http request",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "www.listcorp.com/_api/services/company/get-price-data?code=ASX:L1G",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [
+            {
+                "keyType": "User-Agent",
+                "keyValue": "",
+                "valueType": "other",
+                "valueValue": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"
+            },
+            {
+                "keyType": "Accept-Language",
+                "keyValue": "",
+                "valueType": "en-GB, en-US, en;q=0.9",
+                "valueValue": ""
+            },
+            {
+                "keyType": "Content-Type",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            },
+            {
+                "keyType": "Accept",
+                "keyValue": "",
+                "valueType": "application/json",
+                "valueValue": ""
+            },
+            {
+                "keyType": "Accept-Encoding",
+                "keyValue": "",
+                "valueType": "br",
+                "valueValue": ""
+            },
+            {
+                "keyType": "other",
+                "keyValue": "sec-ch-ua",
+                "valueType": "other",
+                "valueValue": "\"Google Chrome\";v=\"141\", \"Not?A_Brand\";v=\"8\", \"Chromium\";v=\"141\""
+            },
+            {
+                "keyType": "other",
+                "keyValue": "sec-ch-ua-platform",
+                "valueType": "other",
+                "valueValue": "\"Windows\""
+            }
+        ],
+        "x": 830,
+        "y": 940,
+        "wires": [
+            [
+                "33b7593ad51d32b5"
+            ]
+        ]
+    },
+    {
+        "id": "388fb83742c273ad",
+        "type": "inject",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 620,
+        "y": 940,
+        "wires": [
+            [
+                "a6a2c5c4265d3e21"
+            ]
+        ]
+    },
+    {
+        "id": "c4baabcba29c7d3d",
+        "type": "catch",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "scope": [
+            "9a965d2e3c6bc1c1",
+            "a6a2c5c4265d3e21"
+        ],
+        "uncaught": false,
+        "x": 810,
+        "y": 1040,
+        "wires": [
+            [
+                "ba5159a50b6c265a"
+            ]
+        ]
+    },
+    {
+        "id": "ba5159a50b6c265a",
+        "type": "debug",
+        "z": "2191763eafdcb9cc",
+        "name": "error",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1030,
+        "y": 1040,
+        "wires": []
+    }
+]
