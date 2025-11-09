@@ -2,17 +2,17 @@
 
 [Node-Red][1] nodes for various functions:
 
-*   Data Analysis  - statistical metrics that has real time option
-*   Matrix
-*   Transform
-*   Test
-*   Load Injector
-*   Monitor Flow
-*   append
-*   Spawn Process
-*   Host Available
-*   node.js os metrics
-*   Levenshtein Distance
+* Data Analysis  - statistical metrics that has real time option
+* Matrix
+* Transform
+* Test
+* Load Injector
+* Monitor Flow
+* append
+* Spawn Process
+* Host Available
+* node.js os metrics
+* Levenshtein Distance
 
 ------------------------------------------------------------
 
@@ -30,7 +30,8 @@ being outside 3 standard deviations from mean. This can be changed to median and
 A set of data analysis functions that can be run over an array of data
 
 Single value metrics:
-* autocorrelation
+
+* Autocorrelation
 * Autocovariance
 * Average/Mean
 * Maximum
@@ -43,6 +44,7 @@ Single value metrics:
 * Variance
 
 Array metrics:
+
 * Deltas
 * Deltas Normalised
 * difference
@@ -56,10 +58,10 @@ Array metrics:
 * Standardization (Z-score Normalization)
 
 Array data
-* distances 
+
+* distances
 * distance(s) minimum between points
 * distance(s) maximum between points
-
 
 ![Data Analysis](documentation/DataAnalysis.JPG "Data Analysis")
 
@@ -69,9 +71,7 @@ example:
 
 ![Data Analysis Pearson R example](documentation/DataAnalysisTestPearsonR.JPG "Data Analysis PearsonR example")
 
-
 ![Data Analysis example](documentation/DataAnalysisTest.JPG "Data Analysis example")
-
 
 ------------------------------------------------------------
 
@@ -79,26 +79,25 @@ example:
 
 Define a matrix and perform various functions
 
- * Define / Define Empty / Create / Create Like/ clone
- * Add / Add Row to Row / Add to Cell / Add Row / Subtract Cell
- * Multiple / Multiple Cell / Divide Cell / Divide Row
- * Transpose
- * Adjoint
- * Cofactor
- * Complement Minor
- * Identity
- * Inverse
- * Determinant
- * Backward Substitution
- * Forward Elimination
- * Gaussian Elimination
- * Reduced Row EchelonForm
- * Row Echelon Form
- * Nearly Equals / Is Square / Get Cell
- * Sum Row
- * Swap Rows
- * To Array Object
-
+* Define / Define Empty / Create / Create Like/ clone
+* Add / Add Row to Row / Add to Cell / Add Row / Subtract Cell
+* Multiple / Multiple Cell / Divide Cell / Divide Row
+* Transpose
+* Adjoint
+* Cofactor
+* Complement Minor
+* Identity
+* Inverse
+* Determinant
+* Backward Substitution
+* Forward Elimination
+* Gaussian Elimination
+* Reduced Row EchelonForm
+* Row Echelon Form
+* Nearly Equals / Is Square / Get Cell
+* Sum Row
+* Swap Rows
+* To Array Object
 
 ![Matrix](documentation/matrix.jpg "Matrix")
 
@@ -107,103 +106,102 @@ Define a matrix and perform various functions
 ## Transform
 
 Translates a selected msg property to a target property.
-Messages generates a message for each row or record. 
+Messages generates a message for each row or record.
 
 Transformations:
 
-*   Array to
-    * CSV
-    * HTML
-    * ISO8385
-    * Messages
-    * xlsx / xlsx object (excel uses [xlsx][7])  
-*   AVRO to JSON (uses [avsc][6])
-*   Buffer to compressed 
-*   Confluence to JSON
-*   Compressed to
-    * Buffer
-    * String
-    * JSON
-*   CSV to
-    * Array
-    * HTML
-    * Messages
-*   CSVWithHeader to
-    * Array
-    * HTML
-    * JSON
-*   Date to
-    * is between
-    * ISO string 
-    * locale string
-    * range limit
-*   ISO8385 to Array
-*   ISO8385 to JSON
-*   JSON to 
-    * Array
-    * Confluence
-    * CSV
-    * AVRO (uses [avsc][6])
-    * ISO8385
-    * Messages
-    * String
-    * xlsx / xlsx object (excel uses [xlsx][7])  
-    * XML (uses [fast-xml-parser][4])
+* Array to
+  * CSV
+  * HTML
+  * ISO8385
+  * Messages
+  * xlsx / xlsx object (excel uses [xlsx][7])  
+* AVRO to JSON (uses [avsc][6])
+* Buffer to compressed
+* Confluence to JSON
+* Compressed to
+  * Buffer
+  * String
+  * JSON
+* CSV to
+  * Array
+  * HTML
+  * Messages
+* CSVWithHeader to
+  * Array
+  * HTML
+  * JSON
+* Date to
+  * is between
+  * ISO string
+  * locale string
+  * range limit
+* ISO8385 to Array
+* ISO8385 to JSON
+* JSON to
+  * Array
+  * Confluence
+  * CSV
+  * AVRO (uses [avsc][6])
+  * ISO8385
+  * Messages
+  * String
+  * xlsx / xlsx object (excel uses [xlsx][7])  
+  * XML (uses [fast-xml-parser][4])
 * Number
-    * is between
-    * range limit
-*   path
-    * Basename
-    * Dirname
-    * Extname
-    * Format
-    * Is Absolute
-    * Join
-    * Parse
-    * Normalize
-    * Resolve
-*   snappy compress (uses [snappy][5], must install separately)
-*   snappy uncompress (uses [snappy][5], must install separately)
-*   String to
-    * Append
-    * Array By Delimiter
-    * At
-    * Camelize
-    * Capitalize
-    * Compressed
-    * Char At
-    * Char Code At"
-    * Code Point At
-    * Concat
-    * Date
-    * Delimiter On Case
-    * _ to space
-    * _ to space Capitilize
-    * Drop square bracket prefix
-    * Ends With
-    * Float
-    * Get Word
-    * Integer
-    * is Between
-    * Lower Case
-    * Number
-    * Prepend
-    * JSON
-    * Range Limit
-    * Split
-    * Starts With
-    * Timestamp
-    * Title
-    * Title Grammatical
-    * Trim
-    * Trim End
-    * Trim Start
-    * Upper Case
-    * Xml String Encode
+  * is between
+  * range limit
+* path
+  * Basename
+  * Dirname
+  * Extname
+  * Format
+  * Is Absolute
+  * Join
+  * Parse
+  * Normalize
+  * Resolve
+* snappy compress (uses [snappy][5], must install separately)
+* snappy uncompress (uses [snappy][5], must install separately)
+* String to
+  * Append
+  * Array By Delimiter
+  * At
+  * Camelize
+  * Capitalize
+  * Compressed
+  * Char At
+  * Char Code At"
+  * Code Point At
+  * Concat
+  * Date
+  * Delimiter On Case
+  * _ to space
+  * _ to space Capitilize
+  * Drop square bracket prefix
+  * Ends With
+  * Float
+  * Get Word
+  * Integer
+  * is Between
+  * Lower Case
+  * Number
+  * Prepend
+  * JSON
+  * Range Limit
+  * Split
+  * Starts With
+  * Timestamp
+  * Title
+  * Title Grammatical
+  * Trim
+  * Trim End
+  * Trim Start
+  * Upper Case
+  * Xml String Encode
 
-
-*   xlsx / xlsx object to array/JSON (excel uses [xlsx][7])  
-*   XML to JSON (uses [fast-xml-parser][4])
+* xlsx / xlsx object to array/JSON (excel uses [xlsx][7])  
+* XML to JSON (uses [fast-xml-parser][4])
 
 Note, snappy needs to be installed separately as can have issues with auto install as build binaries.
 
@@ -213,13 +211,13 @@ Example AVRO with schema
 
 ![Transform AVRO](documentation/transformArvo.jpg "Transform AVRO example")
 
-For Confluence schema contains a list of schemas in form {"<schema id>",<schema>}
+For Confluence schema contains a list of schemas in form {"\<schema id\>",\<schema\>}
 
 ------------------------------------------------------------
 
 ## Test
 
-Allows a test case for a message to allow simple testing of nodes. Injects a new message via mouse or message. Message sent to first port which can be consumed by other nodes and returned back to node in a loop. The Test node then checks against detailed expected payload result. 
+Allows a test case for a message to allow simple testing of nodes. Injects a new message via mouse or message. Message sent to first port which can be consumed by other nodes and returned back to node in a loop. The Test node then checks against detailed expected payload result.
 
 ![Test](documentation/Test.JPG "Test")
 
@@ -260,10 +258,10 @@ Inject messages for a set period of time with varying think time.
 Primary purpose is testing and useful for load/stress testing.
 
 Has 3 extra data types
+
 1. generated id - Unique id for each message
 2. generated data - string text generated using [dummy-json][3]
 3. generated json - json generated using [dummy-json][3]
-
 
 ![Load Injector](documentation/loadInjector.png "Load Injector")
 
@@ -300,7 +298,7 @@ Test example:
 
 ------------------------------------------------------------
 
-## Monitor System 
+## Monitor System
 
 System monitoring metrics
 
@@ -330,7 +328,7 @@ Spawn process as per node.js manual with ability to set working directory, envir
 and argument passed to process. STDOUT and STDERR are sent as individual messages.
 RC port is sent a message on closure.
 Takes in messages that starts a process with ability to add environment values.
-Message can be sent to kill the process.    
+Message can be sent to kill the process.
 
 ![Spawn Process](documentation/SpawnProcess.JPG "Spawn Process")
 
@@ -340,19 +338,22 @@ Test example:
 
 ------------------------------------------------------------
 
-# Install
+## Install
 
 Run the following command in the root directory of your Node-RED install
 
     npm install node-red-contrib-prib-functions
 
-# Tests
+## Tests
 
 Test/example flow in test/generalTest.json
 
 ------------------------------------------------------------
 
-# Version
+## Version
+
+0.23.3 Removes bug in test, more translation
+
 0.23.0 Removes bug in test, more translation
 
 0.22.0 Add autocovariance + autocorealationship to real time data analystics, improves test
@@ -367,8 +368,7 @@ Test/example flow in test/generalTest.json
 
 0.17.0 Add finished wire to load injector
 
-
-# Author
+## Author
 
 [Peter Prib][3]
 
@@ -385,5 +385,3 @@ Test/example flow in test/generalTest.json
 [6]: https://www.npmjs.com/package/avsc "avsc"
 
 [7]: https://www.npmjs.com/package/xlsx "xlsx"
-
-[8]: https://www.npmjs.com/package/dummy-json "dummy-json"
