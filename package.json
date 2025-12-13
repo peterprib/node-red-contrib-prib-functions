@@ -139,6 +139,7 @@
 		"version": ">=2.0.0",
 		"nodes": {
 			"append": "append/append.js",
+			"filesystem": "filesystem/filesystem.js",
 			"dataAnalysis": "dataAnalysis/dataAnalysis.js",
 			"hostAvailable": "testing/hostAvailable.js",
 			"levenshteinDistance": "levenshteinDistance/levenshteinDistanceNode.js",

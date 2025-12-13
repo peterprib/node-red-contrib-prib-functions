@@ -21,6 +21,14 @@
         "info": ""
     },
     {
+        "id": "43a74ee3902ea5d5",
+        "type": "tab",
+        "label": "filesystem",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "955f4808.fd1898",
         "type": "tab",
         "label": "Host Available",
@@ -1999,9 +2007,9 @@
         "infiniteIsNull": false,
         "payload": "",
         "payloadType": "date",
-        "result": "$boolean(msg._matrix.toArray()=[[1,0],[0,1]])",
+        "result": "$boolean(_matrix.toArray()=[[1,0],[0,1]])",
         "resultType": "jsonata",
-        "resultProperty": "msg.payload",
+        "resultProperty": "msg",
         "topic": "",
         "x": 170,
         "y": 480,
@@ -2066,6 +2074,24 @@
             [
                 "25c0c8c9e94083e0"
             ],
+            []
+        ]
+    },
+    {
+        "id": "ae223fa13da104ff",
+        "type": "function",
+        "z": "ae9957f07bd56e1b",
+        "name": "function 1",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 580,
+        "wires": [
             []
         ]
     },
@@ -7315,8 +7341,8 @@
         "infiniteIsNull": false,
         "payload": "{\"worksheet1\":[[11,12],[21,22],[31,32]],\"worksheet2\":[[11,12],[21,22]]}",
         "payloadType": "json",
-        "result": "",
-        "resultType": "date",
+        "result": "{\"worksheet1\":[[11,12],[21,22],[31,32]],\"worksheet2\":[[11,12],[21,22]]}",
+        "resultType": "json",
         "resultProperty": "msg.payload",
         "topic": "",
         "x": 260,
@@ -7454,7 +7480,7 @@
         "stringType": "str",
         "delimiter": ",",
         "compressionType": "setGzip",
-        "x": 140,
+        "x": 160,
         "y": 320,
         "wires": [
             [
