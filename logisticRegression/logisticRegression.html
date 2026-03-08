@@ -1,0 +1,136 @@
+<script type="text/javascript">
+    RED.nodes.registerType('logisticRegression', {
+        category: 'function',
+        color: '#a6bbcf',
+        defaults: {
+            name: {value:"", required:false},
+            modelName: {value:"", required:true},
+            action: {value:"predict", required:true},
+            learningRate: {value:0.1, required:false},
+            iterations: {value:2000, required:false},
+            fitIntercept: {value:true, required:false},
+            l2: {value:0.0, required:false},
+            tolerance: {value:1e-7, required:false},
+            verbose: {value:false, required:false},
+            threshold: {value:0.5, required:false}
+        },
+        inputs: 1,
+        inputLabels: "in",
+		outputs:1,
+        outputLabels: ["Result"],
+		paletteLabel: "Logistic Regression",
+        icon: "logisticregression.svg",
+        label: function() {
+            return this.name || (this.action + " Logistic Regression");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+            const node = this;
+            $("#node-input-action").change(function() {
+                const action = $(this).val();
+                if (action === 'fit') {
+                    $("#fit-params").show();
+                    $("#predict-params").hide();
+                } else {
+                    $("#fit-params").hide();
+                    $("#predict-params").show();
+                }
+            });
+            $("#node-input-action").change(); // trigger on load
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="logisticRegression">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-modelName"><i class="fa fa-database"></i> Model</label>
+        <input type="text" id="node-input-modelName" data-type="flow" data-value="">
+    </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-cogs"></i> Action</label>
+        <select type="text" id="node-input-action">
+            <option value="fit">Fit Model</option>
+            <option value="predict">Predict Class</option>
+            <option value="predictProba">Predict Probability</option>
+        </select>
+    </div>
+    <div id="fit-params">
+        <div class="form-row">
+            <label for="node-input-learningRate">Learning Rate</label>
+            <input type="number" id="node-input-learningRate" step="0.01">
+        </div>
+        <div class="form-row">
+            <label for="node-input-iterations">Iterations</label>
+            <input type="number" id="node-input-iterations">
+        </div>
+        <div class="form-row">
+            <label for="node-input-fitIntercept">Fit Intercept</label>
+            <input type="checkbox" id="node-input-fitIntercept" checked>
+        </div>
+        <div class="form-row">
+            <label for="node-input-l2">L2 Regularization</label>
+            <input type="number" id="node-input-l2" step="0.01">
+        </div>
+        <div class="form-row">
+            <label for="node-input-tolerance">Tolerance</label>
+            <input type="number" id="node-input-tolerance" step="1e-8">
+        </div>
+        <div class="form-row">
+            <label for="node-input-verbose">Verbose</label>
+            <input type="checkbox" id="node-input-verbose">
+        </div>
+    </div>
+    <div id="predict-params" style="display:none;">
+        <div class="form-row">
+            <label for="node-input-threshold">Threshold (for predict)</label>
+            <input type="number" id="node-input-threshold" step="0.01" min="0" max="1">
+        </div>
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="logisticRegression">
+    <p>Logistic Regression node for binary classification using gradient descent optimization.</p>
+    
+    <h3>Actions</h3>
+    <ul>
+        <li><b>Fit Model:</b> Train the model with training data. Input msg.payload should be: 
+            <pre>{X: [[feature1, feature2, ...], ...], y: [0, 1, 0, ...]}</pre>
+            where X is array of feature vectors and y is array of binary labels (0 or 1)</li>
+        <li><b>Predict Class:</b> Predict class labels (0 or 1) for input features. Input msg.payload should be array of feature vectors: 
+            <pre>[[feature1, feature2, ...], ...]</pre></li>
+        <li><b>Predict Probability:</b> Predict probabilities for class 1. Same input format as Predict Class, returns array of probabilities between 0 and 1</li>
+    </ul>
+
+    <h3>Configuration Parameters</h3>
+    <ul>
+        <li><b>Learning Rate:</b> Step size for gradient descent optimization (default: 0.1). Smaller values lead to slower convergence, larger values may overshoot.</li>
+        <li><b>Iterations:</b> Number of gradient descent iterations for model training (default: 2000). More iterations allow better convergence.</li>
+        <li><b>Fit Intercept:</b> Whether to fit an intercept (bias) term in the model (default: true).</li>
+        <li><b>L2 Regularization:</b> Regularization parameter to prevent overfitting (default: 0.0). Higher values apply stronger regularization.</li>
+        <li><b>Tolerance:</b> Convergence tolerance for optimization (default: 1e-7). Algorithm stops when cost change is below this threshold.</li>
+        <li><b>Verbose:</b> Enable logging of training progress (default: false).</li>
+        <li><b>Threshold:</b> Decision threshold for class prediction (default: 0.5). Probabilities >= threshold predict class 1, otherwise class 0.</li>
+    </ul>
+
+    <h3>Model Storage</h3>
+    <p><b>Model:</b> Required name for the logistic regression model. For fit actions, this specifies where to store the trained model in the flow context. For predict actions, this selects which fitted model to use from the flow context. The dropdown shows all available flow context variables - select an existing fitted model or enter a new name to create one.</p>
+    <p>Models are stored in the flow context and can be shared between multiple Logistic Regression nodes in the same flow. Fit a model with one node, then use the same model name in predict nodes to make predictions.</p>
+
+    <h3>Example Payload</h3>
+    <p><b>For Fit:</b></p>
+    <pre>{
+  "X": [[0, 0], [0, 1], [1, 0], [1, 1]],
+  "y": [0, 1, 1, 1]
+}</pre>
+    <p><b>For Predict:</b></p>
+    <pre>[[0.5, 0.5], [1, 1]]</pre>
+
+    <h3>Output</h3>
+    <p>Results are returned in msg.result with appropriate format (fitted model confirmation for fit, predictions array for predict/predictProba).</p>
+</script>

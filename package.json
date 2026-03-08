@@ -1,6 +1,6 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.23.3",
+	"version": "0.24.0",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"avsc": ">=5.7.7",
@@ -10,23 +10,24 @@
 		"node-red-contrib-logger": "latest",
 		"node-red-contrib-noderedbase": ">=0.0.16",
 		"node-red-contrib-prib-functions": "file:",
+		"node-red-node-data-generator":">=1.0.1",
 		"npm": "^11.3.0",
-		"xlsx": "*"
+		"xlsx": "*",
+		"logisticegression": "git+https://gitlab.com/peter.prib/logisticregression.git"
 	},
 	"devDependencies": {
 		"@node-red/runtime": ">=4.0.9",
 		"axios": ">=1.9.0",
-		"bcrypt": "^5.1.1",
 		"bl": "^6.1.0",
-		"mocha": "^11.2.2",
+		"should": ">=8.x",
 		"node-red": ">=4.0.9",
 		"node-red-node-test-helper": ">=0.3.4"
 	},
 	"scripts": {
-		"test": "mocha \"test/dataAnalysisE*.js\"",
-		"test2": "mocha \"test/transformNum*.js\"",
-		"test00": "mocha \"test/00*.js\"",
-		"test02": "mocha \"test/02*.js\"",
+		"test": "node test-runner.js",
+		"testLogisticRegression": "node test-runner.js",
+		"testTransform": "node test-runner.js transform",
+		"testDataAnalysis": "node test-runner.js dataanalysis",
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'",
 		"sharesNodeRed": "node-red --userDir ./test/data/shares --setting ./test/data/shares/settings.js ./test/data/shares/flow.json --title '***shares nodered***'"
 	},
@@ -85,6 +86,7 @@
 		"levenshtein distance",
 		"load",
 		"load injector",
+		"logistic regression",
 		"matrix",
 		"maximum",
 		"mean",
@@ -142,6 +144,7 @@
 			"dataAnalysis": "dataAnalysis/dataAnalysis.js",
 			"hostAvailable": "testing/hostAvailable.js",
 			"levenshteinDistance": "levenshteinDistance/levenshteinDistanceNode.js",
+			"logisticRegression": "logisticRegression/logisticRegression.js",
 			"load-injector": "testing/load-injector.js",
 			"matrix": "matrix/matrixNode.js",
 			"monitorflow": "monitor/monitorflow.js",

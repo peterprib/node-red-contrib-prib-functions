@@ -141,6 +141,14 @@
         "info": ""
     },
     {
+        "id": "d98540e8ed31a4a1",
+        "type": "tab",
+        "label": "logistic Regression",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "680198a3be420949",
         "type": "group",
         "z": "1374c39ae82adb4e",
@@ -7502,6 +7510,142 @@
         "wires": [
             [
                 "0e4f57304e89edb8"
+            ]
+        ]
+    },
+    {
+        "id": "835d891c3b7b9451",
+        "type": "debug",
+        "z": "d98540e8ed31a4a1",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 740,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "b850a29956571494",
+        "type": "logisticRegression",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "modelName": "test",
+        "action": "fit",
+        "learningRate": 0.1,
+        "iterations": 2000,
+        "fitIntercept": true,
+        "l2": 0,
+        "tolerance": 1e-7,
+        "verbose": false,
+        "threshold": 0.5,
+        "x": 420,
+        "y": 180,
+        "wires": [
+            [
+                "835d891c3b7b9451",
+                "1c969461651d15fa"
+            ]
+        ]
+    },
+    {
+        "id": "1c969461651d15fa",
+        "type": "test",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "{\"X\":[[0,0],[0,1],[1,0],[1,1]],\"y\":[0,1,1,1]}",
+        "payloadType": "json",
+        "result": "Model fitted and stored as: test",
+        "resultType": "str",
+        "resultProperty": "msg.result",
+        "topic": "",
+        "x": 180,
+        "y": 80,
+        "wires": [
+            [
+                "b850a29956571494"
+            ],
+            [],
+            [
+                "f903d1b11568c38c"
+            ]
+        ]
+    },
+    {
+        "id": "a4ff87db6b6a4889",
+        "type": "logisticRegression",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "modelName": "test",
+        "action": "predict",
+        "learningRate": 0.1,
+        "iterations": 2000,
+        "fitIntercept": true,
+        "l2": 0,
+        "tolerance": 1e-7,
+        "verbose": false,
+        "threshold": 0.5,
+        "x": 460,
+        "y": 360,
+        "wires": [
+            [
+                "835d891c3b7b9451",
+                "f903d1b11568c38c",
+                "21167b6b6f5c0cbc"
+            ]
+        ]
+    },
+    {
+        "id": "f903d1b11568c38c",
+        "type": "test",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "[[0, 0], [1, 1], [0.5, 0.5]]",
+        "payloadType": "json",
+        "result": "[0,1,1]",
+        "resultType": "json",
+        "resultProperty": "msg.result",
+        "topic": "",
+        "x": 140,
+        "y": 280,
+        "wires": [
+            [
+                "a4ff87db6b6a4889"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "21167b6b6f5c0cbc",
+        "type": "logisticRegression",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "modelName": "test",
+        "action": "predictProba",
+        "learningRate": 0.1,
+        "iterations": 2000,
+        "fitIntercept": true,
+        "l2": 0,
+        "tolerance": 1e-7,
+        "verbose": false,
+        "threshold": 0.5,
+        "x": 440,
+        "y": 480,
+        "wires": [
+            [
+                "835d891c3b7b9451"
             ]
         ]
     }

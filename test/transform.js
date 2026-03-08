@@ -1,4 +1,4 @@
-const should = require("should");
+const assert = require("assert");
 const helper = require("node-red-node-test-helper");
 const transformNode = require("../transform/transform.js");
 
@@ -30,16 +30,16 @@ describe('transform', function() {
 		} ];
 		helper.load(transformNode, flow, function() {
 			const n1 = helper.getNode("n1");
-			n1.should.have.property('name', 'transform name');
-			n1.should.have.property('actionSource', "Array");
-			n1.should.have.property('actionTarget',"Messages");
-			n1.should.have.property('sourceProperty',"msg.payload");
-			n1.should.have.property('targetProperty',"msg.payload");
-			n1.should.have.property('topicProperty',"'test topic'");
-			n1.should.have.property('maxMessages', 1000);
-			n1.should.have.property('skipLeading', 0);
-			n1.should.have.property('skipTrailing', 0);
-			n1.should.have.property('delimiter', ",");
+			assert.strictEqual(n1.name, 'transform name');
+			assert.strictEqual(n1.actionSource, "Array");
+			assert.strictEqual(n1.actionTarget, "Messages");
+			assert.strictEqual(n1.sourceProperty, "msg.payload");
+			assert.strictEqual(n1.targetProperty, "msg.payload");
+			assert.strictEqual(n1.topicProperty, "'test topic'");
+			assert.strictEqual(n1.maxMessages, 1000);
+			assert.strictEqual(n1.skipLeading, 0);
+			assert.strictEqual(n1.skipTrailing, 0);
+			assert.strictEqual(n1.delimiter, ",");
 			done();
 		});
 	});
