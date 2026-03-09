@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "4.1.1-git",
+        "version": "4.1.7-git",
         "local": false,
         "user": false,
         "nodes": {
@@ -448,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.23.3",
+        "version": "0.24.0",
         "local": false,
         "user": false,
         "nodes": {
@@ -594,6 +594,25 @@
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
+            }
+        }
+    },
+    "node-red-node-data-generator": {
+        "name": "node-red-node-data-generator",
+        "version": "1.0.2",
+        "local": false,
+        "user": false,
+        "nodes": {
+            "data-generator": {
+                "name": "data-generator",
+                "types": [
+                    "data-generator"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-node-data-generator",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-node-data-generator\\datagenerator.js"
             }
         }
     }

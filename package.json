@@ -6,14 +6,14 @@
 		"avsc": ">=5.7.7",
 		"compressiontool": "*",
 		"fast-xml-parser": "^5.2.1",
+		"logisticegression": "git+https://gitlab.com/peter.prib/logisticregression.git",
 		"node": ">=22.15.0",
 		"node-red-contrib-logger": "latest",
 		"node-red-contrib-noderedbase": ">=0.0.16",
 		"node-red-contrib-prib-functions": "file:",
 		"node-red-node-data-generator":">=1.0.1",
 		"npm": "^11.3.0",
-		"xlsx": "*",
-		"logisticegression": "git+https://gitlab.com/peter.prib/logisticregression.git"
+		"xlsx": "*"
 	},
 	"devDependencies": {
 		"@node-red/runtime": ">=4.0.9",
@@ -28,6 +28,7 @@
 		"testLogisticRegression": "node test-runner.js",
 		"testTransform": "node test-runner.js transform",
 		"testDataAnalysis": "node test-runner.js dataanalysis",
+		"testColumnar": "node test-runner.js columnar",
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'",
 		"sharesNodeRed": "node-red --userDir ./test/data/shares --setting ./test/data/shares/settings.js ./test/data/shares/flow.json --title '***shares nodered***'"
 	},
@@ -152,7 +153,9 @@
 			"os": "nodejs/os.js",
 			"spawnProcess": "spawnProcess/spawnProcess.js",
 			"test": "testing/test.js",
-			"transform": "transform/transform.js"
+			"transform": "transform/transform.js",
+			"gitlab": "gitlab/gitlab.js",
+			"columnar": "columnar/columnar.js"
 		}
 	},
 	"author": "Peter Prib",

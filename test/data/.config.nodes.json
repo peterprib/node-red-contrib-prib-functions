@@ -594,6 +594,28 @@
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
+            },
+            "gitlab": {
+                "name": "gitlab",
+                "types": [
+                    "gitlab"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\gitlab\\gitlab.js"
+            },
+            "parquet": {
+                "name": "parquet",
+                "types": [
+                    "parquet"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\parquet\\parquet.js"
             }
         }
     },

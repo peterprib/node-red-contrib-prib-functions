@@ -1,0 +1,174 @@
+<script type="text/javascript">
+    RED.nodes.registerType('columnar', {
+        category: 'storage',
+        color: '#8BC34A',
+        defaults: {
+            name: {value:"", required:false},
+            action: {value:"readFile", required:true},
+            filePath: {value:"", required:false}
+        },
+        inputs: 1,
+        inputLabels: "in",
+        outputs:1,
+        outputLabels: ["Result"],
+        paletteLabel: "Columnar Datastore",
+        icon: "columnar.svg",
+        label: function() {
+            return this.name || (this.action + " Columnar");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="columnar">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-cogs"></i> Action</label>
+        <select type="text" id="node-input-action">
+            <option value="readFile">Read File</option>
+            <option value="writeFile">Write File</option>
+            <option value="queryFile">Query File</option>
+            <option value="getSchema">Get Schema</option>
+            <option value="getMetadata">Get Metadata</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-filePath">File Path</label>
+        <input type="text" id="node-input-filePath" placeholder="/path/to/file.columnar">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="columnar">
+    <p>Columnar-inspired datastore node for reading and writing columnar data files. This implementation is based on <a href="https://github.com/apache/parquet-format/" target="_blank">Apache Parquet specification</a> concepts including columnar storage, metadata structures, and compression principles, but provides a simplified JavaScript implementation for basic use cases.</p>
+
+    <h3>Actions</h3>
+    <ul>
+        <li><b>Read File:</b> Reads all records from a Columnar file</li>
+        <li><b>Write File:</b> Writes records to a Columnar file</li>
+        <li><b>Query File:</b> Reads and filters records from a Columnar file</li>
+        <li><b>Get Schema:</b> Retrieves the schema information from a Columnar file</li>
+        <li><b>Get Metadata:</b> Retrieves metadata information from a Columnar file</li>
+    </ul>
+
+    <h3>Configuration</h3>
+    <ul>
+        <li><b>File Path:</b> Path to the Columnar file (.columnar extension). Can be overridden in msg.payload.filePath</li>
+    </ul>
+
+    <h3>Input/Output Formats</h3>
+
+    <h4>Read File</h4>
+    <p><b>Input:</b> Optional filePath in msg.payload</p>
+    <p><b>Output:</b></p>
+    <pre>{
+  "result": {
+    "records": [...],
+    "count": 100,
+    "schema": {...},
+    "filePath": "/path/to/file.columnar"
+  }
+}</pre>
+
+    <h4>Write File</h4>
+    <p><b>Input:</b></p>
+    <pre>{
+  "records": [
+    {"name": "John", "age": 30, "city": "NYC"},
+    {"name": "Jane", "age": 25, "city": "LA"}
+  ],
+  "filePath": "/path/to/output.columnar",
+  "schema": {...} // optional, auto-inferred if not provided
+}</pre>
+    <p><b>Output:</b></p>
+    <pre>{
+  "result": {
+    "filePath": "/path/to/output.columnar",
+    "recordsWritten": 2,
+    "schema": {...}
+  }
+}</pre>
+
+    <h4>Query File</h4>
+    <p><b>Input:</b></p>
+    <pre>{
+  "filePath": "/path/to/file.columnar",
+  "limit": 100, // optional
+  // either provide a javascript filter function or a ridMap to perform
+  // a column‑based intersection.  The columnar layout stores each field
+  // as its own buffer along with a list of row‑ids (rids).  A ridMap is an
+  // object whose keys are column names and whose values are arrays or
+  // Sets of rids; only rows present in *every* set will be returned.
+  // Example using a filter function:
+  "filter": "function(record) { return record.age > 25; }" // optional
+  // Example using a ridMap (select rows 1 and 2 from the 'age' column):
+  // "ridMap": {"age": [1,2]}
+}</pre>
+    <p><b>Output:</b></p>
+    <pre>{
+  "result": {
+    "records": [...],
+    "count": 50,
+    "totalScanned": 100,
+    "schema": {...},
+    "filtered": true
+  }
+}</pre>
+
+    <h4>Get Schema</h4>
+    <p><b>Input:</b> Optional filePath in msg.payload</p>
+    <p><b>Output:</b></p>
+    <pre>{
+  "result": {
+    "schema": {...},
+    "fields": ["name", "age", "city"],
+    "filePath": "/path/to/file.parquet"
+  }
+}</pre>
+
+    <h4>Get Metadata</h4>
+    <p><b>Input:</b> Optional filePath in msg.payload</p>
+    <p><b>Output:</b></p>
+    <pre>{
+  "result": {
+    "metadata": {...},
+    "filePath": "/path/to/file.parquet",
+    "numRows": 1000,
+    "numRowGroups": 5
+  }
+}</pre>
+
+    <h3>Data Types</h3>
+    <p>Columnar supports various data types. The node automatically infers types when writing:</p>
+    <ul>
+        <li>String → UTF8</li>
+        <li>Number → DOUBLE</li>
+        <li>Boolean → BOOLEAN</li>
+        <li>Date → TIMESTAMP</li>
+    </ul>
+
+    <h3>Implementation Notes</h3>
+    <ul>
+        <li>Based on <a href="https://github.com/apache/parquet-format/" target="_blank">Apache Parquet specification</a> concepts</li>
+        <li>Implements columnar storage for efficient data organization</li>
+        <li>Uses metadata structures inspired by Parquet format specification</li>
+        <li>Applies compression principles from the Parquet specification</li>
+        <li>Custom JavaScript implementation, not a full Apache Parquet compatible format</li>
+        <li>Best suited for basic tabular data storage and retrieval</li>
+      <li>Supports filtering via row‑id (rid) maps; query operations on
+        multiple columns efficiently intersect the provided rid sets</li>
+    </ul>
+
+    <h3>Error Handling</h3>
+    <p>Errors are reported in msg.error. Common issues:</p>
+    <ul>
+        <li>File not found</li>
+        <li>Invalid Columnar format</li>
+        <li>Schema mismatches</li>
+        <li>Permission issues</li>
+    </ul>
+</script>

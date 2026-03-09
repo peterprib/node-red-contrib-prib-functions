@@ -23,6 +23,12 @@ if (process.argv.includes('dataanalysis')) {
     return;
 }
 
+// If the CLI includes 'columnar' run the columnar-format tests
+if (process.argv.includes('columnar')) {
+    runColumnarTests();
+    return;
+}
+
 
 function test(description, fn) {
     try {
@@ -149,6 +155,61 @@ async function runDataAnalysisTests() {
 
     const dir = path.join(__dirname, 'test');
     const files = fs.readdirSync(dir).filter(f => /^dataAnalysisE.*\.js$/.test(f));
+    files.forEach(f => require(path.join(dir, f)));
+
+    for (const t of tests) {
+        for (const bf of beforeEachFns) await callMaybeAsync(bf);
+        try {
+            await callMaybeAsync(t.fn);
+            console.log(`✓ PASS: ${t.desc}`);
+            testsPassed++;
+        } catch (err) {
+            console.error(`✗ FAIL: ${t.desc}`);
+            console.error(`  Error: ${err.message}`);
+            testsFailed++;
+        }
+        for (const af of afterEachFns) await callMaybeAsync(af);
+    }
+
+    console.log('\n' + '='.repeat(60));
+    console.log(`Tests passed: ${testsPassed}`);
+    console.log(`Tests failed: ${testsFailed}`);
+    console.log('='.repeat(60));
+    process.exit(testsFailed > 0 ? 1 : 0);
+}
+
+// ---------------------------------------------------------------------------
+// columnar test emulation
+// ---------------------------------------------------------------------------
+async function runColumnarTests() {
+    const path = require('path');
+    const fs = require('fs');
+
+    let beforeEachFns = [];
+    let afterEachFns = [];
+    let tests = [];
+    let currentDescribe = '';
+
+    global.describe = function(desc, fn) {
+        currentDescribe = desc;
+        fn();
+    };
+    global.beforeEach = function(fn) {
+        beforeEachFns.push(fn);
+    };
+    global.afterEach = function(fn) {
+        afterEachFns.push(fn);
+    };
+    global.it = function(desc, fn) {
+        const full = currentDescribe ? `${currentDescribe} ${desc}` : desc;
+        tests.push({desc: full, fn});
+        return { timeout: () => {} };
+    };
+
+    console.log("Columnar File Tests\n" + "=".repeat(60));
+
+    const dir = path.join(__dirname, 'test');
+    const files = fs.readdirSync(dir).filter(f => /^columnar.*\.js$/.test(f));
     files.forEach(f => require(path.join(dir, f)));
 
     for (const t of tests) {
