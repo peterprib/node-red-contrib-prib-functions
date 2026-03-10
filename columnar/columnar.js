@@ -1,4 +1,4 @@
-const logger = new (require("node-red-contrib-logger"))("Columnar Datastore");
+const logger = new (require("node-red-contrib-logger"))("Columnar Store");
 logger.sendInfo("Copyright 2025 Jaroslav Peter Prib");
 
 // Implementation based on Apache Parquet specification concepts
@@ -61,91 +61,120 @@ class SimpleColumnarStore {
             compressedSize: output.length
         };
     }
-        // improved writeRecords: uses true columnar binary buffers with individual compression
-        static async writeRecords(records, filePath) {
-            if (!records || records.length === 0) {
-                throw new Error("No records to write");
-            }
-
-            // infer schema types from first record
-            const schema = {};
-            const first = records[0];
-            for (const [k, v] of Object.entries(first)) {
-                schema[k] = typeof v;
-            }
-
-            // build column buffers (binary) rather than JSON
-            const columnBuffers = [];
-            const columnMeta = [];
-
-            for (const [col, type] of Object.entries(schema)) {
-                let buf;
-                switch (type) {
-                    case 'number': {
-                        const arr = new Float64Array(records.length);
-                        records.forEach((r,i)=> arr[i] = r[col] == null ? NaN : r[col]);
-                        buf = Buffer.from(arr.buffer);
-                        break;
-                    }
-                    case 'boolean': {
-                        const arr = Buffer.alloc(records.length);
-                        records.forEach((r,i)=> arr[i] = r[col] ? 1 : 0);
-                        buf = arr;
-                        break;
-                    }
-                    case 'string': {
-                        const parts = [];
-                        records.forEach(r=>{
-                            const s = r[col] == null ? '' : String(r[col]);
-                            const sb = Buffer.from(s,'utf8');
-                            const len = Buffer.alloc(4);
-                            len.writeUInt32LE(sb.length,0);
-                            parts.push(len,sb);
-                        });
-                        buf = Buffer.concat(parts);
-                        break;
-                    }
-                    default: {
-                        const json = records.map(r=>r[col]);
-                        buf = Buffer.from(JSON.stringify(json),'utf8');
-                    }
-                }
-                const comp = zlib.gzipSync(buf);
-                columnMeta.push({name: col, type: type, length: comp.length});
-                columnBuffers.push(comp);
-            }
-
-            const metadata = {
-                version: 1,
-                schema: schema,
-                numRows: records.length,
-                numColumns: columnMeta.length,
-                created: new Date().toISOString(),
-                compression: 'gzip',
-                columns: columnMeta
-            };
-
-            const metaBuf = Buffer.from(JSON.stringify(metadata),'utf8');
-            const metaSize = Buffer.alloc(4);
-            metaSize.writeUInt32LE(metaBuf.length,0);
-
-            const magic = Buffer.from('PARQ');
-
-            const pieces = [magic, metaSize, metaBuf];
-            for (const comp of columnBuffers) {
-                const sizeBuf = Buffer.alloc(4);
-                sizeBuf.writeUInt32LE(comp.length,0);
-                pieces.push(sizeBuf, comp);
-            }
-            const output = Buffer.concat(pieces);
-            fs.writeFileSync(filePath, output);
-            return {
-                filePath,
-                recordsWritten: records.length,
-                schema,
-                fileSize: output.length
-            };
+    // improved writeRecords: uses true columnar binary buffers with individual compression
+    // Now supports appending to existing files
+    static async writeRecords(records, filePath, append = false) {
+        if (!records || records.length === 0) {
+            throw new Error("No records to write");
         }
+
+        // If appending and file exists, read existing data and merge
+        let existingRecords = [];
+        let existingSchema = {};
+        if (append && fs.existsSync(filePath)) {
+            try {
+                const existingData = await this.readRecords(filePath);
+                existingRecords = existingData.records;
+                existingSchema = existingData.schema;
+            } catch (e) {
+                // If we can't read the existing file, treat it as non-existent
+                existingRecords = [];
+                existingSchema = {};
+            }
+        }
+
+        // Combine existing and new records
+        const allRecords = [...existingRecords, ...records];
+
+        // infer schema types from all records (merge schemas)
+        const schema = {...existingSchema};
+        for (const record of allRecords) {
+            for (const [k, v] of Object.entries(record)) {
+                if (!(k in schema)) {
+                    schema[k] = typeof v;
+                }
+            }
+        }
+
+        // build column buffers (binary) rather than JSON
+        const columnBuffers = [];
+        const columnMeta = [];
+
+        for (const [col, type] of Object.entries(schema)) {
+            let buf;
+            switch (type) {
+                case 'number': {
+                    const arr = new Float64Array(allRecords.length);
+                    allRecords.forEach((r,i)=> arr[i] = r[col] == null ? NaN : r[col]);
+                    buf = Buffer.from(arr.buffer);
+                    break;
+                }
+                case 'boolean': {
+                    const arr = Buffer.alloc(allRecords.length);
+                    allRecords.forEach((r,i)=> arr[i] = r[col] ? 1 : 0);
+                    buf = arr;
+                    break;
+                }
+                case 'string': {
+                    const parts = [];
+                    allRecords.forEach(r=>{
+                        const s = r[col] == null ? '' : String(r[col]);
+                        const sb = Buffer.from(s,'utf8');
+                        const len = Buffer.alloc(4);
+                        len.writeUInt32LE(sb.length,0);
+                        parts.push(len,sb);
+                    });
+                    buf = Buffer.concat(parts);
+                    break;
+                }
+                default: {
+                    const json = allRecords.map(r=>r[col]);
+                    buf = Buffer.from(JSON.stringify(json),'utf8');
+                }
+            }
+            const comp = zlib.gzipSync(buf);
+            columnMeta.push({name: col, type: type, length: comp.length});
+            columnBuffers.push(comp);
+        }
+
+        const metadata = {
+            version: 1,
+            schema: schema,
+            numRows: allRecords.length,
+            numColumns: columnMeta.length,
+            created: new Date().toISOString(),
+            compression: 'gzip',
+            columns: columnMeta
+        };
+
+        const metaBuf = Buffer.from(JSON.stringify(metadata),'utf8');
+        const metaSize = Buffer.alloc(4);
+        metaSize.writeUInt32LE(metaBuf.length,0);
+
+        const magic = Buffer.from('PARQ');
+
+        const pieces = [magic, metaSize, metaBuf];
+        for (const comp of columnBuffers) {
+            const sizeBuf = Buffer.alloc(4);
+            sizeBuf.writeUInt32LE(comp.length,0);
+            pieces.push(sizeBuf, comp);
+        }
+        const output = Buffer.concat(pieces);
+        fs.writeFileSync(filePath, output);
+        return {
+            filePath,
+            recordsWritten: records.length,
+            totalRecords: allRecords.length,
+            schema,
+            fileSize: output.length,
+            appended: append && existingRecords.length > 0
+        };
+    }
+
+    // Convenience method to append records to existing file
+    static async appendRecords(records, filePath) {
+        return this.writeRecords(records, filePath, true);
+    }
 
     static async readRecords(filePath) {
         if (!fs.existsSync(filePath)) {
@@ -157,7 +186,7 @@ class SimpleColumnarStore {
         // Check magic bytes
         const magic = buffer.slice(0, 4).toString();
         if (magic !== 'PARQ') {
-            throw new Error("Invalid file format - not a Parquet-like file");
+            throw new Error("Invalid file format - not a columnar file");
         }
 
         // Read compressed data size
@@ -309,6 +338,319 @@ class SimpleColumnarStore {
         };
     }
 
+    // Full-featured SQL query engine with JOIN support. Supports:
+    //   SELECT [col1,col2,…|*|COUNT(*)|SUM(col)|AVG(col)|etc] FROM ?
+    //   [INNER|LEFT|RIGHT|FULL OUTER] JOIN filePath ON <join condition>
+    //   [WHERE <expression>]
+    //   [GROUP BY col1,col2,…]
+    //   [HAVING <expression>]
+    //   [ORDER BY col1 [ASC|DESC], …]
+    //   [LIMIT n]
+    // Aggregates: COUNT, SUM, AVG, MIN, MAX, COUNT DISTINCT
+    // Expressions may use JavaScript syntax with record fields.
+    static async sqlQuery(filePath, sql, parsedTokens = null) {
+        if (typeof sql !== 'string' || !sql.trim()) {
+            throw new Error('sql must be a non-empty string');
+        }
+        const data = await this.readRecords(filePath);
+
+        // Parse query components (use cached tokens if provided)
+        const tokens = parsedTokens || this._parseSql(sql);
+        let records = [...data.records];
+
+        // JOIN operations
+        if (tokens.joins && tokens.joins.length > 0) {
+            for (const join of tokens.joins) {
+                const joinData = await this.readRecords(join.filePath);
+                records = this._applyJoin(records, joinData.records, join);
+            }
+        }
+
+        // WHERE clause
+        if (tokens.where) {
+            records = this._applyWhere(records, tokens.where);
+        }
+
+        // GROUP BY or aggregates without GROUP BY
+        if (tokens.groupBy && tokens.groupBy.length > 0) {
+            records = this._applyGroupBy(records, tokens.groupBy, tokens.select);
+        } else if (tokens.hasAggregates) {
+            // Aggregates without GROUP BY
+            records = this._applyGroupBy(records, [], tokens.select);
+        }
+
+        // HAVING clause (after grouping)
+        if (tokens.having) {
+            records = this._applyWhere(records, tokens.having);
+        }
+
+        // ORDER BY
+        if (tokens.orderBy && tokens.orderBy.length > 0) {
+            records = this._applyOrderBy(records, tokens.orderBy);
+        }
+
+        // LIMIT
+        if (tokens.limit) {
+            records = records.slice(0, tokens.limit);
+        }
+
+        // Final projection (SELECT columns)
+        // Always apply if not SELECT *, or if we have JOINs (to handle alias.column syntax)
+        const hasJoins = tokens.joins && tokens.joins.length > 0;
+        if (tokens.select && tokens.select !== '*' && (!tokens.hasAggregates || hasJoins)) {
+            records = this._projectColumns(records, tokens.select);
+        }
+
+        return records;
+    }
+
+    static _parseSql(sql) {
+        const result = {
+            select: '*',
+            hasAggregates: false,
+            from: '?',
+            joins: [],
+            where: null,
+            groupBy: [],
+            having: null,
+            orderBy: [],
+            limit: null
+        };
+
+        // Case-insensitive regex matching
+        const selectMatch = sql.match(/SELECT\s+(.+?)\s+FROM/i);
+        if (!selectMatch) throw new Error('Invalid SQL: missing SELECT clause');
+        result.select = selectMatch[1].trim();
+        result.hasAggregates = /\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i.test(result.select);
+
+        // Parse JOINs (INNER, LEFT, RIGHT, FULL OUTER)
+        // Handles optional table alias before JOIN: "FROM ? u INNER JOIN 'file' o ON u.id = o.uid"
+        const joinRegex = /(?:FROM|JOIN)\s+[?'"]?\S+[?'"]?\s+\w+\s+(INNER\s+|LEFT\s+|RIGHT\s+|FULL\s+OUTER\s+)?JOIN\s+['"]([^'"]+)['"]\s+\w+\s+ON\s+(.+?)(?:(?:INNER|LEFT|RIGHT|FULL|WHERE|GROUP|HAVING|ORDER|LIMIT)\s|$)/gi;
+        let joinMatch;
+        while ((joinMatch = joinRegex.exec(sql)) !== null) {
+            const joinType = (joinMatch[1] || 'INNER').trim().toUpperCase();
+            const filePath = joinMatch[2];
+            const onCondition = joinMatch[3].trim();
+            result.joins.push({ joinType, filePath, onCondition });
+        }
+
+        const whereMatch = sql.match(/WHERE\s+(.+?)(?:GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|$)/i);
+        if (whereMatch) result.where = whereMatch[1].trim();
+
+        const groupMatch = sql.match(/GROUP\s+BY\s+(.+?)(?:HAVING|ORDER\s+BY|LIMIT|$)/i);
+        if (groupMatch) {
+            result.groupBy = groupMatch[1].trim().split(/\s*,\s*/).map(c => c.trim());
+        }
+
+        const havingMatch = sql.match(/HAVING\s+(.+?)(?:ORDER\s+BY|LIMIT|$)/i);
+        if (havingMatch) result.having = havingMatch[1].trim();
+
+        const orderMatch = sql.match(/ORDER\s+BY\s+(.+?)(?:LIMIT|$)/i);
+        if (orderMatch) {
+            const orderParts = orderMatch[1].trim().split(/\s*,\s*/);
+            result.orderBy = orderParts.map(part => {
+                const m = part.match(/(\S+)\s+(ASC|DESC)?/i);
+                return {
+                    column: m[1],
+                    direction: (m[2] || 'ASC').toUpperCase()
+                };
+            });
+        }
+
+        const limitMatch = sql.match(/LIMIT\s+(\d+)/i);
+        if (limitMatch) result.limit = parseInt(limitMatch[1]);
+
+        return result;
+    }
+
+    static _applyJoin(leftRecords, rightRecords, joinSpec) {
+        const { joinType, onCondition } = joinSpec;
+        const result = [];
+
+        // Parse the ON condition: e.g., "l.id = r.id"
+        const onMatch = onCondition.match(/(\w+)\.(\w+)\s*=\s*(\w+)\.(\w+)/);
+        if (!onMatch) throw new Error('Invalid JOIN condition syntax');
+        const [, lAlias, lCol, rAlias, rCol] = onMatch;
+
+        // Build a map for quick lookup
+        const rightMap = {};
+        rightRecords.forEach((r, idx) => {
+            const key = String(r[rCol]);
+            if (!rightMap[key]) rightMap[key] = [];
+            rightMap[key].push({ record: r, index: idx });
+        });
+
+        const processedLeft = new Set();
+        const processedRight = new Set();
+
+        // INNER, LEFT, RIGHT, FULL OUTER
+        if (joinType === 'INNER' || joinType === 'LEFT' || joinType === 'FULL OUTER') {
+            leftRecords.forEach((l, lIdx) => {
+                const key = String(l[lCol]);
+                const matches = rightMap[key] || [];
+
+                if (matches.length > 0) {
+                    matches.forEach(({ record: r, index: rIdx }) => {
+                        result.push(Object.assign({}, l, r));
+                        processedRight.add(rIdx);
+                    });
+                } else if (joinType !== 'INNER') {
+                    // LEFT or FULL OUTER: include unmatched left rows
+                    result.push(l);
+                }
+                processedLeft.add(lIdx);
+            });
+        }
+
+        if (joinType === 'RIGHT' || joinType === 'FULL OUTER') {
+            rightRecords.forEach((r, rIdx) => {
+                if (!processedRight.has(rIdx)) {
+                    result.push(r);
+                }
+            });
+        }
+
+        return result;
+    }
+
+    static _applyWhere(records, whereExpr) {
+        let fn;
+        try {
+            fn = new Function('r', 'with(r){return ' + whereExpr + ';}');
+        } catch (e) {
+            throw new Error('Invalid WHERE expression: ' + e.message);
+        }
+        return records.filter(r => {
+            try {
+                return fn(r);
+            } catch (_e) {
+                return false;
+            }
+        });
+    }
+
+    static _applyGroupBy(records, groupCols, selectExpr) {
+        const groups = {};
+
+        // Check if SELECT has only aggregates (no group by columns)
+        const hasOnlyAggregates = groupCols.length === 0 && /^\s*(COUNT|SUM|AVG|MIN|MAX|COUNT\s+DISTINCT)\s*\(/i.test(selectExpr);
+
+        if (hasOnlyAggregates) {
+            // Single aggregate over all records
+            const row = {};
+            const aggregates = this._extractAggregates(selectExpr, records);
+            Object.assign(row, aggregates);
+            return [row];
+        }
+
+        // Build groups
+        records.forEach(r => {
+            const key = groupCols.map(c => String(r[c])).join('|');
+            if (!groups[key]) {
+                groups[key] = {
+                    records: [],
+                    groupValues: {}
+                };
+                groupCols.forEach(c => {
+                    groups[key].groupValues[c] = r[c];
+                });
+            }
+            groups[key].records.push(r);
+        });
+
+        // Compute aggregates
+        const result = [];
+        for (const key in groups) {
+            const group = groups[key];
+            const row = { ...group.groupValues };
+
+            // Parse aggregates from selectExpr
+            const aggregates = this._extractAggregates(selectExpr, group.records);
+            Object.assign(row, aggregates);
+
+            result.push(row);
+        }
+
+        return result;
+    }
+
+    static _extractAggregates(selectExpr, records) {
+        const result = {};
+        const aggRegex = /(COUNT|SUM|AVG|MIN|MAX|COUNT\s+DISTINCT)\s*\(\s*([^)]+)\s*\)\s*(?:AS|as)?\s*(\w+)?/g;
+
+        let match;
+        while ((match = aggRegex.exec(selectExpr)) !== null) {
+            const [, aggFunc, colExpr, alias] = match;
+            const colName = alias || aggFunc.toUpperCase() + '_' + colExpr;
+
+            const values = records.map(r => {
+                try {
+                    if (colExpr === '*') return 1;
+                    const fn = new Function('r', 'with(r){return ' + colExpr + ';}');
+                    return fn(r);
+                } catch (_e) {
+                    return null;
+                }
+            }).filter(v => v != null);
+
+            if (aggFunc.toUpperCase() === 'COUNT') {
+                result[colName] = records.length;
+            } else if (aggFunc.toUpperCase() === 'COUNT DISTINCT') {
+                result[colName] = new Set(values).size;
+            } else if (aggFunc.toUpperCase() === 'SUM') {
+                result[colName] = values.reduce((a, b) => a + b, 0);
+            } else if (aggFunc.toUpperCase() === 'AVG') {
+                result[colName] = values.length > 0 ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+            } else if (aggFunc.toUpperCase() === 'MIN') {
+                result[colName] = Math.min(...values);
+            } else if (aggFunc.toUpperCase() === 'MAX') {
+                result[colName] = Math.max(...values);
+            }
+        }
+
+        return result;
+    }
+
+    static _applyOrderBy(records, orderBy) {
+        return records.sort((a, b) => {
+            for (const { column, direction } of orderBy) {
+                const valA = a[column];
+                const valB = b[column];
+                let cmp = 0;
+                if (valA < valB) cmp = -1;
+                else if (valA > valB) cmp = 1;
+                if (cmp !== 0) return direction === 'DESC' ? -cmp : cmp;
+            }
+            return 0;
+        });
+    }
+
+    static _projectColumns(records, selectExpr) {
+        const cols = selectExpr.split(/\s*,\s*/).map(c => {
+            const m = c.match(/(\S+)(?:\s+(?:AS|as)\s+(\w+))?/);
+            const name = m[1];
+            let outputName = m[2] || name;
+            let sourceCol = name;
+
+            // Handle alias.column syntax: convert "u.id" to source "id", output as "u.id" or custom alias
+            if (name.includes('.')) {
+                const [_, col] = name.split('.');
+                sourceCol = col;
+                outputName = m[2] || name;  // Keep "u.id" unless AS clause overrides
+            }
+
+            return { sourceCol, outputName };
+        });
+
+        return records.map(r => {
+            const o = {};
+            cols.forEach(c => {
+                o[c.outputName] = r[c.sourceCol];
+            });
+            return o;
+        });
+    }
+
     static async getSchema(filePath) {
         if (!fs.existsSync(filePath)) {
             throw new Error("File does not exist: " + filePath);
@@ -385,6 +727,25 @@ const actions = {
         return await SimpleColumnarStore.writeRecords(msg.payload.records, filePath);
     },
 
+    appendFile: async (RED, node, msg) => {
+        if (!msg.payload || !msg.payload.records || !Array.isArray(msg.payload.records)) {
+            throw new Error("msg.payload must contain records array");
+        }
+
+        const filePath = msg.payload.filePath || node.filePath;
+        if (!filePath) {
+            throw new Error("filePath must be provided in msg.payload or configured in node");
+        }
+
+        // Ensure directory exists
+        const dir = path.dirname(filePath);
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+
+        return await SimpleColumnarStore.appendRecords(msg.payload.records, filePath);
+    },
+
     queryFile: async (RED, node, msg) => {
         const filePath = msg.payload && msg.payload.filePath ? msg.payload.filePath : node.filePath;
         if (!filePath) {
@@ -397,6 +758,22 @@ const actions = {
         };
 
         return await SimpleColumnarStore.queryRecords(filePath, options);
+    },
+
+    sqlQuery: async (RED, node, msg) => {
+        const filePath = msg.payload && msg.payload.filePath ? msg.payload.filePath : node.filePath;
+        if (!filePath) {
+            throw new Error("filePath must be provided in msg.payload or configured in node");
+        }
+        const sql = (msg.payload && msg.payload.sql) || node.sqlQuery;
+        if (!sql) {
+            throw new Error("SQL query must be provided in msg.payload.sql or configured in node");
+        }
+
+        // Use cached tokens if SQL matches the cached query
+        const useCachedTokens = !msg.payload?.sql && node.cachedSqlTokens && sql === node.cachedSql;
+
+        return await SimpleColumnarStore.sqlQuery(filePath, sql, useCachedTokens ? node.cachedSqlTokens : null);
     },
 
     getSchema: async (RED, node, msg) => {
@@ -419,11 +796,23 @@ const actions = {
 };
 
 module.exports = function (RED) {
-    function ParquetNode(config) {
+    function ColumnarNode(config) {
         RED.nodes.createNode(this, config);
         const node = Object.assign(this, config, {
             filePath: config.filePath || ''
         });
+
+        // Cache parsed SQL tokens for hardcoded queries to improve performance
+        if (config.action === 'sqlQuery' && config.sqlQuery && config.sqlQuery.trim()) {
+            try {
+                node.cachedSqlTokens = SimpleColumnarStore._parseSql(config.sqlQuery);
+                node.cachedSql = config.sqlQuery;
+            } catch (error) {
+                node.error("Failed to parse hardcoded SQL: " + error.message);
+                node.status({ fill: "red", shape: "ring", text: "SQL parse error" });
+                return;
+            }
+        }
 
         node.callFunction = actions[config.action];
         if (!node.callFunction) {
@@ -436,7 +825,9 @@ module.exports = function (RED) {
 
         node.on('input', async function (msg) {
             try {
-                msg.result = await node.callFunction(RED, node, msg);
+                const result = await node.callFunction(RED, node, msg);
+                const outputProperty = node.outputProperty || 'result';
+                msg[outputProperty] = result;
                 node.send(msg);
                 node.status({ fill: "green", shape: "dot", text: "Success" });
             } catch (error) {
@@ -445,7 +836,7 @@ module.exports = function (RED) {
             }
         });
     }
-    RED.nodes.registerType("columnar", ParquetNode);
+    RED.nodes.registerType("columnar", ColumnarNode);
 };
 
 // export helper class for external use/testing

@@ -78,6 +78,11 @@ example:
 ## logistic regression
 
 Perform logistic regression by setting up model with fit then using the model in other nodes to do prediction probability or class
+------------------------------------------------------------
+
+## columnar store
+
+Store data into a columnar store with sql select access
 
 ------------------------------------------------------------
 
@@ -357,6 +362,8 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 ## Version
+
+0.24.0 add columnar store node
 
 0.24.0 add in logistic regression
 

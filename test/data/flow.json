@@ -149,6 +149,14 @@
         "env": []
     },
     {
+        "id": "8aa8799ad5afca2b",
+        "type": "tab",
+        "label": "Columnar store",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "680198a3be420949",
         "type": "group",
         "z": "1374c39ae82adb4e",
@@ -7646,6 +7654,202 @@
         "wires": [
             [
                 "835d891c3b7b9451"
+            ]
+        ]
+    },
+    {
+        "id": "6dcc4342cb95db99",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "appendFile",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "x": 440,
+        "y": 180,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "f7056a42ba573367",
+        "type": "debug",
+        "z": "8aa8799ad5afca2b",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 660,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "69adf3d24df340b6",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"records\":[{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"},{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}]}",
+        "payloadType": "json",
+        "x": 110,
+        "y": 180,
+        "wires": [
+            [
+                "6dcc4342cb95db99"
+            ]
+        ]
+    },
+    {
+        "id": "c4db16448a22def4",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 280,
+        "wires": [
+            [
+                "cb96c887a71c3cba"
+            ]
+        ]
+    },
+    {
+        "id": "cb96c887a71c3cba",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "readFile",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "x": 430,
+        "y": 280,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "a7c85ce48c4baa7b",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "",
+        "x": 440,
+        "y": 360,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "17aa1ae56c2be540",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"sql\":\"SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"}",
+        "payloadType": "json",
+        "x": 110,
+        "y": 360,
+        "wires": [
+            [
+                "a7c85ce48c4baa7b"
+            ]
+        ]
+    },
+    {
+        "id": "50413b0ca082d563",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"",
+        "outputProperty": "payload",
+        "x": 450,
+        "y": 440,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "34909ff6e5e0f6a7",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 140,
+        "y": 440,
+        "wires": [
+            [
+                "50413b0ca082d563"
             ]
         ]
     }

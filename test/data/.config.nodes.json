@@ -448,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.24.0",
+        "version": "0.25.0",
         "local": false,
         "user": false,
         "nodes": {
@@ -606,16 +606,16 @@
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\gitlab\\gitlab.js"
             },
-            "parquet": {
-                "name": "parquet",
+            "columnar": {
+                "name": "columnar",
                 "types": [
-                    "parquet"
+                    "columnar"
                 ],
                 "enabled": true,
                 "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\parquet\\parquet.js"
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\columnar\\columnar.js"
             }
         }
     },
