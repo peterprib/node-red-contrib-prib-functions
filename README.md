@@ -363,7 +363,7 @@ Test/example flow in test/generalTest.json
 
 ## Version
 
-0.24.0 add columnar store node
+0.26.0 add columnar store node with sql query capabilty
 
 0.24.0 add in logistic regression
 

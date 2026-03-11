@@ -7,7 +7,8 @@
             action: {value:"readFile", required:true},
             filePath: {value:"", required:false},
             sqlQuery: {value:"", required:false},
-            outputProperty: {value:"result", required:false}
+            outputProperty: {value:"result", required:false},
+            parameterMappings: {value:[], required:false}
         },
         inputs: 1,
         inputLabels: "in",
@@ -57,6 +58,10 @@
             
             $('#node-input-action').change(updateSqlField);
             updateSqlField(); // Initial check
+            
+        },
+        oneditsave: function() {
+            // No parameter mappings needed; explicit :msg., :flow., :global. markers only
         }
     });
 </script>
@@ -108,9 +113,10 @@
 
     <h3>Configuration</h3>
     <ul>
-        <li><b>File Path:</b> Path to the Columnar file (.columnar extension). Can be overridden in msg.payload.filePath</li>
-        <li><b>Output Property:</b> Property name on msg object where results will be stored (default: "result")</li>
-        <li><b>SQL Query:</b> (SQL Query action only) Hardcoded SQL query to execute. Can be overridden by msg.payload.sql. Hardcoded queries are parsed once and cached for better performance.</li>
+      <li><b>File Path:</b> Path to the Columnar file (.columnar extension). Can be overridden in msg.payload.filePath</li>
+      <li><b>Output Property:</b> Property name on msg object where results will be stored (default: "result")</li>
+      <li><b>SQL Query:</b> (SQL Query action only) Hardcoded SQL query to execute. Can be overridden by msg.payload.sql. Hardcoded queries are parsed once and cached for better performance.</li>
+      <li><b>Parameters:</b> <b>Only</b> <code>:msg.path</code>, <code>:flow.path</code>, or <code>:global.path</code> markers are allowed in SQL. Example: <code>WHERE a.name = :msg.payload.name AND a.age > :flow.minAge</code>. No other parameter markers are supported.</li>
     </ul>
 
     <h3>Input/Output Formats</h3>
@@ -176,8 +182,9 @@
     <p><b>Input:</b> SQL query can be configured in the node or provided in msg.payload.sql (msg.payload.sql takes precedence)</p>
     <pre>{
   "filePath": "/path/to/file.columnar",
-  "sql": "SELECT a.id, a.name, COUNT(*) AS cnt FROM ? a INNER JOIN '/path/to/other.columnar' b ON a.id = b.user_id WHERE a.age > 25 GROUP BY a.id, a.name ORDER BY cnt DESC LIMIT 10"
+  "sql": "SELECT * FROM ? WHERE a.name = :msg.payload.name AND a.age > :flow.minAge"
 }</pre>
+    <p><b>Parameters:</b> Use <code>:msg.path</code>, <code>:flow.path</code>, or <code>:global.path</code> in your SQL to reference values from <code>msg</code>, <code>flow</code>, or <code>global</code> context. <b>Other parameter markers are not supported and will cause an error.</b></p>
     <p><b>Supported Features:</b></p>
     <ul>
       <li><b>SELECT:</b> Column names, <code>*</code>, or aggregates (COUNT, SUM, AVG, MIN, MAX, COUNT DISTINCT)</li>
@@ -187,6 +194,7 @@
       <li><b>HAVING:</b> Filter grouped results</li>
       <li><b>ORDER BY:</b> Sort by column(s) with ASC/DESC</li>
       <li><b>LIMIT:</b> Restrict result count</li>
+      <li><b>Parameters:</b> Use <code>:msg.path</code>, <code>:flow.path</code>, or <code>:global.path</code> in queries. No other parameter markers are allowed.</li>
     </ul>
     <p><b>JOIN Syntax:</b></p>
     <pre>[INNER|LEFT|RIGHT|FULL OUTER] JOIN 'filepath.columnar' ON table1.col = table2.col</pre>

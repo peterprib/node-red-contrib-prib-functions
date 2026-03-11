@@ -346,16 +346,18 @@ class SimpleColumnarStore {
     //   [HAVING <expression>]
     //   [ORDER BY col1 [ASC|DESC], …]
     //   [LIMIT n]
-    // Aggregates: COUNT, SUM, AVG, MIN, MAX, COUNT DISTINCT
+    // Parameters: Use $param or :param syntax (e.g., WHERE age > $age)
     // Expressions may use JavaScript syntax with record fields.
-    static async sqlQuery(filePath, sql, parsedTokens = null) {
+    static async sqlQuery(filePath, sql, parsedTokens = null, parameters = {}) {
         if (typeof sql !== 'string' || !sql.trim()) {
             throw new Error('sql must be a non-empty string');
         }
+
         const data = await this.readRecords(filePath);
 
-        // Parse query components (use cached tokens if provided)
+        // Parse query components first (before parameter substitution)
         const tokens = parsedTokens || this._parseSql(sql);
+
         let records = [...data.records];
 
         // JOIN operations
@@ -366,9 +368,18 @@ class SimpleColumnarStore {
             }
         }
 
-        // WHERE clause
+        // WHERE clause - use prepared statement if available
         if (tokens.where) {
-            records = this._applyWhere(records, tokens.where);
+            let whereExpr = tokens.where;
+            if (tokens.wherePrepared && tokens.whereParamLocations) {
+                // Use prepared statement approach
+                whereExpr = this._substituteParametersInPrepared(
+                    tokens.wherePrepared,
+                    tokens.whereParamLocations,
+                    { msg: parameters.msg, flow: parameters.flow, global: parameters.global }
+                );
+            }
+            records = this._applyWhere(records, whereExpr);
         }
 
         // GROUP BY or aggregates without GROUP BY
@@ -379,9 +390,18 @@ class SimpleColumnarStore {
             records = this._applyGroupBy(records, [], tokens.select);
         }
 
-        // HAVING clause (after grouping)
+        // HAVING clause (after grouping) - use prepared statement if available
         if (tokens.having) {
-            records = this._applyWhere(records, tokens.having);
+            let havingExpr = tokens.having;
+            if (tokens.havingPrepared && tokens.havingParamLocations) {
+                // Use prepared statement approach
+                havingExpr = this._substituteParametersInPrepared(
+                    tokens.havingPrepared,
+                    tokens.havingParamLocations,
+                    { msg: parameters.msg, flow: parameters.flow, global: parameters.global }
+                );
+            }
+            records = this._applyWhere(records, havingExpr);
         }
 
         // ORDER BY
@@ -398,12 +418,115 @@ class SimpleColumnarStore {
         // Always apply if not SELECT *, or if we have JOINs (to handle alias.column syntax)
         const hasJoins = tokens.joins && tokens.joins.length > 0;
         if (tokens.select && tokens.select !== '*' && (!tokens.hasAggregates || hasJoins)) {
-            records = this._projectColumns(records, tokens.select);
+            let selectExpr = tokens.select;
+            // Substitute parameters in SELECT clause if prepared statement exists
+            if (tokens.selectPrepared && tokens.selectParamLocations) {
+                selectExpr = this._substituteParametersInPrepared(
+                    tokens.selectPrepared,
+                    tokens.selectParamLocations,
+                    { msg: parameters.msg, flow: parameters.flow, global: parameters.global }
+                );
+            }
+            records = this._projectColumns(records, selectExpr);
         }
 
         return records;
     }
 
+    // Extract and prepare parameters from an expression (prepared statement approach)
+    // Returns {expression: prepared_expr, paramLocations: [{marker, ctxType, path}]}
+    static _extractAndPrepareParameters(expr) {
+        const paramLocations = [];
+        let paramIndex = 0;
+        
+        const preparedExpr = expr.replace(/:(msg|flow|global)\.[a-zA-Z0-9_$.]+/g, (match) => {
+            // Extract context type and path from marker like ":msg.payload.minAge"
+            const ctxType = match.split('.')[0].slice(1); // Get 'msg' from ":msg"
+            const path = match.slice(1 + ctxType.length + 1); // Get "payload.minAge" after ":msg."
+            paramLocations.push({ marker: match, ctxType, path, index: paramIndex });
+            // Replace with a placeholder that won't interfere with JavaScript parsing
+            paramIndex++;
+            return `__PARAM_${paramLocations.length - 1}__`;
+        });
+        
+        return { preparedExpr, paramLocations };
+    }
+
+    // Substitute prepared parameters with actual values at runtime
+    static _substituteParametersInPrepared(preparedExpr, paramLocations, context = {}) {
+        function getDeep(obj, path) {
+            if (!obj || typeof path !== 'string') return undefined;
+            return path.split('.').reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
+        }
+
+        let resultExpr = preparedExpr;
+        
+        for (const param of paramLocations) {
+            let value;
+            if (param.ctxType === 'msg') {
+                value = getDeep(context.msg, param.path);
+            } else if (param.ctxType === 'flow') {
+                value = getDeep(context.flow, param.path);
+            } else if (param.ctxType === 'global') {
+                value = getDeep(context.global, param.path);
+            } else {
+                throw new Error(`Invalid parameter context: ${param.ctxType}`);
+            }
+            
+            if (value === undefined) {
+                throw new Error(`Parameter '${param.marker}' not provided`);
+            }
+            
+            // Safely convert value to JavaScript literal
+            let safeValue;
+            if (typeof value === 'string') {
+                safeValue = JSON.stringify(value);
+            } else if (typeof value === 'number' || typeof value === 'boolean') {
+                safeValue = String(value);
+            } else {
+                safeValue = JSON.stringify(value);
+            }
+            
+            resultExpr = resultExpr.replace(`__PARAM_${param.index}__`, safeValue);
+        }
+        
+        return resultExpr;
+    }
+
+    // Legacy function for backward compatibility (deprecated)
+    static _substituteParameters(sql, context = {}) {
+        // Only allow :msg.something, :flow.something, :global.something
+        function getDeep(obj, path) {
+            if (!obj || typeof path !== 'string') return undefined;
+            return path.split('.').reduce((acc, part) => (acc && acc[part] !== undefined ? acc[part] : undefined), obj);
+        }
+        return sql.replace(/:(msg|flow|global)\.[a-zA-Z0-9_$.]+/g, (match) => {
+            // Extract context type and path
+            const [_, ctxType, ...pathParts] = match.split(/[:.]/);
+            const path = match.slice(1 + ctxType.length + 1); // skip : and ctxType.
+            let value;
+            if (ctxType === 'msg') {
+                value = getDeep(context.msg, path);
+            } else if (ctxType === 'flow') {
+                value = getDeep(context.flow, path);
+            } else if (ctxType === 'global') {
+                value = getDeep(context.global, path);
+            } else {
+                throw new Error(`Invalid parameter context: ${ctxType}`);
+            }
+            if (value === undefined) {
+                throw new Error(`Parameter '${match}' not provided`);
+            }
+            // Only allow safe values
+            if (typeof value === 'string') {
+                return JSON.stringify(value);
+            } else if (typeof value === 'number' || typeof value === 'boolean') {
+                return String(value);
+            } else {
+                return JSON.stringify(value);
+            }
+        });
+    }
     static _parseSql(sql) {
         const result = {
             select: '*',
@@ -422,6 +545,11 @@ class SimpleColumnarStore {
         if (!selectMatch) throw new Error('Invalid SQL: missing SELECT clause');
         result.select = selectMatch[1].trim();
         result.hasAggregates = /\b(COUNT|SUM|AVG|MIN|MAX)\s*\(/i.test(result.select);
+        
+        // Prepare parameters for SELECT clause
+        const selectPrepared = this._extractAndPrepareParameters(result.select);
+        result.selectPrepared = selectPrepared.preparedExpr;
+        result.selectParamLocations = selectPrepared.paramLocations;
 
         // Parse JOINs (INNER, LEFT, RIGHT, FULL OUTER)
         // Handles optional table alias before JOIN: "FROM ? u INNER JOIN 'file' o ON u.id = o.uid"
@@ -435,7 +563,13 @@ class SimpleColumnarStore {
         }
 
         const whereMatch = sql.match(/WHERE\s+(.+?)(?:GROUP\s+BY|HAVING|ORDER\s+BY|LIMIT|$)/i);
-        if (whereMatch) result.where = whereMatch[1].trim();
+        if (whereMatch) {
+            result.where = whereMatch[1].trim();
+            // Prepare parameters for WHERE clause
+            const prepared = this._extractAndPrepareParameters(result.where);
+            result.wherePrepared = prepared.preparedExpr;
+            result.whereParamLocations = prepared.paramLocations;
+        }
 
         const groupMatch = sql.match(/GROUP\s+BY\s+(.+?)(?:HAVING|ORDER\s+BY|LIMIT|$)/i);
         if (groupMatch) {
@@ -443,7 +577,13 @@ class SimpleColumnarStore {
         }
 
         const havingMatch = sql.match(/HAVING\s+(.+?)(?:ORDER\s+BY|LIMIT|$)/i);
-        if (havingMatch) result.having = havingMatch[1].trim();
+        if (havingMatch) {
+            result.having = havingMatch[1].trim();
+            // Prepare parameters for HAVING clause
+            const prepared = this._extractAndPrepareParameters(result.having);
+            result.havingPrepared = prepared.preparedExpr;
+            result.havingParamLocations = prepared.paramLocations;
+        }
 
         const orderMatch = sql.match(/ORDER\s+BY\s+(.+?)(?:LIMIT|$)/i);
         if (orderMatch) {
@@ -514,9 +654,19 @@ class SimpleColumnarStore {
     }
 
     static _applyWhere(records, whereExpr) {
+        // Convert SQL comparison operators to JavaScript
+        // Order matters: replace compound operators first, then single =
+        let jsExpr = whereExpr
+            .replace(/<>/g, '!==')  // SQL !=
+            .replace(/!=/g, '!==')  // SQL != (alternative)
+            .replace(/\bAND\b/gi, '&&')  // SQL AND
+            .replace(/\bOR\b/gi, '||')   // SQL OR
+            .replace(/\bNOT\b/gi, '!')   // SQL NOT
+            .replace(/([^=!<>])=([^=])/g, '$1===$2'); // SQL = becomes === (not part of compound operators)
+
         let fn;
         try {
-            fn = new Function('r', 'with(r){return ' + whereExpr + ';}');
+            fn = new Function('r', 'with(r){return ' + jsExpr + ';}');
         } catch (e) {
             throw new Error('Invalid WHERE expression: ' + e.message);
         }
@@ -626,26 +776,61 @@ class SimpleColumnarStore {
     }
 
     static _projectColumns(records, selectExpr) {
-        const cols = selectExpr.split(/\s*,\s*/).map(c => {
-            const m = c.match(/(\S+)(?:\s+(?:AS|as)\s+(\w+))?/);
-            const name = m[1];
-            let outputName = m[2] || name;
-            let sourceCol = name;
 
-            // Handle alias.column syntax: convert "u.id" to source "id", output as "u.id" or custom alias
-            if (name.includes('.')) {
-                const [_, col] = name.split('.');
-                sourceCol = col;
-                outputName = m[2] || name;  // Keep "u.id" unless AS clause overrides
+        // Split selectExpr on commas, but ignore commas inside quotes
+        function splitSelectColumns(expr) {
+            const cols = [];
+            let current = '';
+            let inSingle = false, inDouble = false;
+            for (let i = 0; i < expr.length; i++) {
+                const ch = expr[i];
+                if (ch === "'" && !inDouble) inSingle = !inSingle;
+                else if (ch === '"' && !inSingle) inDouble = !inDouble;
+                if (ch === ',' && !inSingle && !inDouble) {
+                    cols.push(current.trim());
+                    current = '';
+                } else {
+                    current += ch;
+                }
             }
+            if (current.trim()) cols.push(current.trim());
+            return cols;
+        }
 
-            return { sourceCol, outputName };
+        const cols = splitSelectColumns(selectExpr).map(c => {
+            // Support quoted identifiers for output name
+            // Match: expr [AS name] or expr [AS "name"]
+            const m = c.match(/(.+?)(?:\s+(?:AS|as)\s+((?:"[^"]+")|(?:'[^']+')|\w+))?$/);
+            const expr = m[1].trim();
+            let outputName = m[2];
+            if (outputName) {
+                outputName = outputName.replace(/^['"]|['"]$/g, ''); // Remove quotes if present
+            } else {
+                outputName = expr;
+            }
+            return { expr, outputName };
         });
 
         return records.map(r => {
             const o = {};
             cols.forEach(c => {
-                o[c.outputName] = r[c.sourceCol];
+                // Check if expr is a simple column reference or contains parameters/expressions
+                if (/^[a-zA-Z_][a-zA-Z0-9_.]*$/.test(c.expr)) {
+                    // Simple column reference (e.g., "id", "u.id")
+                    let sourceCol = c.expr;
+                    if (c.expr.includes('.')) {
+                        sourceCol = c.expr.split('.')[1];  // Extract column name after alias
+                    }
+                    o[c.outputName] = r[sourceCol];
+                } else {
+                    // Computed expression - evaluate it (handles parameters and JS expressions)
+                    try {
+                        const fn = new Function('r', 'with(r){return ' + c.expr + ';}');
+                        o[c.outputName] = fn(r);
+                    } catch (e) {
+                        o[c.outputName] = undefined;
+                    }
+                }
             });
             return o;
         });
@@ -699,6 +884,25 @@ class SimpleColumnarStore {
 }
 
 const actions = {
+    // Helper function to safely extract properties from msg object
+    getMsgProperty: (msg, path) => {
+        if (!path || typeof path !== 'string') {
+            return undefined;
+        }
+        
+        const parts = path.split('.');
+        let current = msg;
+        
+        for (const part of parts) {
+            if (current && typeof current === 'object' && part in current) {
+                current = current[part];
+            } else {
+                return undefined;
+            }
+        }
+        
+        return current;
+    },
     readFile: async (RED, node, msg) => {
         const filePath = msg.payload && msg.payload.filePath ? msg.payload.filePath : node.filePath;
         if (!filePath) {
@@ -770,10 +974,17 @@ const actions = {
             throw new Error("SQL query must be provided in msg.payload.sql or configured in node");
         }
 
+        // Prepare context for parameter extraction
+        const context = {
+            msg,
+            flow: (typeof node.context === 'function' && node.context().flow) ? node.context().flow : {},
+            global: (typeof node.context === 'function' && node.context().global) ? node.context().global : {}
+        };
+
         // Use cached tokens if SQL matches the cached query
         const useCachedTokens = !msg.payload?.sql && node.cachedSqlTokens && sql === node.cachedSql;
 
-        return await SimpleColumnarStore.sqlQuery(filePath, sql, useCachedTokens ? node.cachedSqlTokens : null);
+        return await SimpleColumnarStore.sqlQuery(filePath, sql, useCachedTokens ? node.cachedSqlTokens : null, context);
     },
 
     getSchema: async (RED, node, msg) => {
@@ -841,3 +1052,4 @@ module.exports = function (RED) {
 
 // export helper class for external use/testing
 module.exports.SimpleColumnarStore = SimpleColumnarStore;
+module.exports.actions = actions;

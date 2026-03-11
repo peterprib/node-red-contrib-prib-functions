@@ -7664,7 +7664,7 @@
         "name": "",
         "action": "appendFile",
         "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "x": 440,
+        "x": 350,
         "y": 180,
         "wires": [
             [
@@ -7685,8 +7685,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 660,
-        "y": 180,
+        "x": 700,
+        "y": 360,
         "wires": []
     },
     {
@@ -7710,7 +7710,7 @@
         "topic": "",
         "payload": "{\"records\":[{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"},{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}]}",
         "payloadType": "json",
-        "x": 110,
+        "x": 90,
         "y": 180,
         "wires": [
             [
@@ -7754,7 +7754,7 @@
         "name": "",
         "action": "readFile",
         "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "x": 430,
+        "x": 340,
         "y": 280,
         "wires": [
             [
@@ -7769,9 +7769,10 @@
         "name": "",
         "action": "sqlQuery",
         "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "",
-        "x": 420,
-        "y": 380,
+        "sqlQuery": "select * from ? limit 4",
+        "outputProperty": "",
+        "x": 340,
+        "y": 360,
         "wires": [
             [
                 "f7056a42ba573367"
@@ -7799,7 +7800,7 @@
         "topic": "",
         "payload": "{\"sql\":\"SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"}",
         "payloadType": "json",
-        "x": 110,
+        "x": 90,
         "y": 360,
         "wires": [
             [
@@ -7814,10 +7815,16 @@
         "name": "",
         "action": "sqlQuery",
         "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"",
+        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name,COUNT(*) AS cnt1 FROM ? a where name= :msg.payload",
         "outputProperty": "payload",
-        "x": 450,
-        "y": 440,
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 500,
         "wires": [
             [
                 "f7056a42ba573367"
@@ -7843,13 +7850,188 @@
         "once": false,
         "onceDelay": 0.1,
         "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 520,
+        "wires": [
+            [
+                "50413b0ca082d563",
+                "a1caf329e4e87dbc"
+            ]
+        ]
+    },
+    {
+        "id": "a1caf329e4e87dbc",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT :msg.payload as tes from ? limit 5",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 580,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "ce0e3fb3e004b4af",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT a.name,COUNT(*) AS cnt FROM ? a group by name",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 420,
+        "y": 740,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "343f59f36e7293df",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "select  a.name  from ? a where name=\"John\" limit 4",
+        "outputProperty": "",
+        "x": 420,
+        "y": 660,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "babd195c3d0980dd",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 140,
-        "y": 440,
+        "x": 120,
+        "y": 660,
+        "wires": [
+            [
+                "343f59f36e7293df",
+                "ce0e3fb3e004b4af"
+            ]
+        ]
+    },
+    {
+        "id": "0960f3c3ca9ba2dc",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 480,
         "wires": [
             [
                 "50413b0ca082d563"
+            ]
+        ]
+    },
+    {
+        "id": "a61df296c3a578e2",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name, FROM ? a where name= :msg.payload",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 440,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "e88b60b96a6ce42a",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 420,
+        "wires": [
+            [
+                "a61df296c3a578e2"
             ]
         ]
     }
