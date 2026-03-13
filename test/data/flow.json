@@ -21,6 +21,14 @@
         "info": ""
     },
     {
+        "id": "43a74ee3902ea5d5",
+        "type": "tab",
+        "label": "filesystem",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "955f4808.fd1898",
         "type": "tab",
         "label": "Host Available",
@@ -1416,6 +1424,19 @@
         ]
     },
     {
+        "id": "17e0d9b46ba19357",
+        "type": "filesystem",
+        "z": "43a74ee3902ea5d5",
+        "name": "",
+        "action": "open",
+        "x": 120,
+        "y": 240,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
         "id": "ffd72c7.5d152d",
         "type": "Host Available",
         "z": "955f4808.fd1898",
@@ -2015,9 +2036,9 @@
         "infiniteIsNull": false,
         "payload": "",
         "payloadType": "date",
-        "result": "$boolean(msg._matrix.toArray()=[[1,0],[0,1]])",
+        "result": "$boolean(_matrix.toArray()=[[1,0],[0,1]])",
         "resultType": "jsonata",
-        "resultProperty": "msg.payload",
+        "resultProperty": "msg",
         "topic": "",
         "x": 170,
         "y": 480,
@@ -2082,6 +2103,24 @@
             [
                 "25c0c8c9e94083e0"
             ],
+            []
+        ]
+    },
+    {
+        "id": "ae223fa13da104ff",
+        "type": "function",
+        "z": "ae9957f07bd56e1b",
+        "name": "function 1",
+        "func": "\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 480,
+        "y": 580,
+        "wires": [
             []
         ]
     },
