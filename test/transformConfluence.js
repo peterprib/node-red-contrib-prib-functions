@@ -1,4 +1,4 @@
-//const should = require("should");
+const assert = require("assert");
 const helper = require("node-red-node-test-helper");
 const transformNode = require("../transform/transform.js");
 const Buffer=require('buffer').Buffer;
@@ -7,7 +7,9 @@ helper.init(require.resolve('node-red'));
 
 function getAndTestNodeProperties(o) {
 	const n = helper.getNode(o.id);
-	for(let p in o) n.should.have.property(p, o[p]);
+	for (let p in o) {
+		assert.strictEqual(n[p], o[p], `property ${p} mismatch`);
+	}
 	return n;
 }
 

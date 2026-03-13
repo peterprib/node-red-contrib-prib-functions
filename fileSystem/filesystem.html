@@ -1,0 +1,299 @@
+<script type="text/javascript">
+	/*globals RED */
+	RED.nodes.registerType('filesystem', {
+		category: 'storage',
+		color: '#fdeea2',
+		defaults: {
+			name: {value: ""},
+			action: {value:"read",required:true}
+		},
+		inputs: 1,
+		outputs: 2,
+		icon: "icons8-one-way-transition-80.png",
+		align: 'left',
+		paletteLabel: "filesystem",
+		inputLabels: "Message In",
+		outputLabels: ["Message Out","Error"],
+		label: function () {
+			return this.name ?? this.action
+		},
+		actionArgs:{
+			"access":["path","mode"],
+			"appendFile":["path","data","options"],
+			"chmod":["path","mode"],
+			"chown":["path","uid","gid"],
+			"close":["fd"],
+			"copyFile":["src","dest","mode"],
+			"cp":["src","dest","options"],
+			"createReadStream":["path","options"],
+			"createWriteStream":["path","options"],
+			"fchmod":["fd","mode"],
+			"fchown":["fd","uid","gid"],
+			"fdatasync":["fd"],
+			"fstat":["fd","options"],
+			"fsync":["fd"],
+			"ftruncate":["fd","len"],
+			"futimes":["fd","atime","mtime"],
+			"glob":["pattern","options"],
+			"lchmod":["path","mode"],
+			"lchown":["path","uid","gid"],
+			"lutimes":["path","atime","mtime"],
+			"link":["existingPath","newPath"],
+			"lstat":["path","options"],
+			"mkdir":["path","options"],
+			"mkdtemp":["prefix","options"],
+			"open":["path","flags","mode"],
+			"openAsBlob":["path","options"],
+			"opendir":["path","options"],
+			"read":["fd","buffer","offset","length","position"],
+			"read":["fd","options"],
+			"read":["fd","buffer","options"],
+			"readdir":["path","options"],
+			"readFile":["path","options"],
+			"readlink":["path","options"],
+			"readv":["fd","buffers","position"],
+			"realpath":["path","options"],
+			"realpath.native":["path","options"],
+			"rename":["oldPath","newPath"],
+			"rmdir":["path","options"],
+			"rm":["path","options"],
+			"stat":["path","options"],
+			"statfs":["path","options"],
+			"symlink":["target","path","type"],
+			"truncate":["path","length"],
+			"unlink":["path"],
+			"unwatchFile":["filename","listener"],
+			"utimes":["path","atime","mtime"],
+			"watch":["filename","options","listener"],
+			"watchFile":["filename","options","listener"],
+			"writeDirect":["fd","buffer","offset","length","position]"],
+			"write":["fd","buffer","options"],
+			"writeString":["fd","string","position","encoding"],
+			"writeFile":["file","data","options"],
+			"writev":["fd","buffers","position"]
+		},
+		argTypes:{
+			"atime":{_types:["num","msg"],label:null},
+			"buffer":{_types:["msg"],label:null,default:"payload.buffer"},
+			"buffers":{_types:['msg'],label:null},
+			"encoding":{_types:["str","msg"],label:null},
+			"fd":{_types:["msg"],label:null,default:"payload.fd"},
+			"flags":{
+				typedInput:{
+					type:"flags",
+					types:[{
+    					value: "flags",
+    					multiple: false,
+    					options: [
+							{value: "a", label: "Open for appending, created if missing"},
+							{value: "ax", label: "Open for appending"},
+							{value: "a+", label: "Open for reading + appending, created if missing"},
+							{value: "ax+", label: "Open for reading + appending"},
+							{value: "as", label: "Open for synchronous appending, file created if missing"},
+							{value: "as+", label: "Open for synchronous reading and appending,created if missing"},
+							{value: "r", label: "Open for reading"},
+							{value: "rs", label: "Open for synchronous reading"},
+							{value: "r+", label: "Open for synchronous reading and writing"},
+							{value: "rs+", label: "Open for synchronous reading and writing, bypass system caching"},
+							{value: "w", label: "Open for synchronous writing, created if missing or truncated"},
+							{value: "wx", label: "Open for synchronous writing, truncated"},
+							{value: "w+", label: "Open reading and writing, created if missing or truncated"},
+							{value: "wx+", label: "Open reading and writing"}
+						]
+					}]
+				}
+			},
+			"uid":{_types:["num","msg"],label:null},
+			"gid":{_types:["num","msg"],label:null},
+			"length":{_types:["msg","num"],label:null,default:"payload.length"},
+			"listener":{_types:["msg"],label:null},
+			"mode":{
+				label:null,
+				typedInput:{
+					type:"modes",
+					types:[{
+    					value: "modes",
+    					multiple: false,
+    					options: [
+        					{value: "F_OK", label: "Visible"},
+        					{value: "R_OK", label: "Read"},
+        					{value: "W_OK", label: "Write"},
+        					{value: "X_OK", label: "Execute"},
+    					]
+					}]
+				}
+			},
+			"mode-file":{
+				label:null,
+				typedInput:{
+					type:"modes",
+					types:[{
+    					value: "modes",
+    					multiple: false,
+    					options: [
+        					{value: "S_IRUSR", label: "read by owner"},
+        					{value: "S_IWUSR", label: "write by owner"},
+        					{value: "S_IXUSR", label: "execute/search by owner"},
+        					{value: "S_IRGRP", label: "read by group"},
+        					{value: "S_IWGRP", label: "write by group"},
+        					{value: "S_IXGRP", label: "execute/search by group"},
+        					{value: "S_IROTH", label: "read by others"},
+        					{value: "S_IWOTH", label: "write by others"},
+        					{value: "S_IXOTH", label: "execute/search by others"},
+    					]
+					}]
+				}
+			},
+			"mtime":{_types:["num","msg"],label:null},
+			"newPath":{_types:["str","msg"],label:null},
+			"options":{
+				appendFile:{
+					encoding: {types:['str'],label:null}, //<string> | <null> Default: 'utf8'
+					mode: {types:['str'],label:null}, // <integer> Default: 0o666
+					flag:"$flag",		// <string> See support of file system flags. Default: 'a'.
+					flush:{types:['boolean']}
+				}	
+			},
+			"path":{_types:['msg','str','flow','global','jsonata','env'],label:null,default:"payload.path"},
+			"pattern":{_types:["str","msg"],label:null},
+			"offset":{_types:["msg","num"],label:null,default:"payload.offset"},
+			"position":{_types:["msg","num"],label:null,default:"payload.position"},
+			"prefix":{_types:["str","msg"],label:null},
+			"string":{_types:["str","msg"],label:null},
+			"type":{_types:["str","msg"],label:null},
+			"dest":{_types:['str','msg','flow','global','jsonata','env'],label:"destination"},
+			"existingPath":{_types:['str','msg','flow','global','jsonata','env'],label:"existing path"},
+			"filename":{_types:['str','msg','flow','global','jsonata','env'],label:"file name"},
+			"oldPath":{_types:['str','msg','flow','global','jsonata','env'],label:"old path"},
+			"src":{_types:['str','msg','flow','global','jsonata','env'],label:"source"},
+			"target":{_types:['msg'],label:"Target",default:"payload.result"}
+		},
+		addInput: function (baseElement, property, label = property) {
+//			console.log("adding field "+property)
+			const div=$('<div>', {id:'form-row-http-in-'+property, class: "form-row" })
+			const input=$('<input>', { type: 'text', id: 'node-input-' + property, style: "width:70%" })
+			const inputType=$('<input>', { type: 'hidden', id: 'node-input-' + property + 'Type' })
+			div.append(
+				$('<label>', {for:"node-input-" + property}).append(
+					$('<i>', {class:"fa fa-bookmark"}),
+					$('<span>').attr("data-i18n", "common.label.string").text(" "+(label??property))
+				),
+				input,
+				inputType
+			)
+			baseElement.append(div)
+			const argType=this.argTypes[property]
+			argType.input=input
+			argType.inputType=inputType
+			if(argType.typedInput)
+				return input.typedInput(argType.typedInput)
+			const types=argType.types
+			input.typedInput({
+				default: types[0],
+				typeField: inputType,
+				types:types,
+				validate: ()=>{
+				}
+			})
+		},
+		setProperty:function(property,value){
+			try{
+//				console.log("set "+property)
+				if(property.hasOwnProperty("_types")){
+					$("#form-row-http-in-"+property).show()
+					const argType=this.argTypes[property]
+					argType.input.typedInput('value',value??argType.default??"")
+//						argType.inputType.val(_this[property+"type"])
+					return
+				}
+				Object.keys(value).forEach(p=>this.setProperty(p,value[p]))
+			} catch(ex){
+				console.error("setProperty error "+ex.message);
+			}
+		},
+		oneditprepare: function() {
+			const _this=this
+			const nodeBase=this._def
+			const inputBase=$("#input-base")
+			for(const property in nodeBase.argTypes) nodeBase.addInput(inputBase,property,nodeBase.argTypes[property].label)
+			const action=this.action
+			const actions=Object.keys(nodeBase.actionArgs).map(property=>({value:property,label:property}))
+			$("#node-input-action").typedInput({type:"action", types:[{
+				value: "action",
+    			options: actions
+			}]});
+
+			$("#node-input-action").change(function() {
+				const action=$(this).val();
+				Object.keys(nodeBase.argTypes).forEach(property=>{
+					try{
+						$("#form-row-http-in-"+property).hide()
+					} catch(ex){
+						console.error("hide in row error "+ex.message);
+					}
+				})	
+				nodeBase.actionArgs[action].forEach(property=>nodeBase.setProperty(property,_this[property]))
+				if(["open","createWriteStream","exists","fstat","fsync","lstat","mkdir","mkdtemp","open",
+					"openAsBlob","opendir","read","readdir","readFile","readlink","readv","realpath","stat","statfs",
+					"watch","watchFile","write","writev","existsSync","globSync","lstatSync","mkdirSync","mkdtempSync",
+					"mkdtempDisposableSync","opendirSync","openSync","readdirSync","readFileSync","readlinkSync",
+					"readSync","readSync"
+					].includes(action)
+					)
+					nodeBase.setProperty("target",_this.target)
+			}).change();
+		},
+		oneditsave: function() {
+			const _this=this
+			const nodeBase=this._def
+			nodeBase.actionArgs[this.action].forEach(property=>{
+				const argType=nodeBase.argTypes[property]
+				if(argType.hasOwnProperty("_types")){
+					_this[property]=argType.input.typedInput('value');
+					_this[property+"type"]=argType.input.typedInput('type')
+					return
+				}
+				for (const p in argType) {
+					_this[p]=argType[p].input.typedInput('value')
+					_this[p+"type"]=argType[p].input.typedInput('type')
+				}
+			})
+		},
+		resizeRule : function(file,newWidth) {
+		}
+	});
+</script>
+
+<script type="text/x-red" data-template-name="filesystem">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name </label>
+		<input type="text" id="node-input-name" placeholder="Name">
+	</div>
+	<div class="form-row">
+		<label for="node-input-action"><i class="fa fa-tag"></i> Action </label>
+		<input type="select" id="node-input-action" placeholder="Action">
+	</div>
+	<div id="input-base">
+    </div>
+
+</script>
+
+<script type="text/x-red" data-help-name="filesystem">
+	<p>filesystem</p>
+	<p>
+	</p>
+	<h3>Inputs</h3>
+	<dl class="message-properties">
+		<dt>msg <span class="property-type">topic</span></dt>
+		<dd>incoming message with topic</dd>
+		<dt>msg <span class="property-type">payload</span></dt>
+		<dd></dd>
+	</dl>
+	<h3>Ports</h3>
+	<dl class="message-properties">
+		<dt><span class="property-type">message out</span></dt>
+		<dd>Inbound message with </dd>
+		<dt><span class="property-type">error</span></dt>
+		<dd>a message where msg.error details error</dd>
+	</dl>
+</script>

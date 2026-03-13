@@ -1,0 +1,191 @@
+<script type="text/javascript">
+    RED.nodes.registerType('gitlab', {
+        category: 'function',
+        color: '#FC6D26',
+        defaults: {
+            name: {value:"", required:false},
+            action: {value:"getRepo", required:true},
+            gitlabUrl: {value:"https://gitlab.com", required:true},
+            accessToken: {value:"", required:true},
+            projectId: {value:"", required:true},
+            filePath: {value:"", required:false}
+        },
+        inputs: 1,
+        inputLabels: "in",
+        outputs:1,
+        outputLabels: ["Result"],
+        paletteLabel: "GitLab",
+        icon: "gitlab.svg",
+        label: function() {
+            return this.name || (this.action + " GitLab");
+        },
+        labelStyle: function() {
+            return "node_label_italic";
+        },
+        oneditprepare: function() {
+            const node = this;
+            $("#node-input-action").change(function() {
+                const action = $(this).val();
+                if (action === 'getFile') {
+                    $("#file-path-row").show();
+                } else {
+                    $("#file-path-row").hide();
+                }
+            });
+            $("#node-input-action").change(); // trigger on load
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="gitlab">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-cogs"></i> Action</label>
+        <select type="text" id="node-input-action">
+            <option value="getRepo">Get Repository Info</option>
+            <option value="listIssues">List Issues</option>
+            <option value="createIssue">Create Issue</option>
+            <option value="getMergeRequests">Get Merge Requests</option>
+            <option value="createMergeRequest">Create Merge Request</option>
+            <option value="getFile">Get File</option>
+            <option value="runPipeline">Run Pipeline</option>
+            <option value="createCommit">Create Commit</option>
+            <option value="getCommits">Get Commits</option>
+            <option value="getCommit">Get Commit</option>
+        </select>
+    </div>
+    <div class="form-row">
+        <label for="node-input-gitlabUrl">GitLab URL</label>
+        <input type="text" id="node-input-gitlabUrl" placeholder="https://gitlab.com">
+    </div>
+    <div class="form-row">
+        <label for="node-input-accessToken">Access Token</label>
+        <input type="password" id="node-input-accessToken" placeholder="GitLab personal access token">
+    </div>
+    <div class="form-row">
+        <label for="node-input-projectId">Project ID</label>
+        <input type="text" id="node-input-projectId" placeholder="project-id or namespace/project-name">
+    </div>
+    <div class="form-row" id="file-path-row" style="display:none;">
+        <label for="node-input-filePath">File Path</label>
+        <input type="text" id="node-input-filePath" placeholder="path/to/file.txt">
+    </div>
+</script>
+
+<script type="text/x-red" data-help-name="gitlab">
+    <p>GitLab API access node for performing various operations on GitLab repositories.</p>
+
+    <h3>Configuration</h3>
+    <ul>
+        <li><b>GitLab URL:</b> The GitLab instance URL (default: https://gitlab.com)</li>
+        <li><b>Access Token:</b> GitLab personal access token with appropriate permissions</li>
+        <li><b>Project ID:</b> The project identifier (numeric ID or namespace/project-name)</li>
+        <li><b>File Path:</b> Path to file in repository (only shown for Get File action)</li>
+    </ul>
+
+    <h3>Actions</h3>
+    <ul>
+        <li><b>Get Repository Info:</b> Retrieves basic information about the repository</li>
+        <li><b>List Issues:</b> Lists issues in the repository. Optional filters in msg.payload: state, labels, assignee_id</li>
+        <li><b>Create Issue:</b> Creates a new issue. Required in msg.payload: title. Optional: description, labels, assignee_ids</li>
+        <li><b>Get Merge Requests:</b> Lists merge requests. Optional filters in msg.payload: state, source_branch, target_branch</li>
+        <li><b>Create Merge Request:</b> Creates a new merge request. Required in msg.payload: title, source_branch, target_branch. Optional: description, assignee_id, labels</li>
+        <li><b>Get File:</b> Retrieves file content from repository. File path can be in msg.payload.file_path or configured in node. Optional: ref (branch/tag/commit)</li>
+        <li><b>Run Pipeline:</b> Triggers a CI/CD pipeline. Optional in msg.payload: ref (default: main), variables (array of {key, value})</li>
+        <li><b>Create Commit:</b> Creates a new commit with file changes. Required in msg.payload: branch, commit_message, actions (array of file operations)</li>
+        <li><b>Get Commits:</b> Lists commits in repository. Optional filters in msg.payload: ref_name, since, until, path, author, per_page</li>
+        <li><b>Get Commit:</b> Retrieves details of a specific commit. Required in msg.payload: commit_sha</li>
+    </ul>
+
+    <h3>Authentication</h3>
+    <p>You need a GitLab personal access token with appropriate scopes:
+    <ul>
+        <li>api - for full API access</li>
+        <li>read_repository - for read operations</li>
+        <li>write_repository - for write operations</li>
+    </ul>
+    Create tokens at: GitLab Profile → Access Tokens</p>
+
+    <h3>Project ID</h3>
+    <p>The project ID can be found in the repository URL or project settings. It can be:
+    <ul>
+        <li>Numeric ID (e.g., 12345)</li>
+        <li>URL-encoded path (e.g., namespace%2Fproject-name)</li>
+    </ul></p>
+
+    <h3>Examples</h3>
+
+    <h4>Get Repository Info</h4>
+    <pre>Input: (any)
+Output: Repository object with id, name, description, etc.</pre>
+
+    <h4>Create Issue</h4>
+    <pre>Input:
+{
+  "title": "Bug report",
+  "description": "Found a critical bug",
+  "labels": ["bug", "critical"],
+  "assignee_ids": [123]
+}
+Output: Created issue object</pre>
+
+    <h4>Get File</h4>
+    <pre>Input:
+{
+  "file_path": "README.md",
+  "ref": "main"
+}
+Output: File object with content, encoding, size, etc.</pre>
+
+    <h4>Run Pipeline</h4>
+    <pre>Input:
+{
+  "ref": "develop",
+  "variables": [
+    {"key": "ENV", "value": "staging"}
+  ]
+}
+Output: Pipeline object with id, status, etc.</pre>
+
+    <h4>Create Commit</h4>
+    <pre>Input:
+{
+  "branch": "main",
+  "commit_message": "Update README.md",
+  "actions": [
+    {
+      "action": "update",
+      "file_path": "README.md",
+      "content": "Updated content here..."
+    }
+  ],
+  "author_email": "user@example.com",
+  "author_name": "User Name"
+}
+Output: Commit object with id, short_id, title, etc.</pre>
+
+    <h4>Get Commits</h4>
+    <pre>Input:
+{
+  "ref_name": "main",
+  "per_page": 10,
+  "author": "user@example.com"
+}
+Output: Array of commit objects</pre>
+
+    <h4>Get Commit</h4>
+    <pre>Input:
+{
+  "commit_sha": "abc123..."
+}
+Output: Detailed commit object with stats, files, etc.</pre>
+
+    <h3>Output</h3>
+    <p>Results are returned in msg.result. The structure depends on the action performed.</p>
+
+    <h3>Error Handling</h3>
+    <p>Errors from the GitLab API are caught and reported. Check msg.error for details.</p>
+</script>
