@@ -10,7 +10,8 @@
                 "view-node-status": true,
                 "view-node-show-label": true,
                 "view-show-tips": true,
-                "view-show-welcome-tours": true
+                "view-show-welcome-tours": true,
+                "view-node-info-icon": true
             },
             "tours": {
                 "welcome": "4.0.9-git"
@@ -24,6 +25,9 @@
                     "context"
                 ]
             }
+        },
+        "debug": {
+            "clearType": "all"
         }
     }
 }

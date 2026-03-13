@@ -46,7 +46,9 @@ const JSON2npyNode={
 };
 function getAndTestNodeProperties(o) {
 	const n = helper.getNode(o.id);
-	for(let p in o) n.should.have.property(p, o[p]);
+	for (let p in o) {
+		assert.strictEqual(n[p], o[p], `property ${p} mismatch`);
+	}
 	return n;
 }
 function testFlow(done,node,data,result) {

@@ -75,6 +75,17 @@ example:
 
 ------------------------------------------------------------
 
+## logistic regression
+
+Perform logistic regression by setting up model with fit then using the model in other nodes to do prediction probability or class
+------------------------------------------------------------
+
+## columnar store
+
+Store data into a columnar store with sql select access
+
+------------------------------------------------------------
+
 ## Matrix
 
 Define a matrix and perform various functions
@@ -351,6 +362,10 @@ Test/example flow in test/generalTest.json
 ------------------------------------------------------------
 
 ## Version
+
+0.26.0 add columnar store node with sql query capabilty
+
+0.24.0 add in logistic regression
 
 0.23.3 Removes bug in test, more translation
 
