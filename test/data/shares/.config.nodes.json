@@ -463,6 +463,17 @@
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
             },
+            "filesystem": {
+                "name": "filesystem",
+                "types": [
+                    "filesystem"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\filesystem\\filesystem.js"
+            },
             "dataAnalysis": {
                 "name": "dataAnalysis",
                 "types": [
