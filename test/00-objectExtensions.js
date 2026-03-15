@@ -1,5 +1,4 @@
 const assert=require('assert');
-const should=require("should");
 const {coalesce,nullif}=require("../lib/objectExtensions");
 
 describe('/lib/objectExtensions array ', function() {

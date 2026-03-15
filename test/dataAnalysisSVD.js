@@ -1,5 +1,4 @@
 const assert=require('assert');
-const should=require("should");
 const svd=require("../dataAnalysis/svd.js");
 require("../dataAnalysis/arrayCompareToPrecision.js");
 

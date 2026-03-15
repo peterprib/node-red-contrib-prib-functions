@@ -1,5 +1,4 @@
 const assert=require('assert')
-const should=require("should")
 const GraphDB = require('../lib/GraphDB.js')
 
 describe('GraphDB', function() {
@@ -28,13 +27,17 @@ describe('GraphDB', function() {
     const eb=graphDB.addEdge(b,c,{id:"eb",name:"ebname"})
     const ec=graphDB.addEdge(a,c,{id:"ec",name:"ecname"})
      it("define edges", function(done) {
-        assert.throws(graphDB.addEdge({}),Error("from not type Vertex"))
-        assert.throws(graphDB.addEdge(a,{}),Error("to not type Vertex"))
-        assert.equal(graphDB.getEdgesCount(),0)
-        graphDB.addEdge(a,b)
-        assert.equal(graphDB.getEdgesCount(),1)
-        graphDB.addEdge(b,c,{cost:1})
-        assert.equal(graphDB.getEdgesCount(),2)
+        const g = new GraphDB();
+        const v1 = g.addVertex({id:"v1"});
+        const v2 = g.addVertex({id:"v2"});
+        const v3 = g.addVertex({id:"v3"});
+        assert.throws(() => g.addEdge({}), Error("from not type Vertex"));
+        assert.throws(() => g.addEdge(v1, {}), Error("to not type Vertex"));
+        assert.equal(g.getEdgesCount(),0);
+        g.addEdge(v1, v2);
+        assert.equal(g.getEdgesCount(),1);
+        g.addEdge(v2, v3, {cost: 1});
+        assert.equal(g.getEdgesCount(),2);
         done()
     });
     it("find edges", function(done) {

@@ -1,5 +1,4 @@
 const assert=require('assert');
-const should=require("should");
 const dataAnalysis=require("../dataAnalysis/dataAnalysis.js");
 const helper=require("node-red-node-test-helper");
 helper.init(require.resolve('node-red'));
@@ -41,7 +40,7 @@ function test(label,action,data,expected) {
 				const detailsNode=getNode(helperNodeDetails);
 				const outliersNode=getNode(helperNodeOutliers);
 				const n1=getNode(newBase);
-				n1.should.have.property("action", action);
+				assert.strictEqual(n1.action, action);
 				resultsNode.on("input", function(msg) {
 					try{
 						if(msg.error) throw Error(msg.error);

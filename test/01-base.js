@@ -1,5 +1,4 @@
 const assert=require('assert');
-const should=require("should");
 const helper=require("node-red-node-test-helper");
 const storageDefinition=require("../nodes/storageDefinition.js");
 const storageRead = require('../nodes/storageRead.js');
@@ -8,7 +7,9 @@ helper.init(require.resolve('node-red'));
 
 function getAndTestNodeProperties(o) {
 	const n = helper.getNode(o.id);
-	for(let p in o) n.should.have.property(p, o[p]);
+	for(let p in o) {
+		assert.strictEqual(n[p], o[p], `property ${p} mismatch`);
+	}
 	return n;
 }
 
@@ -42,16 +43,16 @@ function testFlow(done,node,data,result) {
 		const errorHelper = helper.getNode("errorHelper");
 		outHelper.on("input", function(msg) {
 			console.log("outHelper "+JSON.stringify(msg.payload));
-			if(JSON.stringify(msg.payload)==JSON.stringify(result)) {
+			try {
+				assert.deepStrictEqual(msg.payload, result);
 				done();
-			} else {
-				console.log("mismatch  expected: "+JSON.stringify(result) +" returned: "+JSON.stringify(msg.payload));
-				done("mismatch");
+			} catch (e) {
+				done(e);
 			}
 		});
 		errorHelper.on("input", function(msg) {
 			console.log("errorHelper "+JSON.stringify(msg));
-			done("error  check log output");
+			done(new Error("error check log output"));
 		});
 		n.receive({
 			topic:"test",

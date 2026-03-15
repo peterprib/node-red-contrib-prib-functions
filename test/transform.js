@@ -67,10 +67,14 @@ describe('transform', function() {
 			let count = 0;
 			const anArray = [ [ 1, "a" ],[2 ,"b"],[3 ,"c"] ];
 			n2.on("input", function(msg) {
-//				msg.should.have.property('payload', 'uppercase');
-				console.log("test " + count);
-				console.log(msg);
-				if (++count>= anArray.length) done();
+				try {
+					console.log("test " + count);
+					console.log(msg);
+					assert.deepStrictEqual(msg.payload, anArray[count]);
+					if (++count>= anArray.length) done();
+				} catch (e) {
+					done(e);
+				}
 			});
 			n1.receive({
 				payload : anArray
@@ -110,16 +114,16 @@ describe('transform', function() {
 			const testData ='{"name":"testname"}';
 			outHelper.on("input", function(msg) {
 				console.log("outHelper "+msg.payload);
-				if(JSON.stringify(msg.payload)==testData) {
+				try {
+					assert.strictEqual(JSON.stringify(msg.payload), testData);
 					done();
-				} else {
-					console.log("mismatch  in: "+testData +" returned: "+JSON.stringify(msg.payload));
-					done("mismatch");
+				} catch (e) {
+					done(e);
 				}
 			});
 			errorHelper.on("input", function(msg) {
 				console.log("errorHelper "+msg.payload);
-				done("error  check log output");
+				done(new Error("error check log output"));
 			});
 			JSON2AVRO.receive({
 				topic:"test",

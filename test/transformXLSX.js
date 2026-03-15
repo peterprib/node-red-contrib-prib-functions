@@ -46,15 +46,16 @@ function testFlow(done,data,result) {
 		const errorHelper = helper.getNode("errorHelper");
 		outHelper.on("input", function(msg) {
 			console.log("outHelper "+JSON.stringify(msg.json));
-			if(JSON.stringify(msg.payload)==JSON.stringify(msg.json)) {
+			try {
+				assert.deepStrictEqual(msg.payload, msg.json);
 				done();
-			} else {
-				done("mismatch expected: " +JSON.stringify(msg.payload)+"  actual: " +JSON.stringify(msg.json));
+			} catch (e) {
+				done(e);
 			}
 		});
 		errorHelper.on("input", function(msg) {
 			console.log("errorHelper "+JSON.stringify(msg));
-			done("error  check log output");
+			done(new Error("error check log output"));
 		});
 		n.receive({
 			topic:"test",

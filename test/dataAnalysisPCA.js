@@ -1,5 +1,4 @@
 const assert=require('assert');
-const should=require("should");
 require("../dataAnalysis/arrayCompareToPrecision.js");
 const PCA=require("../dataAnalysis/pca.js");
 const pca=new PCA();
