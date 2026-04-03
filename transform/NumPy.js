@@ -154,6 +154,7 @@ V void
 const dataTypeToNumpyDescr = new Map([
     ["float32", "<f4"],
     ["float64", "<f8"],
+    ["number", "<f8"],
     ["int8",  "<i1"],
     ["int16", "<i2"],
     ["int32", "<i4"],

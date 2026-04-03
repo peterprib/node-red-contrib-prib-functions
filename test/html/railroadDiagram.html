@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">	
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">		
+		<title>Document</title>
+		<style>
+			body { font-family: sans-serif; line-height: 1.5; padding: 20px; background: #fff; }
+			.test-summary { border: 1px solid #ccc; padding: 15px; margin-bottom: 30px; background: #f9f9f9; border-radius: 4px; }
+			.assertion { margin: 5px 0; padding: 5px; border-bottom: 1px solid #eee; }
+			.pass { color: #28a745; font-weight: bold; }
+			.fail { color: #dc3545; font-weight: bold; }
+			svg { border: 1px solid #eee; display: block; margin-top: 10px; background: #fff; }
+			h2 { margin-top: 25px; font-size: 1.2em; color: #333; }
+		</style>
+	</head>
+	<body>
+		<h1>Railroad Diagram Test</h1>
+
+		<div class="test-summary">
+			<h3>Test Assertions</h3>
+			<div id="test-results"></div>
+		</div>
+
+		<script type="module">
+			import { Diagram, Sequence, Terminal, Choice, Optional, ZeroOrMore, defaults, svgElement } from './EBNF/railroadDiagram.js';
+
+			function assert(condition, message) {
+				const container = document.getElementById('test-results');
+				const div = document.createElement('div');
+				div.className = 'assertion';
+				div.innerHTML = (condition ? '<span class="pass">✔ PASS</span>' : '<span class="fail">✘ FAIL</span>') + ': ' + message;
+				container.appendChild(div);
+			}
+
+			// Example usage of the railroad diagram components
+			const diagram = new Diagram(
+				new Sequence(
+					new Terminal("number"),
+					new Choice(
+						new Sequence(
+							new Terminal(","),
+							new Terminal("number")
+						),
+						new Sequence(
+							new Terminal(";"),
+							new Terminal("number")
+						)
+					)
+				)
+			);
+			const diagramTerminal = new Diagram(
+				new Terminal("<number>")
+			);
+			const diagramOptional	= new Diagram(
+				new Optional(new Terminal("<number>"))
+			);
+			const diagramZeroOrMore= new Diagram(
+				new ZeroOrMore(new Terminal("<number>"))
+			);
+			const diagramSequence = new Diagram(
+				new Sequence(
+					new Terminal("<number>"),
+					new Terminal(","),
+					new Terminal("<number>")
+				)
+			);
+			const diagramChoice = new Diagram(
+				new Choice(
+					new Terminal("<number>"),
+					new Terminal("<string>"),
+					new Terminal("<boolean>"),
+					new Terminal("<null>")
+				)
+			);
+			const diagramChoiceNotFault = new Diagram(
+				new Choice(null,
+					new Terminal("<number>"),
+					new Terminal("<string>"),
+					new Terminal("<boolean>"),
+					new Terminal("<null>")
+				)
+			);
+
+			const diagramSelect = new Diagram(new Sequence(
+  				new Terminal("SELECT"),
+  				new Optional(new Terminal("DISTINCT")),			
+  				new Terminal("<expression>"),
+  				new Optional(new Sequence(new Terminal("AS"), new Terminal("<column name>"))),
+  				new ZeroOrMore(new Sequence(new Terminal(","), new Terminal("<column>"))),
+				new Terminal("FROM"),
+				new Terminal("<table>"),
+  				new Optional(
+					new Sequence(
+						new Terminal("JOIN"),
+						new Terminal("<table>"),
+						new Optional(
+							new Sequence(
+								new Terminal("ON"),
+								new Terminal("<predicate>")
+							)
+						)
+					),
+  				new Optional(
+					new Sequence(new Terminal("WHERE"), new Terminal("<condition>"))
+				),
+  				new Optional(
+					new Sequence(new Terminal("GROUP BY"), new Terminal("<column>"))
+				),	
+  				new Optional(
+					new Sequence(
+						new Terminal("ORDER BY"), 
+						new Terminal("<column>"), 
+						new Choice(new Terminal("ASC"), new Terminal("DESC")))
+					)
+				),
+  				new Optional(new Sequence(new Terminal("LIMIT"), new Terminal("<number>")))
+			));
+			// Run verification tests
+			assert(diagram instanceof Diagram, "(1) Diagram instance correctly initialized");
+			assert(diagram.width > 0 && diagram.height > 0, "(2) Diagram dimensions are set correctly after drawing");
+			assert(diagram.up >= 0 && diagram.down >= 0, "(3) Diagram vertical metrics (up/down) are non-negative");
+			assert(diagram.toSVG() instanceof SVGElement, "(4) Diagram.toSVG() returns a valid SVG element");
+			assert(diagramSelect instanceof Diagram, "(5) Diagram instance for SELECT statement correctly initialized");
+			assert(diagramSelect.width > 0 && diagramSelect.height > 0, "(6) Diagram dimensions for SELECT statement are set correctly after drawing");
+			
+			const drawnElement = diagram.draw(20, 100);
+			assert(drawnElement instanceof svgElement, "(7) Diagram.draw() returns a valid SVGElement class");
+			const standAloneSVG = diagram.toSVG();
+			assert(standAloneSVG instanceof SVGElement, "(8) Diagram.toSVG() returns a valid SVG element");	
+
+			document.body.insertAdjacentHTML('beforeend', '<h2>Drawn Diagram (Appended to container)</h2>');
+			const drawnSVG = diagram.toSVG();
+			document.body.appendChild(drawnSVG);
+
+			document.body.insertAdjacentHTML('beforeend', '<h2>Select Statement Diagram</h2>');
+			document.body.appendChild(diagramSelect.toSVG());
+
+			document.body.insertAdjacentHTML('beforeend', '<h2>Terminal Diagram</h2>');
+			document.body.appendChild(diagramTerminal.toSVG());
+
+			document.body.insertAdjacentHTML('beforeend', '<h2>Optional Diagram</h2>');
+			document.body.appendChild(diagramOptional.toSVG());
+			
+			document.body.insertAdjacentHTML('beforeend', '<h2>Zero or More Diagram</h2>');
+			document.body.appendChild(diagramZeroOrMore.toSVG());
+
+			document.body.insertAdjacentHTML('beforeend', '<h2>Sequence Diagram</h2>');
+			document.body.appendChild(diagramSequence.toSVG());
+
+			document.body.insertAdjacentHTML('beforeend', '<h2>Choice Diagram</h2>');
+			document.body.appendChild(diagramChoice.toSVG());
+
+			document.body.insertAdjacentHTML('beforeend', '<h2>Choice Diagram (Not Default)</h2>');
+			document.body.appendChild(diagramChoiceNotFault.toSVG());
+		</script>
+	</body>
+</html>
