@@ -1,0 +1,601 @@
+[
+    {
+        "id": "inject_query",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Simple Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "What is the capital of France?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 100
+    },
+    {
+        "id": "inject_complex",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Complex Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "Can you explain the mathematical proof of Fermat's Last Theorem in detail with all intermediate steps and provide references to the original paper by Andrew Wiles?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 200
+    },
+    {
+        "id": "inject_urgent",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Urgent Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "EMERGENCY: The server is down and customers can't access the website! What should I do immediately?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 300
+    },
+    {
+        "id": "dcdllm_node",
+        "type": "dcdllm",
+        "z": "flow1",
+        "name": "Decision LLM",
+        "maxLength": 100,
+        "keywords": ["help", "search", "find", "emergency", "urgent"],
+        "sentenceThreshold": 3,
+        "complexityThreshold": 0.5,
+        "wordThreshold": 5,
+        "decisionTree": "{}",
+        "priors": "{\"answer\": 0.5, \"clarify\": 0.2, \"retrieve\": 0.2, \"escalate\": 0.1}",
+        "sequentialMode": false,
+        "useRL": false,
+        "reasoningMode": "cot",
+        "x": 300,
+        "y": 200
+    },
+    {
+        "id": "debug_answer",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Answer Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 100
+    },
+    {
+        "id": "debug_clarify",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Clarify Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 200
+    },
+    {
+        "id": "debug_retrieve",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Retrieve Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 300
+    },
+    {
+        "id": "debug_escalate",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Escalate Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 400
+    },
+    {
+        "id": "function_answer",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Answer",
+        "func": "if (msg.reasoningInstruction) {\n    msg.payload = msg.reasoningInstruction + \"\\n\\nQuery: \" + msg.payload;\n}\nmsg.topic = \"LLM Answer Request\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 100
+    },
+    {
+        "id": "function_clarify",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Clarify",
+        "func": "msg.topic = \"User Clarification Needed\";\nmsg.payload = msg.clarificationPrompt || \"Please provide more details.\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 200
+    },
+    {
+        "id": "function_retrieve",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Retrieve",
+        "func": "msg.topic = \"Knowledge Base Search\";\nmsg.payload = msg.retrievalQuery || msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 300
+    },
+    {
+        "id": "function_escalate",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Escalate",
+        "func": "msg.topic = \"Human Escalation\";\nmsg.payload = msg.escalationReason || \"Query requires human intervention.\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 400
+    },
+    {
+        "id": "inject_feedback",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Positive Feedback",
+        "props": [
+            {
+                "p": "feedback",
+                "v": 1,
+                "vt": "num"
+            },
+            {
+                "p": "decisionId",
+                "v": "example_decision_123",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 500
+    },
+    {
+        "id": "inject_negative_feedback",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Negative Feedback",
+        "props": [
+            {
+                "p": "feedback",
+                "v": -1,
+                "vt": "num"
+            },
+            {
+                "p": "decisionId",
+                "v": "example_decision_123",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 600
+    },
+    {
+        "id": "debug_feedback",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Feedback Processed",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 550
+    },
+    {
+        "id": "inject_query.id",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Simple Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "What is the capital of France?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 100,
+        "wires": [
+            [
+                "dcdllm_node"
+            ]
+        ]
+    },
+    {
+        "id": "inject_complex.id",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Complex Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "Can you explain the mathematical proof of Fermat's Last Theorem in detail with all intermediate steps and provide references to the original paper by Andrew Wiles?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 200,
+        "wires": [
+            [
+                "dcdllm_node"
+            ]
+        ]
+    },
+    {
+        "id": "inject_urgent.id",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Urgent Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "EMERGENCY: The server is down and customers can't access the website! What should I do immediately?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 300,
+        "wires": [
+            [
+                "dcdllm_node"
+            ]
+        ]
+    },
+    {
+        "id": "dcdllm_node.id",
+        "type": "dcdllm",
+        "z": "flow1",
+        "name": "Decision LLM",
+        "maxLength": 100,
+        "keywords": [
+            "help",
+            "search",
+            "find",
+            "emergency",
+            "urgent"
+        ],
+        "sentenceThreshold": 3,
+        "complexityThreshold": 0.5,
+        "wordThreshold": 5,
+        "decisionTree": "{}",
+        "priors": "{\"answer\": 0.5, \"clarify\": 0.2, \"retrieve\": 0.2, \"escalate\": 0.1}",
+        "sequentialMode": false,
+        "useRL": false,
+        "reasoningMode": "cot",
+        "x": 300,
+        "y": 200,
+        "wires": [
+            [
+                "function_answer"
+            ],
+            [
+                "function_clarify"
+            ],
+            [
+                "function_retrieve"
+            ],
+            [
+                "function_escalate"
+            ]
+        ]
+    },
+    {
+        "id": "debug_answer.id",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Answer Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "debug_clarify.id",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Clarify Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "debug_retrieve.id",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Retrieve Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 300,
+        "wires": []
+    },
+    {
+        "id": "debug_escalate.id",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Escalate Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "function_answer.id",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Answer",
+        "func": "if (msg.reasoningInstruction) {\n    msg.payload = msg.reasoningInstruction + \"\\n\\nQuery: \" + msg.payload;\n}\nmsg.topic = \"LLM Answer Request\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 100,
+        "wires": [
+            [
+                "debug_answer.id"
+            ]
+        ]
+    },
+    {
+        "id": "function_clarify.id",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Clarify",
+        "func": "msg.topic = \"User Clarification Needed\";\nmsg.payload = msg.clarificationPrompt || \"Please provide more details.\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 200,
+        "wires": [
+            [
+                "debug_clarify.id"
+            ]
+        ]
+    },
+    {
+        "id": "function_retrieve.id",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Retrieve",
+        "func": "msg.topic = \"Knowledge Base Search\";\nmsg.payload = msg.retrievalQuery || msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 300,
+        "wires": [
+            [
+                "debug_retrieve.id"
+            ]
+        ]
+    },
+    {
+        "id": "function_escalate.id",
+        "type": "function",
+        "z": "flow1",
+        "name": "Process Escalate",
+        "func": "msg.topic = \"Human Escalation\";\nmsg.payload = msg.escalationReason || \"Query requires human intervention.\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 400,
+        "wires": [
+            [
+                "debug_escalate.id"
+            ]
+        ]
+    },
+    {
+        "id": "inject_feedback.id",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Positive Feedback",
+        "props": [
+            {
+                "p": "feedback",
+                "v": 1,
+                "vt": "num"
+            },
+            {
+                "p": "decisionId",
+                "v": "example_decision_123",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 500,
+        "wires": [
+            [
+                "dcdllm_node.id"
+            ]
+        ]
+    },
+    {
+        "id": "inject_negative_feedback.id",
+        "type": "inject",
+        "z": "flow1",
+        "name": "Negative Feedback",
+        "props": [
+            {
+                "p": "feedback",
+                "v": -1,
+                "vt": "num"
+            },
+            {
+                "p": "decisionId",
+                "v": "example_decision_123",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 100,
+        "y": 600,
+        "wires": [
+            [
+                "dcdllm_node.id"
+            ]
+        ]
+    },
+    {
+        "id": "debug_feedback.id",
+        "type": "debug",
+        "z": "flow1",
+        "name": "Feedback Processed",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 550,
+        "y": 550,
+        "wires": []
+    }
+]</content>
+<parameter name="filePath">c:\Users\peter\repros\node-red-contrib-prib-functions\example_flow.json

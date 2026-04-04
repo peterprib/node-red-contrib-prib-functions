@@ -448,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.25.0",
+        "version": "0.27.0",
         "local": false,
         "user": false,
         "nodes": {
@@ -463,16 +463,16 @@
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
             },
-            "filesystem": {
-                "name": "filesystem",
+            "columnar": {
+                "name": "columnar",
                 "types": [
-                    "filesystem"
+                    "columnar"
                 ],
                 "enabled": true,
-                "local": true,
+                "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\filesystem\\filesystem.js"
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\columnar\\columnar.js"
             },
             "dataAnalysis": {
                 "name": "dataAnalysis",
@@ -484,6 +484,46 @@
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\dataAnalysis\\dataAnalysis.js"
+            },
+            "delta": {
+                "name": "delta",
+                "types": [],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\delta\\delta.js"
+            },
+            "distance": {
+                "name": "distance",
+                "types": [],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\distance\\distance.js"
+            },
+            "dcdllm": {
+                "name": "dcdllm",
+                "types": [
+                    "dcdllm"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\dcdllm\\dcdllm.js"
+            },
+            "filesystem": {
+                "name": "filesystem",
+                "types": [
+                    "filesystem"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\filesystem\\filesystem.js"
             },
             "hostAvailable": {
                 "name": "hostAvailable",
@@ -616,17 +656,6 @@
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\gitlab\\gitlab.js"
-            },
-            "columnar": {
-                "name": "columnar",
-                "types": [
-                    "columnar"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\columnar\\columnar.js"
             }
         }
     },

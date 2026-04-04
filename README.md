@@ -13,6 +13,7 @@
 * Host Available
 * node.js os metrics
 * Levenshtein Distance
+* DC DLLM - Decision-Centric Design for LLM Systems
 
 ------------------------------------------------------------
 
@@ -361,7 +362,50 @@ Test/example flow in test/generalTest.json
 
 ------------------------------------------------------------
 
+## DC DLLM - Decision-Centric Design for LLM Systems
+
+A decision-making node that implements the Decision-Centric Design for LLM Systems architecture. It analyzes query signals and makes intelligent routing decisions for LLM interactions.
+
+### Features
+
+* **Signal Estimation**: Analyzes query characteristics (length, complexity, keywords, etc.)
+* **Bayesian Decision Making**: Probabilistic action selection with configurable priors
+* **Reinforcement Learning**: Q-learning based policy that learns from feedback
+* **Sequential Context**: Maintains conversation history for consistent decisions
+* **Chain-of-Thought**: Encourages step-by-step reasoning in responses
+* **Tree-of-Thoughts**: Explores multiple reasoning paths for complex queries
+* **Failure Attribution**: Detailed diagnostics for decision analysis
+
+### Configuration
+
+* **Max Length**: Maximum query length threshold
+* **Keywords**: Array of keywords that trigger specific actions
+* **Thresholds**: Complexity, sentence, and word count thresholds
+* **Bayesian Priors**: Initial probabilities for each action
+* **Sequential Mode**: Enable context-aware decision making
+* **RL Policy Learning**: Use reinforcement learning for decisions
+* **Reasoning Mode**: None, Chain-of-Thought, or Tree-of-Thoughts
+
+### Outputs
+
+1. **Answer**: Direct response generation
+2. **Clarify**: Request more information from user
+3. **Retrieve**: Search knowledge base
+4. **Escalate**: Route to human intervention
+
+### Usage
+
+Send queries via `msg.payload`. The node analyzes signals and routes to appropriate output port. For RL learning, provide feedback via `msg.feedback` (1 for positive, -1 for negative).
+
+Example flow available in `example_flow.json`.
+
+![DC DLLM Node](dcdllm/dcdllm.png "DC DLLM Node")
+
+------------------------------------------------------------
+
 ## Version
+
+0.27.0 Add DC DLLM node - Decision-Centric Design for LLM Systems with Bayesian decision making, RL policy learning, and advanced reasoning modes
 
 0.26.0 add columnar store node with sql query capabilty
 
