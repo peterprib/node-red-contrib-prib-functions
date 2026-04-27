@@ -5,7 +5,53 @@
 		color: '#fdeea2',
 		defaults: {
 			name: {value: ""},
-			action: {value:"read",required:true}
+			action: {value:"read",required:true},
+			target: {value:"payload"},targetType: {value:"msg"},
+			atime:{value:null,required:false},atimeType:{value:"num"},	
+			bigint:{value:null,required:false},bigintType:{value:"bool"},
+			buffer:{value:null,required:false},bufferType:{value:"msg"},
+			buffers:{value:null,required:false},	buffersType:{value:"msg"},
+			data:{value:null,required:false},dataType:{value:"str"},
+			dereference:{value:null,required:false},dereferenceType:{value:"bool"},
+			dest:{value:null,required:false},destType:{value:"str"},
+			encoding:{value:null,required:false,default:"utf8"},encodingType:{value:"str"},
+			errorOnExist:{value:null,required:false},errorOnExistType:{value:"bool"},
+			error:{value:null,required:false},errorType:{value:"msg"},
+			existingPath:{value:null,required:false},existingPathType:{value:"str"},
+			fd:{value:null,required:false},fdType:{value:"num"},
+			filename:{value:null,required:false},filenameType:{value:"str"},
+			flags:{value:"+r",required:false},flagsType:{
+				value:"flags",
+				validate: RED.validators.typedInput('flagsType') 
+			},
+			gid:{value:null,required:false},gidType:{value:"num"},
+			length:{value:null,required:false},lengthType:{value:"num"},
+			listener:{value:null,required:false},listenerType:{value:"msg"},
+			modeAccess:{value:null,required:false},modeAccessType:{value:"modeAccess"},
+			modeCopyFile:{value:null,required:false},modeFileCopyType:{value:"modeFileCopy"},
+			modeFile:{value:null,required:false},modeFileType:{value:"modeFile"},
+			modeOpen:{value:null,required:false},modeOpenType:{value:"modeOpen"},
+			mtime:{value:null,required:false},mtimeType:{value:"num"},
+			"newPath":{value:null,required:false},newPathType:{value:"str"},
+			"oldPath":{value:null,required:false},oldPathType:{value:"str"},
+			"offset":{value:null,required:false},offsetType:{value:"num"},
+			"options":{value:null,required:false},optionsType:{value:"str"},
+			openAsBlob:{value:null,required:false},openAsBlobType:{value:"str"},
+			"path":{value:null,required:false},pathType:{value:"str"},
+			"pattern":{value:null,required:false},patternType:{value:"str"},	
+			"persistent":{value:null,required:false},persistentType:{value:"bool"},
+			"position":{value:null,required:false},positionType:{value:"num"},
+			"prefix":{value:null,required:false},prefixType:{value:"str"},
+			preserveTimestamps: {value:null,required:false},preserveTimestampsType:{value:"bool"},
+			"src":{value:null,required:false},srcType:{value:"str"},
+			"recursive":{value:null,required:false},recursiveType:{value:"bool"},
+			"string":{value:null,required:false},stringType:{value:"str"},
+			"fstype":{value:null,required:false},typeType:{value:"str"},
+			throwIfNoEntry: {value:null,required:false},throwIfNoEntryType:{value:"bool"},
+			"uid":{value:null,required:false},uidType:{value:"num"},
+//					filter: {value:null},
+			verbatimSymlinks : {value:null,required:false},verbatimSymlinksType:{value:"bool"},
+			withFileTypes: {value:null,required:false},withFileTypesType:{value:"bool"}
 		},
 		inputs: 1,
 		outputs: 2,
@@ -15,19 +61,20 @@
 		inputLabels: "Message In",
 		outputLabels: ["Message Out","Error"],
 		label: function () {
-			return this.name ?? this.action
+			if(this.name) return this.name
+			return this.action
 		},
 		actionArgs:{
-			"access":["path","mode"],
+			"access":["path","modeAccess"],
 			"appendFile":["path","data","options"],
-			"chmod":["path","mode"],
+			"chmod":["path","modeFile"],
 			"chown":["path","uid","gid"],
 			"close":["fd"],
-			"copyFile":["src","dest","mode"],
+			"copyFile":["src","dest","modeCopyFile"],
 			"cp":["src","dest","options"],
 			"createReadStream":["path","options"],
 			"createWriteStream":["path","options"],
-			"fchmod":["fd","mode"],
+			"fchmod":["fd","modeFile"],
 			"fchown":["fd","uid","gid"],
 			"fdatasync":["fd"],
 			"fstat":["fd","options"],
@@ -35,20 +82,20 @@
 			"ftruncate":["fd","len"],
 			"futimes":["fd","atime","mtime"],
 			"glob":["pattern","options"],
-			"lchmod":["path","mode"],
 			"lchown":["path","uid","gid"],
 			"lutimes":["path","atime","mtime"],
 			"link":["existingPath","newPath"],
 			"lstat":["path","options"],
 			"mkdir":["path","options"],
 			"mkdtemp":["prefix","options"],
-			"open":["path","flags","mode"],
+			"open":["path","flags","modeOpen"],
 			"openAsBlob":["path","options"],
 			"opendir":["path","options"],
 			"read":["fd","buffer","offset","length","position"],
-			"read":["fd","options"],
-			"read":["fd","buffer","options"],
-			"readdir":["path","options"],
+//			"read":["fd","options"],
+//			"read":["fd","buffer","options"],
+//			"readdir":["path","options"],
+//			readdirSync:["path","options"],
 			"readFile":["path","options"],
 			"readlink":["path","options"],
 			"readv":["fd","buffers","position"],
@@ -59,13 +106,14 @@
 			"rm":["path","options"],
 			"stat":["path","options"],
 			"statfs":["path","options"],
-			"symlink":["target","path","type"],
+			statfsSync:["path","options"],
+			"symlink":["target","path","fstype"],
 			"truncate":["path","length"],
 			"unlink":["path"],
-			"unwatchFile":["filename","listener"],
+//			"unwatchFile":["filename","listener"],
 			"utimes":["path","atime","mtime"],
 			"watch":["filename","options","listener"],
-			"watchFile":["filename","options","listener"],
+//			"watchFile":["filename","options","listener"],
 			"writeDirect":["fd","buffer","offset","length","position]"],
 			"write":["fd","buffer","options"],
 			"writeString":["fd","string","position","encoding"],
@@ -73,11 +121,15 @@
 			"writev":["fd","buffers","position"]
 		},
 		argTypes:{
-			"atime":{_types:["num","msg"],label:null},
-			"buffer":{_types:["msg"],label:null,default:"payload.buffer"},
-			"buffers":{_types:['msg'],label:null},
-			"encoding":{_types:["str","msg"],label:null},
-			"fd":{_types:["msg"],label:null,default:"payload.fd"},
+			"atime":{_types:["num","msg"]},
+			"bigint":{_types:["bool"],default:false}, //<boolean> Default: false
+			"buffer":{_types:["msg"],default:"payload.buffer"},
+			"buffers":{_types:['msg']},	
+			"data":{_types:["str","msg"]},
+			"buffers":{_types:['msg']},
+			"encoding":{_types:["str","msg"],default:"utf8"},
+			"error":{_types:["msg"]},
+			"fd":{_types:["msg"],default:"payload.fd"},
 			"flags":{
 				typedInput:{
 					type:"flags",
@@ -90,7 +142,7 @@
 							{value: "a+", label: "Open for reading + appending, created if missing"},
 							{value: "ax+", label: "Open for reading + appending"},
 							{value: "as", label: "Open for synchronous appending, file created if missing"},
-							{value: "as+", label: "Open for synchronous reading and appending,created if missing"},
+							{value: "as+", label: "Open for synchronous reading + appending,created if missing"},
 							{value: "r", label: "Open for reading"},
 							{value: "rs", label: "Open for synchronous reading"},
 							{value: "r+", label: "Open for synchronous reading and writing"},
@@ -103,32 +155,77 @@
 					}]
 				}
 			},
-			"uid":{_types:["num","msg"],label:null},
-			"gid":{_types:["num","msg"],label:null},
-			"length":{_types:["msg","num"],label:null,default:"payload.length"},
-			"listener":{_types:["msg"],label:null},
-			"mode":{
-				label:null,
+			"uid":{_types:["num","msg"]},
+			"gid":{_types:["num","msg"]},
+			"length":{_types:["msg","num"],default:"payload.length"},
+			"listener":{_types:["msg"]},
+			"modeAccess":{
+				label:"mode",
 				typedInput:{
-					type:"modes",
+					type:"modeAccess",
 					types:[{
-    					value: "modes",
+    					value: "modeAccess",
     					multiple: false,
     					options: [
         					{value: "F_OK", label: "Visible"},
         					{value: "R_OK", label: "Read"},
         					{value: "W_OK", label: "Write"},
-        					{value: "X_OK", label: "Execute"},
+        					{value: "X_OK", label: "Execute"}
     					]
 					}]
 				}
 			},
-			"mode-file":{
-				label:null,
+			"modeCopyFile":{
+				label:"mode",
 				typedInput:{
-					type:"modes",
+					type:"modeCopyFile",
 					types:[{
-    					value: "modes",
+    					value: "modeCopyFile",
+    					multiple: false,
+    					options: [
+							{value: "COPYFILE_EXCL", label:"must not exist"},
+							{value: "COPYFILE_EXCL", label:"must be new"},
+							{value: "COPYFILE_FICLONE", label:"copy-on-write or fallback copy"},
+							{value: "COPYFILE_FICLONE_FORCE", label:"copy-on-write only"}
+    					]
+					}]
+				}
+			},
+			"modeOpen":{
+				label:"mode",
+				typedInput:{
+					type:"modeOpen",
+					types:[{
+    					value: "modeOpen",
+    					multiple: false,
+    					options: [
+							{value: "O_RDONLY", label:"read only"},
+							{value: "O_WRONLY", label:"write only"},
+							{value: "O_RDWR", label:"read/write"},
+							{value: "O_CREAT", label:"create"},
+							{value: "O_EXCL", label:"exclusive"},	
+							{value: "O_NOCTTY", label:"no controlling terminal"},	
+							{value: "O_TRUNC", label:"truncate"},	
+							{value: "O_APPEND", label:"append"},	
+							{value: "O_DIRECTORY", label:"directory"},
+							{value: "O_NOATIME", label:"do not update access time"},
+							{value: "O_NOFOLLOW", label:"do not follow symlinks"},
+							{value: "O_SYNC", label:"sync"},
+							{value: "O_DSYNC", label:"dsync"},
+							{value: "O_SYMLINK", label:"create symlink"},
+							{value: "O_DIRECT", label:"direct I/O"},	
+							{value: "O_NONBLOCK", label:"non-blocking"},
+							{value:"UV_FS_O_FILEMAP",label:"memory file mapping"}
+    					]
+					}]
+				}
+			},
+			"modeFile":{
+				label:"mode",
+				typedInput:{
+					type:"modeFile",
+					types:[{
+    					value: "modeFile",
     					multiple: false,
     					options: [
         					{value: "S_IRUSR", label: "read by owner"},
@@ -144,51 +241,247 @@
 					}]
 				}
 			},
-			"mtime":{_types:["num","msg"],label:null},
-			"newPath":{_types:["str","msg"],label:null},
+			"mtime":{_types:["num","msg"]},
+			"newPath":{_types:["str","msg"]},
 			"options":{
 				appendFile:{
-					encoding: {types:['str'],label:null}, //<string> | <null> Default: 'utf8'
-					mode: {types:['str'],label:null}, // <integer> Default: 0o666
-					flag:"$flag",		// <string> See support of file system flags. Default: 'a'.
-					flush:{types:['boolean']}
-				}	
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+				},
+				createReadStream:{
+					flags:{_common:true},	// <string> See support of file system flags. Default: 'r'.
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					fd: {_common:true}, //<integer> | <FileHandle> Default: null
+					modeCopyFile: {_common:true}, //<integer> Default: 0o666
+					autoClose: {_common:true}, //<boolean> Default: true
+					emitClose: {_common:true}, //<boolean> Default: true
+					start: {_common:true}, //<integer>
+					end: {_common:true}, //<integer> Default: Infinity
+					highWaterMark: {_common:true}, //<integer> Default: 64 * 1024
+					fs: {_common:true}, //<Object> | <null> Default: null
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				createWriteStream:{
+						flags:{_common:true}, //,	// <string> See support of file system flags. Default: 'w'.",
+						encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+						fd: {_common:true}, //<integer> | <FileHandle> Default: null
+						modeFile: {_common:true}, //<integer> Default: 0o666
+						autoClose: {_common:true}, //<boolean> Default: true
+						emitClose: {_common:true}, //<boolean> Default: true
+						start: {_common:true}, //<integer>	
+						end: {_common:true}, //<integer> Default: Infinity
+						highWaterMark: {_common:true}, //<integer> Default: 64 * 1024
+						fs: {_common:true}, //<Object> | <null> Default: null
+						signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				lstat:{
+					bigint: {_common:true} //<boolean> Default: false
+				},
+				mkdir:{
+					recursive: {_common:true} //<boolean> Default: false
+				},
+				mkdtemp:{
+					encoding: {_common:true} //<string> | <null> Default: 'utf8'
+				},
+				openAsBlob:{
+					type: {_types:['str']} //<string> 'block' or 'file' Default: 'file'
+				},
+				opendir:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					bufferSize: {_common:true}, //<integer> Default: 32
+					fs: {_common:true}, //<Object> | <null> Default: null
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				read:{
+					buffer: {_common:true},
+					offset: {_common:true},
+					length: {_common:true},
+					position: {_common:true},
+				},
+				readFile:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					flag: {_common:true}, //<string> See support of file system flags. Default: 'r'.
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				readdir:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					withFileTypes: {_common:true} //<boolean> Default: false
+				},
+				readdirSync:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					withFileTypes: {_common:true} //<boolean> Default: false
+				},
+				readlink:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				realpath:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				rm:{
+					recursive: {_common:true}, //<boolean> Default: false
+					force: {_common:true} //<boolean> Default: false
+				},
+				stats:{
+					bigint: {_common:true}, //<boolean> Default: false
+					throwIfNoEntry: {_common:true} //<boolean> Default: false
+				},
+				statfs:{
+					bigint: {_common:true} //<boolean> Default: false
+				},
+				watch:{
+					persistent: {_common:true}, //<boolean> Default: true
+					recursive: {_common:true}, //<boolean> Default: false
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				watchFile:{
+					persistent: {_common:true}, //<boolean> Default: true
+					recursive: {_common:true}, //<boolean> Default: false
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				write:{
+					offset: {_common:true},
+					length: {_common:true},
+					position: {_common:true}
+				},
+				writeFile:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					flag: {_common:true}, //<string> See support of file system flags. Default: 'w'.
+					signal: {_common:true} //<AbortSignal> | <null> Default: null
+				},
+				cpSync:{
+					dereference : {_types:['bool']}, //<boolean> Default: false
+					errorOnExist : {_types:['bool']}, //<boolean> Default: false	
+//					filter: {_types:['func']}, //<Function> | <null> Default: null
+					force: {_common:true}, //<boolean> Default: true
+					preserveTimestamps: {_types:['bool']}, //<boolean> Default: false	
+					modeCopyFile: {_common:true}, //<integer> Default: 0o666
+					recursive: {_common:true}, //<boolean> Default: false
+					verbatimSymlinks : {_types:['bool']} //<boolean> Default: false
+				},
+				lstatSync:{
+					bigint: {_common:true}, //<boolean> Default: false
+					throwIfNoEntry : {_common:true} //<boolean> Default: false
+				},
+				mkdirSync:{
+					modeFile: {_common:true}, //<integer> Default: 0o777
+					recursive: {_common:true} //<boolean> Default: false
+				},
+				mkdtempSync:{
+					encoding: {_common:true} //<string> | <null> Default: 'utf8'
+				},
+				mkdtempDisposableSync:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					prefix: {_common:true}//<string> | <null> Default: 'utf8'
+				},
+				opendirSync:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					bufferSize: {_common:true} //<integer> Default: 32
+				},
+				readdirSync:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					withFileTypes: {_common:true}, //<boolean> Default: false
+					recursive: {_common:true} //<boolean> Default: false
+				},
+				readFileSync:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					flag: {_common:true} //<string> See support of file system flags. Default: 'r'.
+				},
+				readlinkSync:{
+					encoding: {_common:true} //<string> | <null> Default: 'utf8'
+				},
+				readSync:{
+					buffer: {_common:true},
+					offset: {_common:true},
+					length: {_common:true},
+					position: {_common:true}
+				},
+				realpathSync:{
+					encoding: {_common:true} //<string> | <null> Default: 'utf8'
+				},
+				rmdirSync:{
+					recursive: {_common:true} //<boolean> Default: false
+				},
+				rmSync:{
+					recursive: {_common:true}, //<boolean> Default: false
+					force: {_common:true} //<boolean> Default: false
+				},
+				statSync:{
+					bigint: {_common:true}, //<boolean> Default: false
+					throwIfNoEntry: {_common:true} //<boolean> Default: false
+				},
+				statfsSync:{
+					bigint: {_common:true} //<boolean> Default: false
+				},
+				writeFileSync:{
+					encoding: {_common:true}, //<string> | <null> Default: 'utf8'
+					flag: {_common:true} //<string> See support of file system flags. Default: 'w'.
+				},
+				writeSync:{
+					buffer: {_common:true},
+					offset: {_common:true},
+					length: {_common:true},
+					position: {_common:true}
+				},
+
 			},
-			"path":{_types:['msg','str','flow','global','jsonata','env'],label:null,default:"payload.path"},
-			"pattern":{_types:["str","msg"],label:null},
-			"offset":{_types:["msg","num"],label:null,default:"payload.offset"},
-			"position":{_types:["msg","num"],label:null,default:"payload.position"},
-			"prefix":{_types:["str","msg"],label:null},
-			"string":{_types:["str","msg"],label:null},
-			"type":{_types:["str","msg"],label:null},
+			"offset":{_types:["msg","num"],default:"payload.offset"},
+			"path":{_types:['msg','str','flow','global','jsonata','env'],default:"payload.path"},
+			"pattern":{_types:["str","msg"]},
+			"persistent":{_types:['bool'],default:"true"},
+			"position":{_types:["msg","num"],default:"payload.position"},
+			"prefix":{_types:["str","msg"]},
+			'recursive':{_types:['bool']}, 
+			"string":{_types:["str","msg"]},
+			"fstype":{_types:["str","msg"],label:"type"},
 			"dest":{_types:['str','msg','flow','global','jsonata','env'],label:"destination"},
 			"existingPath":{_types:['str','msg','flow','global','jsonata','env'],label:"existing path"},
 			"filename":{_types:['str','msg','flow','global','jsonata','env'],label:"file name"},
 			"oldPath":{_types:['str','msg','flow','global','jsonata','env'],label:"old path"},
 			"src":{_types:['str','msg','flow','global','jsonata','env'],label:"source"},
-			"target":{_types:['msg'],label:"Target",default:"payload.result"}
+			"target":{_types:['msg'],label:"Target",default:"payload.result"},
+			throwIfNoEntry:{_types:['bool'],default:"false"}, 
+			withFileTypes:{_types:['bool'],default:false}
 		},
-		addInput: function (baseElement, property, label = property) {
-//			console.log("adding field "+property)
-			const div=$('<div>', {id:'form-row-http-in-'+property, class: "form-row" })
-			const input=$('<input>', { type: 'text', id: 'node-input-' + property, style: "width:70%" })
-			const inputType=$('<input>', { type: 'hidden', id: 'node-input-' + property + 'Type' })
+		addInput: function (baseElement, property, argType=this.argTypes[property],prefix,properties,loopCnt=11) {
+			if(loopCnt--<=0) throw new Error("possible circular argType definition for "+property)
+			if(argType.hasOwnProperty("_common") && argType._common===true){
+				return
+			}
+			const propertyQualified=prefix?prefix+"_"+property:property
+			console.log("adding input for field: "+propertyQualified)
+			if(argType instanceof Array || !argType instanceof Object) throw new Error("invalid argType definition for "+propertyQualified)
+			if(!argType.hasOwnProperty("_types") && !argType.hasOwnProperty("typedInput")) {
+				for(const type in argType){
+					try{
+						this.addInput(baseElement,type,argType[type],propertyQualified,properties,loopCnt)
+					} catch(ex){
+						console.error("add input error for "+propertyQualified+"."+type+": "+ex.message);
+					}
+				}
+				return
+			}
+			properties.add(propertyQualified)
+			const div=$('<div>', {id:'form-row-http-in-'+propertyQualified, class: "form-row" })
+			const input=$('<input>', { type: 'text', id: 'node-input-' + propertyQualified, style: "width:70%" })
+			const inputType=$('<input>', { type: 'hidden', id: 'node-input-' + propertyQualified + 'Type' })
 			div.append(
-				$('<label>', {for:"node-input-" + property}).append(
+				$('<label>', {for:"node-input-" + propertyQualified}).append(
 					$('<i>', {class:"fa fa-bookmark"}),
-					$('<span>').attr("data-i18n", "common.label.string").text(" "+(label??property))
+					$('<span>').attr("data-i18n", "common.label.string").text(" "+(argType.label??property))	
 				),
 				input,
 				inputType
 			)
 			baseElement.append(div)
-			const argType=this.argTypes[property]
 			argType.input=input
 			argType.inputType=inputType
-			if(argType.typedInput)
+			if(argType.typedInput){
+				argType.typedInput.typeField=inputType
 				return input.typedInput(argType.typedInput)
-			const types=argType.types
-			input.typedInput({
+			}
+			const types=argType._types
+			return input.typedInput({
 				default: types[0],
 				typeField: inputType,
 				types:types,
@@ -196,27 +489,31 @@
 				}
 			})
 		},
-		setProperty:function(property,value){
+		setProperty:function(property,type,value){
 			try{
-//				console.log("set "+property)
-				if(property.hasOwnProperty("_types")){
-					$("#form-row-http-in-"+property).show()
-					const argType=this.argTypes[property]
-					argType.input.typedInput('value',value??argType.default??"")
-//						argType.inputType.val(_this[property+"type"])
-					return
-				}
-				Object.keys(value).forEach(p=>this.setProperty(p,value[p]))
+				console.log("set "+property+" type: "+type+" value: "+value)
+				if(!type) console.warn("no type for property")
+				const _this=this
+				$("#form-row-http-in-"+property).show()
+				return $("#node-input-"+property)
+					.typedInput('type', _this[property+"Type"]??type)
+					.typedInput('value', _this[property]??value)
+					.trigger('change')
+					.trigger('input')
 			} catch(ex){
 				console.error("setProperty error "+ex.message);
 			}
 		},
 		oneditprepare: function() {
+			console.log(">>>filesystem 	oneditprepare")
 			const _this=this
 			const nodeBase=this._def
 			const inputBase=$("#input-base")
-			for(const property in nodeBase.argTypes) nodeBase.addInput(inputBase,property,nodeBase.argTypes[property].label)
+			nodeBase._properties=new Set()
+			for(const property in nodeBase.argTypes) 
+				nodeBase.addInput(inputBase,property,nodeBase.argTypes[property],null,nodeBase._properties)
 			const action=this.action
+
 			const actions=Object.keys(nodeBase.actionArgs).map(property=>({value:property,label:property}))
 			$("#node-input-action").typedInput({type:"action", types:[{
 				value: "action",
@@ -225,39 +522,85 @@
 
 			$("#node-input-action").change(function() {
 				const action=$(this).val();
-				Object.keys(nodeBase.argTypes).forEach(property=>{
+				nodeBase._properties.forEach(property=>{
 					try{
-						$("#form-row-http-in-"+property).hide()
+						 $("#form-row-http-in-"+property).hide()
 					} catch(ex){
 						console.error("hide in row error "+ex.message);
 					}
-				})	
-				nodeBase.actionArgs[action].forEach(property=>nodeBase.setProperty(property,_this[property]))
-				if(["open","createWriteStream","exists","fstat","fsync","lstat","mkdir","mkdtemp","open",
-					"openAsBlob","opendir","read","readdir","readFile","readlink","readv","realpath","stat","statfs",
+				})
+				nodeBase.actionArgs[action].forEach(property=>{
+					if(property=="options"){
+						const argTypes=nodeBase.argTypes.options[action]
+						for( const p in argTypes) {
+							const argType=argTypes[p]
+							if (argType._common) {
+								const at=nodeBase.argTypes[p]
+								if(!at) throw new Error("missing options property "+p+" for action "+action)
+								nodeBase.setProperty(p,
+									_this[p+"Type"]||(at.typedInput.type??at._types[0]),
+									_this[p]??at.default
+								)
+								continue
+							}
+							nodeBase.setProperty(p,
+								_this[p+"Type"]||(argType.typedInput.type??argType._types[0]),
+								_this[p]??argType.default
+							)
+						}
+						return
+					}
+					const argType=nodeBase.argTypes[property]
+					const inputProperty=nodeBase.setProperty(property,
+						_this[property+"Type"]||(argType.typedInput.type??argType._types[0]),
+						_this[property]??argType.default
+					)
+				})
+				if(nodeBase.hasTargetProperty(action))
+					nodeBase.setProperty("target","msg",_this.target??"payload.result")
+			}).change();
+		},
+		hasTargetProperty:function(action=this.action){
+			return ["open","createWriteStream","exists","fstat","fsync","lstat","mkdir","mkdtemp","open",
+					"openAsBlob","opendir","read","readdir","readFile","readlink","readv","realpath","stat","statfs","statfsSync",
 					"watch","watchFile","write","writev","existsSync","globSync","lstatSync","mkdirSync","mkdtempSync",
 					"mkdtempDisposableSync","opendirSync","openSync","readdirSync","readFileSync","readlinkSync",
-					"readSync","readSync"
-					].includes(action)
-					)
-					nodeBase.setProperty("target",_this.target)
-			}).change();
+					"readSync"].includes(action)
 		},
 		oneditsave: function() {
 			const _this=this
 			const nodeBase=this._def
-			nodeBase.actionArgs[this.action].forEach(property=>{
-				const argType=nodeBase.argTypes[property]
-				if(argType.hasOwnProperty("_types")){
-					_this[property]=argType.input.typedInput('value');
-					_this[property+"type"]=argType.input.typedInput('type')
-					return
+			const action=this.action
+			const baseInput="#node-input-"
+
+			if(nodeBase.hasTargetProperty(action)){
+				_this.target= $(baseInput+"target").typedInput('value')
+				_this.targetType=$(baseInput+"target").typedInput('type')
+//				_this.target=$(baseInput+"targetType").val()
+				console.log("saving target property with value "+_this.target+" and type "+_this.targetType)
+			}
+			for(const property of nodeBase.actionArgs[action]) {
+				try{
+					if(property=="options"){
+						const argTypes=nodeBase.argTypes.options[action]
+						for( const p in argTypes) {
+							const typeName=p+"Type"
+							_this[p]= $(baseInput+p).typedInput('value')
+							_this[typeName]=$(baseInput+p).typedInput('type')
+	//						_this[typeName]=$(baseInput+typeName).val()
+							console.log("saving options property "+p+" with value "+_this[p]+" and type "+_this[typeName])
+						}
+					} else {
+						const typeName=property+"Type"
+						_this[property]=$(baseInput+property).typedInput('value');
+						_this[typeName]=$(baseInput+property).typedInput('type');
+					//	_this[typeName]=$(baseInput+typeName).val()
+						console.log("saving property "+property+" with value "+_this[property]+" and type "+_this[typeName])
+					}
+				} catch(ex){
+					console.error("save property error for "+property+" with value "+_this[property]+" and type "+_this[typeName]+": "+ex.message);
 				}
-				for (const p in argType) {
-					_this[p]=argType[p].input.typedInput('value')
-					_this[p+"type"]=argType[p].input.typedInput('type')
-				}
-			})
+			}
 		},
 		resizeRule : function(file,newWidth) {
 		}

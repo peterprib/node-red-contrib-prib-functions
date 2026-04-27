@@ -14,18 +14,19 @@ const createSignalEstimator = ()=>{
 				keywords = [];
 			}
 			return ({
-			length: query.length,
-			wordCount: query.split(/\s+/).length,
-			sentenceCount: (query.match(/[.!?]+/g) || []).length,
-			hasQuestion: query.includes('?'),
-			hasExclamation: query.includes('!'),
-			hasNumbers: /\d/.test(query),
-			hasKeywords: keywords.some(kw => query.toLowerCase().includes(kw.toLowerCase())),
-			capitalRatio: (query.match(/[A-Z]/g) || []).length / query.length,
-			complexity: query.split(/\s+/).filter(word => word.length > 6).length / query.split(/\s+/).length,
-			estimatedCost: (query.length / 100) + (query.split(/\s+/).length / 10)
-		})
-	};
+				length: query.length,
+				wordCount: query.split(/\s+/).length,
+				sentenceCount: (query.match(/[.!?]+/g) || []).length,
+				hasQuestion: query.includes('?'),
+				hasExclamation: query.includes('!'),
+				hasNumbers: /\d/.test(query),
+				hasKeywords: keywords.some(kw => query.toLowerCase().includes(kw.toLowerCase())),
+				capitalRatio: (query.match(/[A-Z]/g) || []).length / query.length,
+				complexity: query.split(/\s+/).filter(word => word.length > 6).length / query.split(/\s+/).length,
+				estimatedCost: (query.length / 100) + (query.split(/\s+/).length / 10)
+			})
+		}
+	}
 };
 
 // Component RL: Reinforcement Learning Policy

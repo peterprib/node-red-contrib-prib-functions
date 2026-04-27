@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "4.1.1-git",
+        "version": "4.1.7-git",
         "local": false,
         "user": false,
         "nodes": {
@@ -448,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.23.3",
+        "version": "0.27.0",
         "local": false,
         "user": false,
         "nodes": {
@@ -463,16 +463,16 @@
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
             },
-            "filesystem": {
-                "name": "filesystem",
+            "columnar": {
+                "name": "columnar",
                 "types": [
-                    "filesystem"
+                    "columnar"
                 ],
                 "enabled": true,
                 "local": false,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\source\\repos\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\filesystem\\filesystem.js"
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\columnar\\columnar.js"
             },
             "dataAnalysis": {
                 "name": "dataAnalysis",
@@ -484,6 +484,39 @@
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\dataAnalysis\\dataAnalysis.js"
+            },
+            "dcdllm": {
+                "name": "dcdllm",
+                "types": [
+                    "dcdllm"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\dcdllm\\dcdllm.js"
+            },
+            "graphDB": {
+                "name": "graphDB",
+                "types": [
+                    "graphDB"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\graphDB\\graphDB.js"
+            },
+            "filesystem": {
+                "name": "filesystem",
+                "types": [
+                    "filesystem"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\filesystem\\filesystem.js"
             },
             "hostAvailable": {
                 "name": "hostAvailable",
@@ -605,6 +638,36 @@
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
+            },
+            "gitlab": {
+                "name": "gitlab",
+                "types": [
+                    "gitlab"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\gitlab\\gitlab.js"
+            }
+        }
+    },
+    "node-red-node-data-generator": {
+        "name": "node-red-node-data-generator",
+        "version": "1.0.2",
+        "local": false,
+        "user": false,
+        "nodes": {
+            "data-generator": {
+                "name": "data-generator",
+                "types": [
+                    "data-generator"
+                ],
+                "enabled": true,
+                "local": false,
+                "user": false,
+                "module": "node-red-node-data-generator",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-node-data-generator\\datagenerator.js"
             }
         }
     }

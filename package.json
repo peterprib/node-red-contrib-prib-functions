@@ -1,6 +1,6 @@
 {
 	"name": "node-red-contrib-prib-functions",
-	"version": "0.27.0",
+	"version": "0.27.1",
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"avsc": ">=5.7.7",
@@ -30,6 +30,7 @@
 		"testDataAnalysis": "node test-runner.js dataanalysis",
 		"testColumnar": "node test-runner.js columnar",
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'",
+	
 		"sharesNodeRed": "node-red --userDir ./test/data/shares --setting ./test/data/shares/settings.js ./test/data/shares/flow.json --title '***shares nodered***'"
 	},
 	"repository": {
@@ -67,7 +68,7 @@
 		"Decision-Centric Design for LLM Agents",
 		"delta",
 		"distance",
-		"difference",		
+		"difference",
 		"determinant",
 		"deflate",
 		"delta",
@@ -84,6 +85,9 @@
 		"gauss jordan",
 		"Gauss Jordan Inverse",
 		"gaussian elimination",
+		"graphdb",
+		"graph database",
+		"knowledge graph",
 		"gzip",
 		"host available",
 		"host status",
@@ -156,9 +160,8 @@
 			"append": "append/append.js",
 			"columnar": "columnar/columnar.js",	
 			"dataAnalysis": "dataAnalysis/dataAnalysis.js",
-			"delta": "delta/delta.js",
-			"distance": "distance/distance.js",
 			"dcdllm": "dcdllm/dcdllm.js",
+			"graphDB": "graphDB/graphDB.js",
 			"filesystem": "filesystem/filesystem.js",
 			"hostAvailable": "testing/hostAvailable.js",
 			"levenshteinDistance": "levenshteinDistance/levenshteinDistanceNode.js",
