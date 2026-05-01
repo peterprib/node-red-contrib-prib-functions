@@ -59,11 +59,12 @@
                 "valueValue": ""
             }
         ],
-        "x": 830,
+        "x": 690,
         "y": 860,
         "wires": [
             [
-                "33b7593ad51d32b5"
+                "33b7593ad51d32b5",
+                "95877d691383a2a4"
             ]
         ]
     },
@@ -88,7 +89,7 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 620,
+        "x": 480,
         "y": 860,
         "wires": [
             [
@@ -155,7 +156,7 @@
                 "valueValue": "\"Windows\""
             }
         ],
-        "x": 830,
+        "x": 690,
         "y": 940,
         "wires": [
             [
@@ -184,7 +185,7 @@
         "topic": "",
         "payload": "",
         "payloadType": "date",
-        "x": 620,
+        "x": 480,
         "y": 940,
         "wires": [
             [
@@ -226,5 +227,115 @@
         "x": 1030,
         "y": 1040,
         "wires": []
+    },
+    {
+        "id": "95877d691383a2a4",
+        "type": "transform",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "actionSource": "JSON",
+        "deleteSource": "true",
+        "deleteSourceType": "bool",
+        "actionTarget": "JSON",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "index": 0,
+        "maxMessages": 1000,
+        "maxDate": "",
+        "minDate": "",
+        "maxNumber": 0,
+        "minNumber": 0,
+        "maxString": "",
+        "minString": "",
+        "radix": 10,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "str",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "string": "",
+        "stringType": "str",
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 940,
+        "y": 780,
+        "wires": [
+            [],
+            []
+        ]
+    },
+    {
+        "id": "ec1a4d9865d29cfb",
+        "type": "template",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "plain",
+        "template": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<title>ASX Chart Viewer</title>\n<script src=\"https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js\"></script>\n<style>\n  * { box-sizing: border-box; margin: 0; padding: 0; }\n  body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; padding: 20px; }\n  h1 { font-size: 18px; font-weight: 500; margin-bottom: 16px; }\n  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }\n  select, button { padding: 6px 12px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 14px; cursor: pointer; }\n  button.active { background: #222; color: #fff; border-color: #222; }\n  .file-label { padding: 6px 12px; border: 1px solid #ccc; border-radius: 6px; background: #fff; font-size: 14px; cursor: pointer; }\n  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 16px; }\n  .stat { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px 14px; }\n  .stat-label { font-size: 11px; color: #888; margin-bottom: 2px; }\n  .stat-value { font-size: 18px; font-weight: 500; }\n  .stat-value.green { color: #2d7a2d; }\n  .stat-value.red { color: #c0392b; }\n  .stat-value.amber { color: #b07d00; }\n  .chart-card { background: #fff; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin-bottom: 12px; }\n  .chart-title { font-size: 13px; color: #888; margin-bottom: 10px; }\n  .signal { font-size: 12px; padding: 3px 8px; border-radius: 4px; display: inline-block; margin-left: 8px; }\n  .signal.buy { background: #d4edda; color: #155724; }\n  .signal.sell { background: #f8d7da; color: #721c24; }\n  .signal.neutral { background: #fff3cd; color: #856404; }\n  #dropzone { border: 2px dashed #ccc; border-radius: 8px; padding: 30px; text-align: center; color: #888; font-size: 14px; margin-bottom: 16px; }\n</style>\n</head>\n<body>\n<h1>ASX Chart Viewer</h1>\n\n<div id=\"dropzone\">\n  Drop your <strong>NVX.json</strong> file here, or\n  <label class=\"file-label\">Browse <input type=\"file\" accept=\".json\" style=\"display:none\" id=\"fileInput\"></label>\n</div>\n\n<div id=\"app\" style=\"display:none\">\n  <div class=\"controls\">\n    <select id=\"period\">\n      <option value=\"90\">3 months</option>\n      <option value=\"180\">6 months</option>\n      <option value=\"365\" selected>1 year</option>\n      <option value=\"730\">2 years</option>\n      <option value=\"99999\">All time</option>\n    </select>\n    <button class=\"active\" onclick=\"toggleIndicator('bb', this)\">Bollinger Bands</button>\n    <button class=\"active\" onclick=\"toggleIndicator('sma', this)\">SMA 50/200</button>\n  </div>\n\n  <div class=\"stats\" id=\"stats\"></div>\n\n  <div class=\"chart-card\">\n    <div class=\"chart-title\">Price <span id=\"bb-signal\"></span><span id=\"sma-signal\"></span></div>\n    <div style=\"position:relative; height:320px;\"><canvas id=\"priceChart\"></canvas></div>\n  </div>\n  <div class=\"chart-card\">\n    <div class=\"chart-title\">Volume</div>\n    <div style=\"position:relative; height:120px;\"><canvas id=\"volChart\"></canvas></div>\n  </div>\n  <div class=\"chart-card\">\n    <div class=\"chart-title\">RSI (14) <span id=\"rsi-signal\"></span></div>\n    <div style=\"position:relative; height:140px;\"><canvas id=\"rsiChart\"></canvas></div>\n  </div>\n  <div class=\"chart-card\">\n    <div class=\"chart-title\">MACD (12,26,9) <span id=\"macd-signal\"></span></div>\n    <div style=\"position:relative; height:160px;\"><canvas id=\"macdChart\"></canvas></div>\n  </div>\n</div>\n\n<script>\nlet allData = [], priceChart, volChart, rsiChart, macdChart;\nlet showBB = true, showSMA = true;\n\nconst toggleIndicator=(key, btn)=>{\n  if (key === 'bb') showBB = !showBB;\n  if (key === 'sma') showSMA = !showSMA;\n  btn.classList.toggle('active');\n  render();\n}\n\n// File loading\ndocument.getElementById('fileInput').addEventListener('change', e => loadFile(e.target.files[0]));\nconst dropzone = document.getElementById('dropzone');\ndropzone.addEventListener('dragover', e => e.preventDefault());\ndropzone.addEventListener('drop', e => { e.preventDefault(); loadFile(e.dataTransfer.files[0]); });\n\nconst loadFile=>(file) {\n  const reader = new FileReader();\n  reader.onload = e => {\n    try {\n      allData = JSON.parse(e.target.result);\n      document.getElementById('dropzone').style.display = 'none';\n      document.getElementById('app').style.display = 'block';\n      document.getElementById('period').addEventListener('change', render);\n      render();\n    } catch { alert('Invalid JSON file'); }\n  };\n  reader.readAsText(file);\n}\n\nconst getSlice=()=>{\n  const days = parseInt(document.getElementById('period').value);\n  return days >= allData.length ? allData : allData.slice(-days);\n}\n\nconst signal=(cls, text)=>{\n  return `<span class=\"signal ${cls}\">${text}</span>`;\n}\n\nconst render=()=>{\n  const data = getSlice();\n  const labels = data.map(d => d.date);\n  const closes = data.map(d => parseFloat(d.close));\n  const last = data[data.length - 1];\n\n  // Stats\n  const prev = data[data.length - 2];\n  const change = (parseFloat(last.close) - parseFloat(prev.close)).toFixed(3);\n  const changePct = ((change / parseFloat(prev.close)) * 100).toFixed(2);\n  const allCloses = data.map(d => parseFloat(d.close));\n  const rsiVal = parseFloat(last.rsi);\n  const macdHist = parseFloat(last.macdHist);\n\n  document.getElementById('stats').innerHTML = `\n    <div class=\"stat\"><div class=\"stat-label\">Last close</div><div class=\"stat-value\">$${last.close}</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">Change</div><div class=\"stat-value ${change >= 0 ? 'green' : 'red'}\">${change >= 0 ? '+' : ''}${change} (${changePct}%)</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">RSI 14</div><div class=\"stat-value ${rsiVal < 30 ? 'green' : rsiVal > 70 ? 'red' : 'amber'}\">${last.rsi}</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">MACD hist</div><div class=\"stat-value ${macdHist >= 0 ? 'green' : 'red'}\">${last.macdHist}</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">SMA 50</div><div class=\"stat-value\">$${last.sma50}</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">SMA 200</div><div class=\"stat-value\">$${last.sma200}</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">BB Upper</div><div class=\"stat-value\">$${last.bbUpper}</div></div>\n    <div class=\"stat\"><div class=\"stat-label\">BB Lower</div><div class=\"stat-value\">$${last.bbLower}</div></div>\n  `;\n\n  // Signals\n  document.getElementById('rsi-signal').innerHTML = rsiVal < 30 ? signal('buy','Oversold') : rsiVal > 70 ? signal('sell','Overbought') : signal('neutral','Neutral');\n  document.getElementById('macd-signal').innerHTML = macdHist > 0 ? signal('buy','Bullish') : signal('sell','Bearish');\n  const price = parseFloat(last.close);\n  document.getElementById('bb-signal').innerHTML = price > parseFloat(last.bbUpper) ? signal('sell','Above upper band') : price < parseFloat(last.bbLower) ? signal('buy','Below lower band') : '';\n  document.getElementById('sma-signal').innerHTML = parseFloat(last.sma50) > parseFloat(last.sma200) ? signal('buy','Golden cross') : signal('sell','Death cross');\n\n  // Destroy old charts\n  [priceChart, volChart, rsiChart, macdChart].forEach(c => c?.destroy());\n\n  // Price chart\n  const priceDatasets = [{\n    label: 'Close', data: closes, borderColor: '#2563eb',\n    borderWidth: 1.5, pointRadius: 0, tension: 0.1, fill: false\n  }];\n  if (showBB) {\n    priceDatasets.push(\n      { label: 'BB Upper', data: data.map(d => parseFloat(d.bbUpper)), borderColor: '#94a3b8', borderWidth: 1, borderDash: [4,4], pointRadius: 0, fill: false },\n      { label: 'BB Lower', data: data.map(d => parseFloat(d.bbLower)), borderColor: '#94a3b8', borderWidth: 1, borderDash: [4,4], pointRadius: 0, fill: false },\n      { label: 'BB Mid', data: data.map(d => parseFloat(d.bbMiddle)), borderColor: '#cbd5e1', borderWidth: 1, pointRadius: 0, fill: false }\n    );\n  }\n  if (showSMA) {\n    priceDatasets.push(\n      { label: 'SMA 50', data: data.map(d => parseFloat(d.sma50)), borderColor: '#f59e0b', borderWidth: 1.5, pointRadius: 0, fill: false },\n      { label: 'SMA 200', data: data.map(d => parseFloat(d.sma200)), borderColor: '#ef4444', borderWidth: 1.5, pointRadius: 0, fill: false }\n    );\n  }\n\n  const commonXAxis = { display: false, ticks: { maxTicksLimit: 8 }};\n  const commonOpts = { responsive: true, maintainAspectRatio: false, animation: false, plugins: { legend: { display: false }}};\n\n  priceChart = new Chart(document.getElementById('priceChart'), {\n    type: 'line',\n    data: { labels, datasets: priceDatasets },\n    options: { ...commonOpts, scales: { x: { display: true, ticks: { maxTicksLimit: 8, font: { size: 11 }}}, y: { ticks: { font: { size: 11 }}}}}\n  });\n\n  // Volume chart\n  volChart = new Chart(document.getElementById('volChart'), {\n    type: 'bar',\n    data: { labels, datasets: [{ label: 'Volume', data: data.map(d => d.volume), backgroundColor: '#93c5fd', borderWidth: 0 }]},\n    options: { ...commonOpts, scales: { x: commonXAxis, y: { ticks: { font: { size: 11 }, callback: v => v >= 1e6 ? (v/1e6).toFixed(1)+'M' : v >= 1e3 ? (v/1e3).toFixed(0)+'K' : v }}}}\n  });\n\n  // RSI chart\n  rsiChart = new Chart(document.getElementById('rsiChart'), {\n    type: 'line',\n    data: { labels, datasets: [\n      { label: 'RSI', data: data.map(d => parseFloat(d.rsi)), borderColor: '#8b5cf6', borderWidth: 1.5, pointRadius: 0, fill: false },\n      { label: 'OB', data: data.map(() => 70), borderColor: '#fca5a5', borderWidth: 1, borderDash: [4,4], pointRadius: 0, fill: false },\n      { label: 'OS', data: data.map(() => 30), borderColor: '#86efac', borderWidth: 1, borderDash: [4,4], pointRadius: 0, fill: false }\n    ]},\n    options: { ...commonOpts, scales: { x: commonXAxis, y: { min: 0, max: 100, ticks: { font: { size: 11 }}}}}\n  });\n\n  // MACD chart\n  const histColors = data.map(d => parseFloat(d.macdHist) >= 0 ? '#86efac' : '#fca5a5');\n  macdChart = new Chart(document.getElementById('macdChart'), {\n    type: 'bar',\n    data: { labels, datasets: [\n      { label: 'Histogram', data: data.map(d => parseFloat(d.macdHist)), backgroundColor: histColors, borderWidth: 0, order: 2 },\n      { label: 'MACD', data: data.map(d => parseFloat(d.macd)), borderColor: '#2563eb', borderWidth: 1.5, pointRadius: 0, type: 'line', fill: false, order: 1 },\n      { label: 'Signal', data: data.map(d => parseFloat(d.macdSignal)), borderColor: '#f59e0b', borderWidth: 1.5, pointRadius: 0, type: 'line', fill: false, order: 1 }\n    ]},\n    options: { ...commonOpts, scales: { x: commonXAxis, y: { ticks: { font: { size: 11 }}}}}\n  });\n}\n</script>\n</body>\n</html>",
+        "output": "str",
+        "x": 260,
+        "y": 220,
+        "wires": [
+            [
+                "31681c4a128c723c"
+            ]
+        ]
+    },
+    {
+        "id": "626b7fc962839956",
+        "type": "http in",
+        "z": "2191763eafdcb9cc",
+        "name": "/index",
+        "url": "/index",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 120,
+        "wires": [
+            [
+                "0d917b2d7e5e6f54"
+            ]
+        ]
+    },
+    {
+        "id": "4772d7f5ca4aa81b",
+        "type": "http response",
+        "z": "2191763eafdcb9cc",
+        "name": "OK",
+        "statusCode": "200",
+        "headers": {},
+        "x": 650,
+        "y": 280,
+        "wires": []
+    },
+    {
+        "id": "0d917b2d7e5e6f54",
+        "type": "Monitor Flow",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "x": 310,
+        "y": 120,
+        "wires": [
+            [
+                "ec1a4d9865d29cfb"
+            ]
+        ]
+    },
+    {
+        "id": "31681c4a128c723c",
+        "type": "Monitor Flow",
+        "z": "2191763eafdcb9cc",
+        "name": "",
+        "x": 470,
+        "y": 220,
+        "wires": [
+            [
+                "4772d7f5ca4aa81b"
+            ]
+        ]
     }
 ]
