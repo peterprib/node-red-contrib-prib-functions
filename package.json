@@ -29,6 +29,8 @@
 		"testTransform": "node test-runner.js transform",
 		"testDataAnalysis": "node test-runner.js dataanalysis",
 		"testColumnar": "node test-runner.js columnar",
+		"testMatrix": "node --test ./test/matrix/01base.js",
+
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'",
 	
 		"sharesNodeRed": "node-red --userDir ./test/data/shares --setting ./test/data/shares/settings.js ./test/data/shares/flow.json --title '***shares nodered***'"
@@ -158,6 +160,7 @@
 		"version": ">=2.0.0",
 		"nodes": {
 			"append": "append/append.js",
+			"arvoStore": "arvoStore/arvoStore.js",
 			"columnar": "columnar/columnar.js",	
 			"dataAnalysis": "dataAnalysis/dataAnalysis.js",
 			"dcdllm": "dcdllm/dcdllm.js",

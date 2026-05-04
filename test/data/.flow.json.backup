@@ -7,6 +7,14 @@
         "info": ""
     },
     {
+        "id": "0af0eaeb09d7f0ed",
+        "type": "tab",
+        "label": "ARVO Store",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "11cc261f.ec82da",
         "type": "tab",
         "label": "Data Analysis",
@@ -14,11 +22,27 @@
         "info": ""
     },
     {
+        "id": "8aa8799ad5afca2b",
+        "type": "tab",
+        "label": "Columnar store",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
         "id": "cf595649.931658",
         "type": "tab",
         "label": "Data Analysis - Real time",
         "disabled": false,
         "info": ""
+    },
+    {
+        "id": "3eda228331ad4985",
+        "type": "tab",
+        "label": "Decision LLM",
+        "disabled": false,
+        "info": "",
+        "env": []
     },
     {
         "id": "43a74ee3902ea5d5",
@@ -41,6 +65,14 @@
         "label": "Load Injector",
         "disabled": false,
         "info": ""
+    },
+    {
+        "id": "d98540e8ed31a4a1",
+        "type": "tab",
+        "label": "logistic Regression",
+        "disabled": false,
+        "info": "",
+        "env": []
     },
     {
         "id": "1be03be45284f9d4",
@@ -110,17 +142,17 @@
         "env": []
     },
     {
-        "id": "1374c39ae82adb4e",
+        "id": "65b5beda2b73b7b5",
         "type": "tab",
-        "label": "transform date",
+        "label": "transform compression",
         "disabled": false,
         "info": "",
         "env": []
     },
     {
-        "id": "65b5beda2b73b7b5",
+        "id": "1374c39ae82adb4e",
         "type": "tab",
-        "label": "transform compression",
+        "label": "transform date",
         "disabled": false,
         "info": "",
         "env": []
@@ -147,30 +179,6 @@
         "label": "transform xlsx",
         "disabled": false,
         "info": ""
-    },
-    {
-        "id": "d98540e8ed31a4a1",
-        "type": "tab",
-        "label": "logistic Regression",
-        "disabled": false,
-        "info": "",
-        "env": []
-    },
-    {
-        "id": "8aa8799ad5afca2b",
-        "type": "tab",
-        "label": "Columnar store",
-        "disabled": false,
-        "info": "",
-        "env": []
-    },
-    {
-        "id": "3eda228331ad4985",
-        "type": "tab",
-        "label": "Decision LLM",
-        "disabled": false,
-        "info": "",
-        "env": []
     },
     {
         "id": "680198a3be420949",
@@ -270,6 +278,22 @@
         "x": 520,
         "y": 140,
         "wires": []
+    },
+    {
+        "id": "4f710dc515d08550",
+        "type": "arvoStore",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "tableName": "test",
+        "schema": "",
+        "action": "sql",
+        "sqlQuery": "",
+        "outputProperty": "payload",
+        "x": 270,
+        "y": 180,
+        "wires": [
+            []
+        ]
     },
     {
         "id": "c549c07b.bc4b9",
@@ -1172,6 +1196,384 @@
         ]
     },
     {
+        "id": "6dcc4342cb95db99",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "appendFile",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "x": 350,
+        "y": 180,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "f7056a42ba573367",
+        "type": "debug",
+        "z": "8aa8799ad5afca2b",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "69adf3d24df340b6",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"records\":[{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"},{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}]}",
+        "payloadType": "json",
+        "x": 90,
+        "y": 180,
+        "wires": [
+            [
+                "6dcc4342cb95db99"
+            ]
+        ]
+    },
+    {
+        "id": "c4db16448a22def4",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 280,
+        "wires": [
+            [
+                "cb96c887a71c3cba"
+            ]
+        ]
+    },
+    {
+        "id": "cb96c887a71c3cba",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "readFile",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "x": 340,
+        "y": 280,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "a7c85ce48c4baa7b",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "select * from ? limit 4",
+        "outputProperty": "",
+        "x": 340,
+        "y": 360,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "17aa1ae56c2be540",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"sql\":\"SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"}",
+        "payloadType": "json",
+        "x": 90,
+        "y": 360,
+        "wires": [
+            [
+                "a7c85ce48c4baa7b"
+            ]
+        ]
+    },
+    {
+        "id": "50413b0ca082d563",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name,COUNT(*) AS cnt1 FROM ? a where name= :msg.payload",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 500,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "34909ff6e5e0f6a7",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 520,
+        "wires": [
+            [
+                "50413b0ca082d563",
+                "a1caf329e4e87dbc"
+            ]
+        ]
+    },
+    {
+        "id": "a1caf329e4e87dbc",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT :msg.payload as tes from ? limit 5",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 580,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "ce0e3fb3e004b4af",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT a.name,COUNT(*) AS cnt FROM ? a group by name",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 420,
+        "y": 740,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "343f59f36e7293df",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "select  a.name  from ? a where name=\"John\" limit 4",
+        "outputProperty": "",
+        "x": 420,
+        "y": 660,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "babd195c3d0980dd",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 660,
+        "wires": [
+            [
+                "343f59f36e7293df",
+                "ce0e3fb3e004b4af"
+            ]
+        ]
+    },
+    {
+        "id": "0960f3c3ca9ba2dc",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 480,
+        "wires": [
+            [
+                "50413b0ca082d563"
+            ]
+        ]
+    },
+    {
+        "id": "a61df296c3a578e2",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name FROM ? a where name= :msg.payload",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 440,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "e88b60b96a6ce42a",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 420,
+        "wires": [
+            [
+                "a61df296c3a578e2"
+            ]
+        ]
+    },
+    {
         "id": "a749368e.985a18",
         "type": "Data Analysis",
         "z": "cf595649.931658",
@@ -1429,6 +1831,317 @@
         "y": 500,
         "wires": [
             []
+        ]
+    },
+    {
+        "id": "function_answer",
+        "type": "function",
+        "z": "3eda228331ad4985",
+        "name": "Process Answer",
+        "func": "if (msg.reasoningInstruction) {\n    msg.payload = msg.reasoningInstruction + \"\\n\\nQuery: \" + msg.payload;\n}\nmsg.topic = \"LLM Answer Request\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 40,
+        "wires": [
+            [
+                "debug_answer.id"
+            ]
+        ]
+    },
+    {
+        "id": "function_clarify",
+        "type": "function",
+        "z": "3eda228331ad4985",
+        "name": "Process Clarify",
+        "func": "msg.topic = \"User Clarification Needed\";\nmsg.payload = msg.clarificationPrompt || \"Please provide more details.\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 620,
+        "y": 100,
+        "wires": [
+            [
+                "debug_clarify.id"
+            ]
+        ]
+    },
+    {
+        "id": "function_retrieve",
+        "type": "function",
+        "z": "3eda228331ad4985",
+        "name": "Process Retrieve",
+        "func": "msg.topic = \"Knowledge Base Search\";\nmsg.payload = msg.retrievalQuery || msg.payload;\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 140,
+        "wires": [
+            [
+                "debug_retrieve.id"
+            ]
+        ]
+    },
+    {
+        "id": "function_escalate",
+        "type": "function",
+        "z": "3eda228331ad4985",
+        "name": "Process Escalate",
+        "func": "msg.topic = \"Human Escalation\";\nmsg.payload = msg.escalationReason || \"Query requires human intervention.\";\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 200,
+        "wires": [
+            [
+                "debug_escalate.id"
+            ]
+        ]
+    },
+    {
+        "id": "inject_query.id",
+        "type": "inject",
+        "z": "3eda228331ad4985",
+        "name": "Simple Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "What is the capital of France?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 130,
+        "y": 40,
+        "wires": [
+            [
+                "dcdllm_node.id"
+            ]
+        ]
+    },
+    {
+        "id": "inject_complex.id",
+        "type": "inject",
+        "z": "3eda228331ad4985",
+        "name": "Complex Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "Can you explain the mathematical proof of Fermat's Last Theorem in detail with all intermediate steps and provide references to the original paper by Andrew Wiles?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 140,
+        "y": 80,
+        "wires": [
+            [
+                "dcdllm_node.id"
+            ]
+        ]
+    },
+    {
+        "id": "inject_urgent.id",
+        "type": "inject",
+        "z": "3eda228331ad4985",
+        "name": "Urgent Query",
+        "props": [
+            {
+                "p": "payload",
+                "v": "EMERGENCY: The server is down and customers can't access the website! What should I do immediately?",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "dcdllm_node.id"
+            ]
+        ]
+    },
+    {
+        "id": "dcdllm_node.id",
+        "type": "dcdllm",
+        "z": "3eda228331ad4985",
+        "name": "Decision LLM",
+        "maxLength": "101",
+        "keywords": "help, search, find, emergency, urgent",
+        "sentenceThreshold": 3,
+        "complexityThreshold": 0.5,
+        "wordThreshold": 5,
+        "decisionTree": "{}",
+        "priors": "{\"answer\": 0.5, \"clarify\": 0.2, \"retrieve\": 0.2, \"escalate\": 0.1}",
+        "sequentialMode": false,
+        "useRL": false,
+        "reasoningMode": "cot",
+        "x": 380,
+        "y": 120,
+        "wires": [
+            [
+                "function_answer"
+            ],
+            [
+                "function_clarify"
+            ],
+            [
+                "function_retrieve"
+            ],
+            [
+                "function_escalate"
+            ]
+        ]
+    },
+    {
+        "id": "debug_answer.id",
+        "type": "debug",
+        "z": "3eda228331ad4985",
+        "name": "Answer Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 820,
+        "y": 40,
+        "wires": []
+    },
+    {
+        "id": "debug_clarify.id",
+        "type": "debug",
+        "z": "3eda228331ad4985",
+        "name": "Clarify Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "debug_retrieve.id",
+        "type": "debug",
+        "z": "3eda228331ad4985",
+        "name": "Retrieve Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 840,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "debug_escalate.id",
+        "type": "debug",
+        "z": "3eda228331ad4985",
+        "name": "Escalate Output",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 860,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "inject_feedback.id",
+        "type": "inject",
+        "z": "3eda228331ad4985",
+        "name": "Positive Feedback",
+        "props": [
+            {
+                "p": "feedback",
+                "v": 1,
+                "vt": "num"
+            },
+            {
+                "p": "decisionId",
+                "v": "example_decision_123",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 180,
+        "wires": [
+            [
+                "dcdllm_node.id"
+            ]
+        ]
+    },
+    {
+        "id": "inject_negative_feedback.id",
+        "type": "inject",
+        "z": "3eda228331ad4985",
+        "name": "Negative Feedback",
+        "props": [
+            {
+                "p": "feedback",
+                "v": -1,
+                "vt": "num"
+            },
+            {
+                "p": "decisionId",
+                "v": "example_decision_123",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "dcdllm_node.id"
+            ]
         ]
     },
     {
@@ -1790,7 +2503,7 @@
         "wires": [
             [
                 "10f3e14824b8bbee",
-                "596132c2e3a5b9a7"
+                "40456dc5b446eae1"
             ],
             [
                 "e9cb63bb70c07332"
@@ -1908,7 +2621,7 @@
         "verbatimSymlinksType": "bool",
         "withFileTypes": "true",
         "withFileTypesType": "bool",
-        "x": 450,
+        "x": 530,
         "y": 400,
         "wires": [
             [
@@ -1916,6 +2629,19 @@
             ],
             [
                 "e9cb63bb70c07332"
+            ]
+        ]
+    },
+    {
+        "id": "40456dc5b446eae1",
+        "type": "Monitor Flow",
+        "z": "43a74ee3902ea5d5",
+        "name": "",
+        "x": 310,
+        "y": 400,
+        "wires": [
+            [
+                "596132c2e3a5b9a7"
             ]
         ]
     },
@@ -2084,6 +2810,142 @@
         "x": 580,
         "y": 160,
         "wires": []
+    },
+    {
+        "id": "835d891c3b7b9451",
+        "type": "debug",
+        "z": "d98540e8ed31a4a1",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 740,
+        "y": 420,
+        "wires": []
+    },
+    {
+        "id": "b850a29956571494",
+        "type": "logisticRegression",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "modelName": "test",
+        "action": "fit",
+        "learningRate": 0.1,
+        "iterations": 2000,
+        "fitIntercept": true,
+        "l2": 0,
+        "tolerance": 1e-7,
+        "verbose": false,
+        "threshold": 0.5,
+        "x": 420,
+        "y": 180,
+        "wires": [
+            [
+                "835d891c3b7b9451",
+                "1c969461651d15fa"
+            ]
+        ]
+    },
+    {
+        "id": "1c969461651d15fa",
+        "type": "test",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "{\"X\":[[0,0],[0,1],[1,0],[1,1]],\"y\":[0,1,1,1]}",
+        "payloadType": "json",
+        "result": "Model fitted and stored as: test",
+        "resultType": "str",
+        "resultProperty": "msg.result",
+        "topic": "",
+        "x": 180,
+        "y": 80,
+        "wires": [
+            [
+                "b850a29956571494"
+            ],
+            [],
+            [
+                "f903d1b11568c38c"
+            ]
+        ]
+    },
+    {
+        "id": "a4ff87db6b6a4889",
+        "type": "logisticRegression",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "modelName": "test",
+        "action": "predict",
+        "learningRate": 0.1,
+        "iterations": 2000,
+        "fitIntercept": true,
+        "l2": 0,
+        "tolerance": 1e-7,
+        "verbose": false,
+        "threshold": 0.5,
+        "x": 460,
+        "y": 360,
+        "wires": [
+            [
+                "835d891c3b7b9451",
+                "f903d1b11568c38c",
+                "21167b6b6f5c0cbc"
+            ]
+        ]
+    },
+    {
+        "id": "f903d1b11568c38c",
+        "type": "test",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "[[0, 0], [1, 1], [0.5, 0.5]]",
+        "payloadType": "json",
+        "result": "[0,1,1]",
+        "resultType": "json",
+        "resultProperty": "msg.result",
+        "topic": "",
+        "x": 140,
+        "y": 280,
+        "wires": [
+            [
+                "a4ff87db6b6a4889"
+            ],
+            [],
+            []
+        ]
+    },
+    {
+        "id": "21167b6b6f5c0cbc",
+        "type": "logisticRegression",
+        "z": "d98540e8ed31a4a1",
+        "name": "",
+        "modelName": "test",
+        "action": "predictProba",
+        "learningRate": 0.1,
+        "iterations": 2000,
+        "fitIntercept": true,
+        "l2": 0,
+        "tolerance": 1e-7,
+        "verbose": false,
+        "threshold": 0.5,
+        "x": 440,
+        "y": 480,
+        "wires": [
+            [
+                "835d891c3b7b9451"
+            ]
+        ]
     },
     {
         "id": "f8d6f002dbf1a0ec",
@@ -4553,6 +5415,353 @@
         "wires": []
     },
     {
+        "id": "ee2d5b0149699bfd",
+        "type": "transform",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "actionSource": "Buffer",
+        "actionTarget": "Compressed",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 520,
+        "y": 80,
+        "wires": [
+            [
+                "5dcab80a65f78002"
+            ],
+            [
+                "10a0adbf5535121a"
+            ]
+        ]
+    },
+    {
+        "id": "8137c393bddb08a1",
+        "type": "debug",
+        "z": "65b5beda2b73b7b5",
+        "name": "debug",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 830,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "10a0adbf5535121a",
+        "type": "debug",
+        "z": "65b5beda2b73b7b5",
+        "name": "error",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 850,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "aba26b9c6499adb1",
+        "type": "transform",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "actionSource": "Compressed",
+        "actionTarget": "Buffer",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 560,
+        "y": 200,
+        "wires": [
+            [
+                "2102f58ce572e09a"
+            ],
+            [
+                "10a0adbf5535121a"
+            ]
+        ]
+    },
+    {
+        "id": "d38095883a4a54ac",
+        "type": "test",
+        "z": "65b5beda2b73b7b5",
+        "name": "test gzip",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
+        "payloadType": "bin",
+        "result": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
+        "resultType": "bin",
+        "resultProperty": "msg.payload",
+        "topic": "test gzip",
+        "x": 100,
+        "y": 100,
+        "wires": [
+            [
+                "f5ec776c8d6d933f"
+            ],
+            [
+                "10a0adbf5535121a"
+            ],
+            [
+                "95a62d934bb57fcd"
+            ]
+        ]
+    },
+    {
+        "id": "50672d0a987880df",
+        "type": "transform",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "actionSource": "Buffer",
+        "actionTarget": "Compressed",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzipSpeed",
+        "x": 360,
+        "y": 340,
+        "wires": [
+            [
+                "7a65c34df4ae2ce4"
+            ],
+            [
+                "10a0adbf5535121a"
+            ]
+        ]
+    },
+    {
+        "id": "7a65c34df4ae2ce4",
+        "type": "transform",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "actionSource": "Compressed",
+        "actionTarget": "Buffer",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 380,
+        "y": 420,
+        "wires": [
+            [
+                "95a62d934bb57fcd"
+            ],
+            [
+                "10a0adbf5535121a"
+            ]
+        ]
+    },
+    {
+        "id": "95a62d934bb57fcd",
+        "type": "test",
+        "z": "65b5beda2b73b7b5",
+        "name": "test gzip speed",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
+        "payloadType": "bin",
+        "result": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
+        "resultType": "bin",
+        "resultProperty": "msg.payload",
+        "topic": "test gzip speed",
+        "x": 120,
+        "y": 480,
+        "wires": [
+            [
+                "50672d0a987880df"
+            ],
+            [
+                "10a0adbf5535121a"
+            ],
+            [
+                "065ac327fbf17d38"
+            ]
+        ]
+    },
+    {
+        "id": "44b0be1b07c2ccc2",
+        "type": "transform",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "actionSource": "Buffer",
+        "actionTarget": "Compressed",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzipCompression",
+        "x": 400,
+        "y": 540,
+        "wires": [
+            [
+                "1a31abc23d7473a0"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "1a31abc23d7473a0",
+        "type": "transform",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "actionSource": "Compressed",
+        "actionTarget": "Buffer",
+        "sourceProperty": "msg.payload",
+        "targetProperty": "msg.payload",
+        "topicProperty": "msg.topic",
+        "maxMessages": 1000,
+        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
+        "schemaType": "json",
+        "skipLeading": 0,
+        "skipTrailing": 0,
+        "delimiter": ",",
+        "compressionType": "setGzip",
+        "x": 420,
+        "y": 620,
+        "wires": [
+            [
+                "065ac327fbf17d38"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "065ac327fbf17d38",
+        "type": "test",
+        "z": "65b5beda2b73b7b5",
+        "name": "test gzip compress",
+        "errorFactor": 0,
+        "escapeString": false,
+        "infiniteIsNull": false,
+        "payload": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
+        "payloadType": "bin",
+        "result": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
+        "resultType": "bin",
+        "resultProperty": "msg.payload",
+        "topic": "test gzip compress",
+        "x": 170,
+        "y": 680,
+        "wires": [
+            [
+                "44b0be1b07c2ccc2"
+            ],
+            [
+                "10a0adbf5535121a"
+            ],
+            [
+                "84bf5aaa74b38e59"
+            ]
+        ]
+    },
+    {
+        "id": "f5ec776c8d6d933f",
+        "type": "Monitor Flow",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "x": 310,
+        "y": 80,
+        "wires": [
+            [
+                "ee2d5b0149699bfd"
+            ]
+        ]
+    },
+    {
+        "id": "5dcab80a65f78002",
+        "type": "Monitor Flow",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "x": 330,
+        "y": 200,
+        "wires": [
+            [
+                "aba26b9c6499adb1"
+            ]
+        ]
+    },
+    {
+        "id": "2102f58ce572e09a",
+        "type": "Monitor Flow",
+        "z": "65b5beda2b73b7b5",
+        "name": "",
+        "x": 130,
+        "y": 280,
+        "wires": [
+            [
+                "d38095883a4a54ac",
+                "8137c393bddb08a1"
+            ]
+        ]
+    },
+    {
+        "id": "0c1e0f0f3543e49e",
+        "type": "link in",
+        "z": "65b5beda2b73b7b5",
+        "name": "transform compress",
+        "links": [],
+        "x": 75,
+        "y": 40,
+        "wires": [
+            [
+                "d38095883a4a54ac"
+            ]
+        ]
+    },
+    {
+        "id": "84bf5aaa74b38e59",
+        "type": "link out",
+        "z": "65b5beda2b73b7b5",
+        "name": "transform compress finished",
+        "mode": "return",
+        "links": [],
+        "x": 305,
+        "y": 760,
+        "wires": []
+    },
+    {
         "id": "49b2ad130416e0a0",
         "type": "transform",
         "z": "1374c39ae82adb4e",
@@ -5376,353 +6585,6 @@
         "links": [],
         "x": 1235,
         "y": 680,
-        "wires": []
-    },
-    {
-        "id": "ee2d5b0149699bfd",
-        "type": "transform",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "actionSource": "Buffer",
-        "actionTarget": "Compressed",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "compressionType": "setGzip",
-        "x": 520,
-        "y": 80,
-        "wires": [
-            [
-                "5dcab80a65f78002"
-            ],
-            [
-                "10a0adbf5535121a"
-            ]
-        ]
-    },
-    {
-        "id": "8137c393bddb08a1",
-        "type": "debug",
-        "z": "65b5beda2b73b7b5",
-        "name": "debug",
-        "active": false,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 830,
-        "y": 260,
-        "wires": []
-    },
-    {
-        "id": "10a0adbf5535121a",
-        "type": "debug",
-        "z": "65b5beda2b73b7b5",
-        "name": "error",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 850,
-        "y": 180,
-        "wires": []
-    },
-    {
-        "id": "aba26b9c6499adb1",
-        "type": "transform",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "actionSource": "Compressed",
-        "actionTarget": "Buffer",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "compressionType": "setGzip",
-        "x": 560,
-        "y": 200,
-        "wires": [
-            [
-                "2102f58ce572e09a"
-            ],
-            [
-                "10a0adbf5535121a"
-            ]
-        ]
-    },
-    {
-        "id": "d38095883a4a54ac",
-        "type": "test",
-        "z": "65b5beda2b73b7b5",
-        "name": "test gzip",
-        "errorFactor": 0,
-        "escapeString": false,
-        "infiniteIsNull": false,
-        "payload": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
-        "payloadType": "bin",
-        "result": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
-        "resultType": "bin",
-        "resultProperty": "msg.payload",
-        "topic": "test gzip",
-        "x": 100,
-        "y": 100,
-        "wires": [
-            [
-                "f5ec776c8d6d933f"
-            ],
-            [
-                "10a0adbf5535121a"
-            ],
-            [
-                "95a62d934bb57fcd"
-            ]
-        ]
-    },
-    {
-        "id": "50672d0a987880df",
-        "type": "transform",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "actionSource": "Buffer",
-        "actionTarget": "Compressed",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "compressionType": "setGzipSpeed",
-        "x": 360,
-        "y": 340,
-        "wires": [
-            [
-                "7a65c34df4ae2ce4"
-            ],
-            [
-                "10a0adbf5535121a"
-            ]
-        ]
-    },
-    {
-        "id": "7a65c34df4ae2ce4",
-        "type": "transform",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "actionSource": "Compressed",
-        "actionTarget": "Buffer",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "compressionType": "setGzip",
-        "x": 380,
-        "y": 420,
-        "wires": [
-            [
-                "95a62d934bb57fcd"
-            ],
-            [
-                "10a0adbf5535121a"
-            ]
-        ]
-    },
-    {
-        "id": "95a62d934bb57fcd",
-        "type": "test",
-        "z": "65b5beda2b73b7b5",
-        "name": "test gzip speed",
-        "errorFactor": 0,
-        "escapeString": false,
-        "infiniteIsNull": false,
-        "payload": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
-        "payloadType": "bin",
-        "result": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
-        "resultType": "bin",
-        "resultProperty": "msg.payload",
-        "topic": "test gzip speed",
-        "x": 120,
-        "y": 480,
-        "wires": [
-            [
-                "50672d0a987880df"
-            ],
-            [
-                "10a0adbf5535121a"
-            ],
-            [
-                "065ac327fbf17d38"
-            ]
-        ]
-    },
-    {
-        "id": "44b0be1b07c2ccc2",
-        "type": "transform",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "actionSource": "Buffer",
-        "actionTarget": "Compressed",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "compressionType": "setGzipCompression",
-        "x": 400,
-        "y": 540,
-        "wires": [
-            [
-                "1a31abc23d7473a0"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "1a31abc23d7473a0",
-        "type": "transform",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "actionSource": "Compressed",
-        "actionTarget": "Buffer",
-        "sourceProperty": "msg.payload",
-        "targetProperty": "msg.payload",
-        "topicProperty": "msg.topic",
-        "maxMessages": 1000,
-        "schema": "{\"type\":\"record\",\"fields\":[{\"name\":\"name\",\"type\":\"string\"}]}",
-        "schemaType": "json",
-        "skipLeading": 0,
-        "skipTrailing": 0,
-        "delimiter": ",",
-        "compressionType": "setGzip",
-        "x": 420,
-        "y": 620,
-        "wires": [
-            [
-                "065ac327fbf17d38"
-            ],
-            []
-        ]
-    },
-    {
-        "id": "065ac327fbf17d38",
-        "type": "test",
-        "z": "65b5beda2b73b7b5",
-        "name": "test gzip compress",
-        "errorFactor": 0,
-        "escapeString": false,
-        "infiniteIsNull": false,
-        "payload": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
-        "payloadType": "bin",
-        "result": "[49,50,51,52,53,54,55,56,57,48,97,98,99,100,101,102,103,104,105,106,108,109,110,111,112,113,114,115,116,117,118,119,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79,80,81,85,82,83,84,85,86,87,88,89,90,33,64,35,36,37,94,38,42,40,41,95,45,43,61,123,91,125,93,124,92,58,34,39,60,44,62,46,63,47,125]",
-        "resultType": "bin",
-        "resultProperty": "msg.payload",
-        "topic": "test gzip compress",
-        "x": 170,
-        "y": 680,
-        "wires": [
-            [
-                "44b0be1b07c2ccc2"
-            ],
-            [
-                "10a0adbf5535121a"
-            ],
-            [
-                "84bf5aaa74b38e59"
-            ]
-        ]
-    },
-    {
-        "id": "f5ec776c8d6d933f",
-        "type": "Monitor Flow",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "x": 310,
-        "y": 80,
-        "wires": [
-            [
-                "ee2d5b0149699bfd"
-            ]
-        ]
-    },
-    {
-        "id": "5dcab80a65f78002",
-        "type": "Monitor Flow",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "x": 330,
-        "y": 200,
-        "wires": [
-            [
-                "aba26b9c6499adb1"
-            ]
-        ]
-    },
-    {
-        "id": "2102f58ce572e09a",
-        "type": "Monitor Flow",
-        "z": "65b5beda2b73b7b5",
-        "name": "",
-        "x": 130,
-        "y": 280,
-        "wires": [
-            [
-                "d38095883a4a54ac",
-                "8137c393bddb08a1"
-            ]
-        ]
-    },
-    {
-        "id": "0c1e0f0f3543e49e",
-        "type": "link in",
-        "z": "65b5beda2b73b7b5",
-        "name": "transform compress",
-        "links": [],
-        "x": 75,
-        "y": 40,
-        "wires": [
-            [
-                "d38095883a4a54ac"
-            ]
-        ]
-    },
-    {
-        "id": "84bf5aaa74b38e59",
-        "type": "link out",
-        "z": "65b5beda2b73b7b5",
-        "name": "transform compress finished",
-        "mode": "return",
-        "links": [],
-        "x": 305,
-        "y": 760,
         "wires": []
     },
     {
@@ -8040,831 +8902,6 @@
         "wires": [
             [
                 "0e4f57304e89edb8"
-            ]
-        ]
-    },
-    {
-        "id": "835d891c3b7b9451",
-        "type": "debug",
-        "z": "d98540e8ed31a4a1",
-        "name": "debug 3",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 740,
-        "y": 420,
-        "wires": []
-    },
-    {
-        "id": "b850a29956571494",
-        "type": "logisticRegression",
-        "z": "d98540e8ed31a4a1",
-        "name": "",
-        "modelName": "test",
-        "action": "fit",
-        "learningRate": 0.1,
-        "iterations": 2000,
-        "fitIntercept": true,
-        "l2": 0,
-        "tolerance": 1e-7,
-        "verbose": false,
-        "threshold": 0.5,
-        "x": 420,
-        "y": 180,
-        "wires": [
-            [
-                "835d891c3b7b9451",
-                "1c969461651d15fa"
-            ]
-        ]
-    },
-    {
-        "id": "1c969461651d15fa",
-        "type": "test",
-        "z": "d98540e8ed31a4a1",
-        "name": "",
-        "errorFactor": 0,
-        "escapeString": false,
-        "infiniteIsNull": false,
-        "payload": "{\"X\":[[0,0],[0,1],[1,0],[1,1]],\"y\":[0,1,1,1]}",
-        "payloadType": "json",
-        "result": "Model fitted and stored as: test",
-        "resultType": "str",
-        "resultProperty": "msg.result",
-        "topic": "",
-        "x": 180,
-        "y": 80,
-        "wires": [
-            [
-                "b850a29956571494"
-            ],
-            [],
-            [
-                "f903d1b11568c38c"
-            ]
-        ]
-    },
-    {
-        "id": "a4ff87db6b6a4889",
-        "type": "logisticRegression",
-        "z": "d98540e8ed31a4a1",
-        "name": "",
-        "modelName": "test",
-        "action": "predict",
-        "learningRate": 0.1,
-        "iterations": 2000,
-        "fitIntercept": true,
-        "l2": 0,
-        "tolerance": 1e-7,
-        "verbose": false,
-        "threshold": 0.5,
-        "x": 460,
-        "y": 360,
-        "wires": [
-            [
-                "835d891c3b7b9451",
-                "f903d1b11568c38c",
-                "21167b6b6f5c0cbc"
-            ]
-        ]
-    },
-    {
-        "id": "f903d1b11568c38c",
-        "type": "test",
-        "z": "d98540e8ed31a4a1",
-        "name": "",
-        "errorFactor": 0,
-        "escapeString": false,
-        "infiniteIsNull": false,
-        "payload": "[[0, 0], [1, 1], [0.5, 0.5]]",
-        "payloadType": "json",
-        "result": "[0,1,1]",
-        "resultType": "json",
-        "resultProperty": "msg.result",
-        "topic": "",
-        "x": 140,
-        "y": 280,
-        "wires": [
-            [
-                "a4ff87db6b6a4889"
-            ],
-            [],
-            []
-        ]
-    },
-    {
-        "id": "21167b6b6f5c0cbc",
-        "type": "logisticRegression",
-        "z": "d98540e8ed31a4a1",
-        "name": "",
-        "modelName": "test",
-        "action": "predictProba",
-        "learningRate": 0.1,
-        "iterations": 2000,
-        "fitIntercept": true,
-        "l2": 0,
-        "tolerance": 1e-7,
-        "verbose": false,
-        "threshold": 0.5,
-        "x": 440,
-        "y": 480,
-        "wires": [
-            [
-                "835d891c3b7b9451"
-            ]
-        ]
-    },
-    {
-        "id": "6dcc4342cb95db99",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "appendFile",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "x": 350,
-        "y": 180,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "f7056a42ba573367",
-        "type": "debug",
-        "z": "8aa8799ad5afca2b",
-        "name": "debug 4",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 700,
-        "y": 360,
-        "wires": []
-    },
-    {
-        "id": "69adf3d24df340b6",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{\"records\":[{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"},{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}]}",
-        "payloadType": "json",
-        "x": 90,
-        "y": 180,
-        "wires": [
-            [
-                "6dcc4342cb95db99"
-            ]
-        ]
-    },
-    {
-        "id": "c4db16448a22def4",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 100,
-        "y": 280,
-        "wires": [
-            [
-                "cb96c887a71c3cba"
-            ]
-        ]
-    },
-    {
-        "id": "cb96c887a71c3cba",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "readFile",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "x": 340,
-        "y": 280,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "a7c85ce48c4baa7b",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "select * from ? limit 4",
-        "outputProperty": "",
-        "x": 340,
-        "y": 360,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "17aa1ae56c2be540",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{\"sql\":\"SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"}",
-        "payloadType": "json",
-        "x": 90,
-        "y": 360,
-        "wires": [
-            [
-                "a7c85ce48c4baa7b"
-            ]
-        ]
-    },
-    {
-        "id": "50413b0ca082d563",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name,COUNT(*) AS cnt1 FROM ? a where name= :msg.payload",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 370,
-        "y": 500,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "34909ff6e5e0f6a7",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "John",
-        "payloadType": "str",
-        "x": 90,
-        "y": 520,
-        "wires": [
-            [
-                "50413b0ca082d563",
-                "a1caf329e4e87dbc"
-            ]
-        ]
-    },
-    {
-        "id": "a1caf329e4e87dbc",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT :msg.payload as tes from ? limit 5",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 370,
-        "y": 580,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "ce0e3fb3e004b4af",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT a.name,COUNT(*) AS cnt FROM ? a group by name",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 420,
-        "y": 740,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "343f59f36e7293df",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "select  a.name  from ? a where name=\"John\" limit 4",
-        "outputProperty": "",
-        "x": 420,
-        "y": 660,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "babd195c3d0980dd",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 120,
-        "y": 660,
-        "wires": [
-            [
-                "343f59f36e7293df",
-                "ce0e3fb3e004b4af"
-            ]
-        ]
-    },
-    {
-        "id": "0960f3c3ca9ba2dc",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "John",
-        "payloadType": "str",
-        "x": 90,
-        "y": 480,
-        "wires": [
-            [
-                "50413b0ca082d563"
-            ]
-        ]
-    },
-    {
-        "id": "a61df296c3a578e2",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name FROM ? a where name= :msg.payload",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 370,
-        "y": 440,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "e88b60b96a6ce42a",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "John",
-        "payloadType": "str",
-        "x": 90,
-        "y": 420,
-        "wires": [
-            [
-                "a61df296c3a578e2"
-            ]
-        ]
-    },
-    {
-        "id": "function_answer",
-        "type": "function",
-        "z": "3eda228331ad4985",
-        "name": "Process Answer",
-        "func": "if (msg.reasoningInstruction) {\n    msg.payload = msg.reasoningInstruction + \"\\n\\nQuery: \" + msg.payload;\n}\nmsg.topic = \"LLM Answer Request\";\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 620,
-        "y": 40,
-        "wires": [
-            [
-                "debug_answer.id"
-            ]
-        ]
-    },
-    {
-        "id": "function_clarify",
-        "type": "function",
-        "z": "3eda228331ad4985",
-        "name": "Process Clarify",
-        "func": "msg.topic = \"User Clarification Needed\";\nmsg.payload = msg.clarificationPrompt || \"Please provide more details.\";\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 620,
-        "y": 100,
-        "wires": [
-            [
-                "debug_clarify.id"
-            ]
-        ]
-    },
-    {
-        "id": "function_retrieve",
-        "type": "function",
-        "z": "3eda228331ad4985",
-        "name": "Process Retrieve",
-        "func": "msg.topic = \"Knowledge Base Search\";\nmsg.payload = msg.retrievalQuery || msg.payload;\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 630,
-        "y": 140,
-        "wires": [
-            [
-                "debug_retrieve.id"
-            ]
-        ]
-    },
-    {
-        "id": "function_escalate",
-        "type": "function",
-        "z": "3eda228331ad4985",
-        "name": "Process Escalate",
-        "func": "msg.topic = \"Human Escalation\";\nmsg.payload = msg.escalationReason || \"Query requires human intervention.\";\nreturn msg;",
-        "outputs": 1,
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 630,
-        "y": 200,
-        "wires": [
-            [
-                "debug_escalate.id"
-            ]
-        ]
-    },
-    {
-        "id": "inject_query.id",
-        "type": "inject",
-        "z": "3eda228331ad4985",
-        "name": "Simple Query",
-        "props": [
-            {
-                "p": "payload",
-                "v": "What is the capital of France?",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "x": 130,
-        "y": 40,
-        "wires": [
-            [
-                "dcdllm_node.id"
-            ]
-        ]
-    },
-    {
-        "id": "inject_complex.id",
-        "type": "inject",
-        "z": "3eda228331ad4985",
-        "name": "Complex Query",
-        "props": [
-            {
-                "p": "payload",
-                "v": "Can you explain the mathematical proof of Fermat's Last Theorem in detail with all intermediate steps and provide references to the original paper by Andrew Wiles?",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "x": 140,
-        "y": 80,
-        "wires": [
-            [
-                "dcdllm_node.id"
-            ]
-        ]
-    },
-    {
-        "id": "inject_urgent.id",
-        "type": "inject",
-        "z": "3eda228331ad4985",
-        "name": "Urgent Query",
-        "props": [
-            {
-                "p": "payload",
-                "v": "EMERGENCY: The server is down and customers can't access the website! What should I do immediately?",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "x": 130,
-        "y": 120,
-        "wires": [
-            [
-                "dcdllm_node.id"
-            ]
-        ]
-    },
-    {
-        "id": "dcdllm_node.id",
-        "type": "dcdllm",
-        "z": "3eda228331ad4985",
-        "name": "Decision LLM",
-        "maxLength": "101",
-        "keywords": "help, search, find, emergency, urgent",
-        "sentenceThreshold": 3,
-        "complexityThreshold": 0.5,
-        "wordThreshold": 5,
-        "decisionTree": "{}",
-        "priors": "{\"answer\": 0.5, \"clarify\": 0.2, \"retrieve\": 0.2, \"escalate\": 0.1}",
-        "sequentialMode": false,
-        "useRL": false,
-        "reasoningMode": "cot",
-        "x": 380,
-        "y": 120,
-        "wires": [
-            [
-                "function_answer"
-            ],
-            [
-                "function_clarify"
-            ],
-            [
-                "function_retrieve"
-            ],
-            [
-                "function_escalate"
-            ]
-        ]
-    },
-    {
-        "id": "debug_answer.id",
-        "type": "debug",
-        "z": "3eda228331ad4985",
-        "name": "Answer Output",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 820,
-        "y": 40,
-        "wires": []
-    },
-    {
-        "id": "debug_clarify.id",
-        "type": "debug",
-        "z": "3eda228331ad4985",
-        "name": "Clarify Output",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 840,
-        "y": 100,
-        "wires": []
-    },
-    {
-        "id": "debug_retrieve.id",
-        "type": "debug",
-        "z": "3eda228331ad4985",
-        "name": "Retrieve Output",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 840,
-        "y": 140,
-        "wires": []
-    },
-    {
-        "id": "debug_escalate.id",
-        "type": "debug",
-        "z": "3eda228331ad4985",
-        "name": "Escalate Output",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "payload",
-        "targetType": "msg",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 860,
-        "y": 200,
-        "wires": []
-    },
-    {
-        "id": "inject_feedback.id",
-        "type": "inject",
-        "z": "3eda228331ad4985",
-        "name": "Positive Feedback",
-        "props": [
-            {
-                "p": "feedback",
-                "v": 1,
-                "vt": "num"
-            },
-            {
-                "p": "decisionId",
-                "v": "example_decision_123",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "x": 150,
-        "y": 180,
-        "wires": [
-            [
-                "dcdllm_node.id"
-            ]
-        ]
-    },
-    {
-        "id": "inject_negative_feedback.id",
-        "type": "inject",
-        "z": "3eda228331ad4985",
-        "name": "Negative Feedback",
-        "props": [
-            {
-                "p": "feedback",
-                "v": -1,
-                "vt": "num"
-            },
-            {
-                "p": "decisionId",
-                "v": "example_decision_123",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "x": 150,
-        "y": 240,
-        "wires": [
-            [
-                "dcdllm_node.id"
             ]
         ]
     }

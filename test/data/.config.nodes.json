@@ -463,6 +463,17 @@
                 "module": "node-red-contrib-prib-functions",
                 "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
             },
+            "arvoStore": {
+                "name": "arvoStore",
+                "types": [
+                    "arvoStore"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\arvoStore\\arvoStore.js"
+            },
             "columnar": {
                 "name": "columnar",
                 "types": [

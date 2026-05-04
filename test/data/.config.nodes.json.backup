@@ -448,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.27.0",
+        "version": "0.27.1",
         "local": true,
         "user": true,
         "nodes": {
