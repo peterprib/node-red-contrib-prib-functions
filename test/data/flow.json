@@ -285,12 +285,19 @@
         "z": "0af0eaeb09d7f0ed",
         "name": "",
         "tableName": "test",
+        "tableNameType": "str",
         "schema": "",
-        "action": "add",
-        "sqlQuery": "",
+        "autoSchema": false,
+        "action": "sql",
+        "sqlQuery": "select * from test",
         "outputProperty": "payload",
-        "x": 310,
-        "y": 180,
+        "outputPropertyType": "str",
+        "persistPath": "",
+        "persistPathType": "",
+        "persistOnUpdate": "",
+        "persistInterval": "",
+        "x": 330,
+        "y": 160,
         "wires": [
             [
                 "3d6666c976894c5e"
@@ -301,7 +308,7 @@
         "id": "898162a79d160a2d",
         "type": "inject",
         "z": "0af0eaeb09d7f0ed",
-        "name": "",
+        "name": "test",
         "props": [
             {
                 "p": "payload"
@@ -318,7 +325,7 @@
         "y": 80,
         "wires": [
             [
-                "4f710dc515d08550"
+                "4e3995ee4ee071e7"
             ]
         ]
     },
@@ -338,6 +345,160 @@
         "x": 560,
         "y": 180,
         "wires": []
+    },
+    {
+        "id": "4e3995ee4ee071e7",
+        "type": "arvoStore",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "tableName": "test",
+        "tableNameType": "str",
+        "schema": "",
+        "autoSchema": true,
+        "action": "add",
+        "sqlQuery": "",
+        "outputProperty": "payload",
+        "outputPropertyType": "str",
+        "persistPath": "/tmp/test",
+        "persistPathType": "str",
+        "persistOnUpdate": "false",
+        "persistInterval": "0",
+        "x": 330,
+        "y": 80,
+        "wires": [
+            [
+                "3d6666c976894c5e"
+            ]
+        ]
+    },
+    {
+        "id": "8ce8529f50d31588",
+        "type": "inject",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[{\"col1\":11,\"col2\":12},{\"col1\":21,\"col2\":22},{\"col1\":31,\"col2\":32}]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "4f710dc515d08550"
+            ]
+        ]
+    },
+    {
+        "id": "d06d1051850479cf",
+        "type": "inject",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "atest",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[{\"col1\":11,\"cola\":\"aa\"},{\"col1\":21,\"cola\":\"bb\"},{\"col1\":31,\"cola\":\"cc\"},{\"col1\":31,\"cola\":\"cccc\"}]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "d9b9fca4550a61de"
+            ]
+        ]
+    },
+    {
+        "id": "a4638588edb82af3",
+        "type": "arvoStore",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "tableName": "test",
+        "tableNameType": "str",
+        "schema": "",
+        "autoSchema": false,
+        "action": "sql",
+        "sqlQuery": "aselect a.col1,col2,b.cola from atest as a join atest b on a.col1=b.col1",
+        "outputProperty": "payload",
+        "outputPropertyType": "str",
+        "persistPath": "",
+        "persistPathType": "",
+        "persistOnUpdate": "",
+        "persistInterval": 0,
+        "x": 310,
+        "y": 340,
+        "wires": [
+            [
+                "3d6666c976894c5e"
+            ]
+        ]
+    },
+    {
+        "id": "d9b9fca4550a61de",
+        "type": "arvoStore",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "tableName": "atest",
+        "tableNameType": "str",
+        "schema": "",
+        "autoSchema": true,
+        "action": "add",
+        "sqlQuery": "",
+        "outputProperty": "payload",
+        "outputPropertyType": "str",
+        "persistPath": "/tmp/atest",
+        "persistPathType": "str",
+        "persistOnUpdate": "false",
+        "persistInterval": "0",
+        "x": 310,
+        "y": 240,
+        "wires": [
+            [
+                "3d6666c976894c5e"
+            ]
+        ]
+    },
+    {
+        "id": "2188e31ebe61fdd7",
+        "type": "inject",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[{\"col1\":11,\"col2\":12},{\"col1\":21,\"col2\":22},{\"col1\":31,\"col2\":32}]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 300,
+        "wires": [
+            [
+                "a4638588edb82af3"
+            ]
+        ]
     },
     {
         "id": "6dcc4342cb95db99",

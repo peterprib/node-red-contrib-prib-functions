@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "4.1.7-git",
+        "version": "4.1.8-git",
         "local": false,
         "user": false,
         "nodes": {
@@ -448,7 +448,7 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.27.0",
+        "version": "0.27.1",
         "local": false,
         "user": false,
         "nodes": {
@@ -654,7 +654,7 @@
     },
     "node-red-node-data-generator": {
         "name": "node-red-node-data-generator",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "local": false,
         "user": false,
         "nodes": {

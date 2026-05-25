@@ -201,7 +201,7 @@ const actions = {
         });
         return response.data;
     }
-
+}
 module.exports = function (RED) {
     function GitLabNode(config) {
         RED.nodes.createNode(this, config);

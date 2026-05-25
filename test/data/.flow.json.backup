@@ -15,19 +15,19 @@
         "env": []
     },
     {
-        "id": "11cc261f.ec82da",
-        "type": "tab",
-        "label": "Data Analysis",
-        "disabled": false,
-        "info": ""
-    },
-    {
         "id": "8aa8799ad5afca2b",
         "type": "tab",
         "label": "Columnar store",
         "disabled": false,
         "info": "",
         "env": []
+    },
+    {
+        "id": "11cc261f.ec82da",
+        "type": "tab",
+        "label": "Data Analysis",
+        "disabled": false,
+        "info": ""
     },
     {
         "id": "cf595649.931658",
@@ -285,14 +285,597 @@
         "z": "0af0eaeb09d7f0ed",
         "name": "",
         "tableName": "test",
+        "tableNameType": "str",
         "schema": "",
+        "autoSchema": false,
         "action": "sql",
+        "sqlQuery": "select * from test",
+        "outputProperty": "payload",
+        "outputPropertyType": "str",
+        "persistPath": "",
+        "persistPathType": "",
+        "persistOnUpdate": "",
+        "persistInterval": "",
+        "x": 330,
+        "y": 160,
+        "wires": [
+            [
+                "3d6666c976894c5e"
+            ]
+        ]
+    },
+    {
+        "id": "898162a79d160a2d",
+        "type": "inject",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "test",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[{\"col1\":11,\"col2\":12},{\"col1\":21,\"col2\":22},{\"col1\":31,\"col2\":32}]",
+        "payloadType": "json",
+        "x": 110,
+        "y": 80,
+        "wires": [
+            [
+                "4e3995ee4ee071e7"
+            ]
+        ]
+    },
+    {
+        "id": "3d6666c976894c5e",
+        "type": "debug",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "debug 5",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 560,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "4e3995ee4ee071e7",
+        "type": "arvoStore",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "tableName": "test",
+        "tableNameType": "str",
+        "schema": "",
+        "autoSchema": true,
+        "action": "add",
         "sqlQuery": "",
         "outputProperty": "payload",
-        "x": 270,
+        "outputPropertyType": "str",
+        "persistPath": "/tmp/test",
+        "persistPathType": "str",
+        "persistOnUpdate": "false",
+        "persistInterval": "0",
+        "x": 330,
+        "y": 80,
+        "wires": [
+            [
+                "3d6666c976894c5e"
+            ]
+        ]
+    },
+    {
+        "id": "8ce8529f50d31588",
+        "type": "inject",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[{\"col1\":11,\"col2\":12},{\"col1\":21,\"col2\":22},{\"col1\":31,\"col2\":32}]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 160,
+        "wires": [
+            [
+                "4f710dc515d08550"
+            ]
+        ]
+    },
+    {
+        "id": "d06d1051850479cf",
+        "type": "inject",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "atest",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[{\"col1\":11,\"cola\":\"aa\"},{\"col1\":21,\"cola\":\"bb\"},{\"col1\":31,\"cola\":\"cc\"},{\"col1\":31,\"cola\":\"cccc\"}]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 240,
+        "wires": [
+            [
+                "d9b9fca4550a61de"
+            ]
+        ]
+    },
+    {
+        "id": "a4638588edb82af3",
+        "type": "arvoStore",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "tableName": "test",
+        "tableNameType": "str",
+        "schema": "",
+        "autoSchema": false,
+        "action": "sql",
+        "sqlQuery": "aselect a.col1,col2,b.cola from atest as a join atest b on a.col1=b.col1",
+        "outputProperty": "payload",
+        "outputPropertyType": "str",
+        "persistPath": "",
+        "persistPathType": "",
+        "persistOnUpdate": "",
+        "persistInterval": 0,
+        "x": 310,
+        "y": 300,
+        "wires": [
+            [
+                "3d6666c976894c5e"
+            ]
+        ]
+    },
+    {
+        "id": "d9b9fca4550a61de",
+        "type": "arvoStore",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "tableName": "atest",
+        "tableNameType": "str",
+        "schema": "",
+        "autoSchema": true,
+        "action": "add",
+        "sqlQuery": "",
+        "outputProperty": "payload",
+        "outputPropertyType": "str",
+        "persistPath": "/tmp/atest",
+        "persistPathType": "str",
+        "persistOnUpdate": "false",
+        "persistInterval": "0",
+        "x": 310,
+        "y": 240,
+        "wires": [
+            [
+                "3d6666c976894c5e"
+            ]
+        ]
+    },
+    {
+        "id": "2188e31ebe61fdd7",
+        "type": "inject",
+        "z": "0af0eaeb09d7f0ed",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "[{\"col1\":11,\"col2\":12},{\"col1\":21,\"col2\":22},{\"col1\":31,\"col2\":32}]",
+        "payloadType": "json",
+        "x": 130,
+        "y": 300,
+        "wires": [
+            [
+                "a4638588edb82af3"
+            ]
+        ]
+    },
+    {
+        "id": "6dcc4342cb95db99",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "appendFile",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "x": 350,
         "y": 180,
         "wires": [
-            []
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "f7056a42ba573367",
+        "type": "debug",
+        "z": "8aa8799ad5afca2b",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 700,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "69adf3d24df340b6",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"records\":[{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"},{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}]}",
+        "payloadType": "json",
+        "x": 90,
+        "y": 180,
+        "wires": [
+            [
+                "6dcc4342cb95db99"
+            ]
+        ]
+    },
+    {
+        "id": "c4db16448a22def4",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 100,
+        "y": 280,
+        "wires": [
+            [
+                "cb96c887a71c3cba"
+            ]
+        ]
+    },
+    {
+        "id": "cb96c887a71c3cba",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "readFile",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "x": 340,
+        "y": 280,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "a7c85ce48c4baa7b",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "select * from ? limit 4",
+        "outputProperty": "",
+        "x": 340,
+        "y": 360,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "17aa1ae56c2be540",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{\"sql\":\"SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"}",
+        "payloadType": "json",
+        "x": 90,
+        "y": 360,
+        "wires": [
+            [
+                "a7c85ce48c4baa7b"
+            ]
+        ]
+    },
+    {
+        "id": "50413b0ca082d563",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name,COUNT(*) AS cnt1 FROM ? a where name= :msg.payload",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 500,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "34909ff6e5e0f6a7",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 520,
+        "wires": [
+            [
+                "50413b0ca082d563",
+                "a1caf329e4e87dbc"
+            ]
+        ]
+    },
+    {
+        "id": "a1caf329e4e87dbc",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT :msg.payload as tes from ? limit 5",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 580,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "ce0e3fb3e004b4af",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT a.name,COUNT(*) AS cnt FROM ? a group by name",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 420,
+        "y": 740,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "343f59f36e7293df",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "select  a.name  from ? a where name=\"John\" limit 4",
+        "outputProperty": "",
+        "x": 420,
+        "y": 660,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "babd195c3d0980dd",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 120,
+        "y": 660,
+        "wires": [
+            [
+                "343f59f36e7293df",
+                "ce0e3fb3e004b4af"
+            ]
+        ]
+    },
+    {
+        "id": "0960f3c3ca9ba2dc",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 480,
+        "wires": [
+            [
+                "50413b0ca082d563"
+            ]
+        ]
+    },
+    {
+        "id": "a61df296c3a578e2",
+        "type": "columnar",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "action": "sqlQuery",
+        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
+        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name FROM ? a where name= :msg.payload",
+        "outputProperty": "payload",
+        "parameterMappings": [
+            {
+                "paramName": "name",
+                "msgPath": "payload"
+            }
+        ],
+        "x": 370,
+        "y": 440,
+        "wires": [
+            [
+                "f7056a42ba573367"
+            ]
+        ]
+    },
+    {
+        "id": "e88b60b96a6ce42a",
+        "type": "inject",
+        "z": "8aa8799ad5afca2b",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            },
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "John",
+        "payloadType": "str",
+        "x": 90,
+        "y": 420,
+        "wires": [
+            [
+                "a61df296c3a578e2"
+            ]
         ]
     },
     {
@@ -1193,384 +1776,6 @@
         "wires": [
             [],
             []
-        ]
-    },
-    {
-        "id": "6dcc4342cb95db99",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "appendFile",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "x": 350,
-        "y": 180,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "f7056a42ba573367",
-        "type": "debug",
-        "z": "8aa8799ad5afca2b",
-        "name": "debug 4",
-        "active": true,
-        "tosidebar": true,
-        "console": false,
-        "tostatus": false,
-        "complete": "true",
-        "targetType": "full",
-        "statusVal": "",
-        "statusType": "auto",
-        "x": 700,
-        "y": 360,
-        "wires": []
-    },
-    {
-        "id": "69adf3d24df340b6",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{\"records\":[{\"name\":\"John\",\"age\":30,\"city\":\"NYC\"},{\"name\":\"Jane\",\"age\":25,\"city\":\"LA\"}]}",
-        "payloadType": "json",
-        "x": 90,
-        "y": 180,
-        "wires": [
-            [
-                "6dcc4342cb95db99"
-            ]
-        ]
-    },
-    {
-        "id": "c4db16448a22def4",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 100,
-        "y": 280,
-        "wires": [
-            [
-                "cb96c887a71c3cba"
-            ]
-        ]
-    },
-    {
-        "id": "cb96c887a71c3cba",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "readFile",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "x": 340,
-        "y": 280,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "a7c85ce48c4baa7b",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "select * from ? limit 4",
-        "outputProperty": "",
-        "x": 340,
-        "y": 360,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "17aa1ae56c2be540",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{\"sql\":\"SELECT COUNT(*) AS cnt FROM ? a LIMIT 10\"}",
-        "payloadType": "json",
-        "x": 90,
-        "y": 360,
-        "wires": [
-            [
-                "a7c85ce48c4baa7b"
-            ]
-        ]
-    },
-    {
-        "id": "50413b0ca082d563",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name,COUNT(*) AS cnt1 FROM ? a where name= :msg.payload",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 370,
-        "y": 500,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "34909ff6e5e0f6a7",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "John",
-        "payloadType": "str",
-        "x": 90,
-        "y": 520,
-        "wires": [
-            [
-                "50413b0ca082d563",
-                "a1caf329e4e87dbc"
-            ]
-        ]
-    },
-    {
-        "id": "a1caf329e4e87dbc",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT :msg.payload as tes from ? limit 5",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 370,
-        "y": 580,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "ce0e3fb3e004b4af",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT a.name,COUNT(*) AS cnt FROM ? a group by name",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 420,
-        "y": 740,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "343f59f36e7293df",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "select  a.name  from ? a where name=\"John\" limit 4",
-        "outputProperty": "",
-        "x": 420,
-        "y": 660,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "babd195c3d0980dd",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "",
-        "payloadType": "date",
-        "x": 120,
-        "y": 660,
-        "wires": [
-            [
-                "343f59f36e7293df",
-                "ce0e3fb3e004b4af"
-            ]
-        ]
-    },
-    {
-        "id": "0960f3c3ca9ba2dc",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "John",
-        "payloadType": "str",
-        "x": 90,
-        "y": 480,
-        "wires": [
-            [
-                "50413b0ca082d563"
-            ]
-        ]
-    },
-    {
-        "id": "a61df296c3a578e2",
-        "type": "columnar",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "action": "sqlQuery",
-        "filePath": "C:\\Users\\peter\\data\\columnarStore\\test",
-        "sqlQuery": "SELECT \"a1\" as test,:msg.payload as name FROM ? a where name= :msg.payload",
-        "outputProperty": "payload",
-        "parameterMappings": [
-            {
-                "paramName": "name",
-                "msgPath": "payload"
-            }
-        ],
-        "x": 370,
-        "y": 440,
-        "wires": [
-            [
-                "f7056a42ba573367"
-            ]
-        ]
-    },
-    {
-        "id": "e88b60b96a6ce42a",
-        "type": "inject",
-        "z": "8aa8799ad5afca2b",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            },
-            {
-                "p": "topic",
-                "vt": "str"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "John",
-        "payloadType": "str",
-        "x": 90,
-        "y": 420,
-        "wires": [
-            [
-                "a61df296c3a578e2"
-            ]
         ]
     },
     {

@@ -5,6 +5,7 @@
 	"dependencies": {
 		"avsc": ">=5.7.7",
 		"compressiontool": "*",
+		"csv-parse":"*",
 		"fast-xml-parser": "^5.2.1",
 		"logisticegression": "git+https://gitlab.com/peter.prib/logisticregression.git",
 		"node": ">=22.15.0",
@@ -30,6 +31,9 @@
 		"testDataAnalysis": "node test-runner.js dataanalysis",
 		"testColumnar": "node test-runner.js columnar",
 		"testMatrix": "node --test ./test/matrix/01base.js",
+		"testArvoSchemaValidator": "node --test ./test/arvoSchemaValidator.js",
+
+		"testSQL": "node --test ./lib/sql/test.js",
 
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'",
 	
