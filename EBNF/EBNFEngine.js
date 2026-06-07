@@ -1,7 +1,7 @@
 // ─── 1. Token type constants ────────────────────────────────────────────────
 
 const T = {
-  IDENT:'IDENT', STR:'STR', EQ:'=', SEMI:';', DOT:'.', BAR:'|',
+  IDENT:'IDENT', STR:'STR', PARAMETER:'PARAMETER', EQ:'=', SEMI:';', DOT:'.', BAR:'|',
   COMMA:',', LBRACE:'{', RBRACE:'}', LBRAK:'[', RBRAK:']',
   LPAREN:'(', RPAREN:')', STAR:'*', PLUS:'+', QUEST:'?', MINUS:'-', EOF:'EOF'
 };
@@ -34,6 +34,14 @@ class IdentifierNode extends ASTNode {
   constructor(v) { super('Identifier', [], v); }
   static parse(parser) {
     return new IdentifierNode(parser.consume(T.IDENT).v);
+  }
+}
+
+class ParameterNode extends ASTNode {
+  constructor(v) { super('Parameter', [], v); }
+  static parse(parser) {
+    // The value includes the leading colon, e.g., ":minAge"
+    return new ParameterNode(parser.consume(T.PARAMETER).v);
   }
 }
 
@@ -140,6 +148,15 @@ function tokenize(src) {
       while (i < src.length && src[i] !== q) s += src[i++];
       i++; toks.push({ t: T.STR, v: s }); continue;
     }
+    if (c === ':') {
+      let s = c; i++;
+      // Parameters can contain alphanumeric, underscore, dot, and dollar sign
+      while (i < src.length && /[a-zA-Z0-9_$.]/.test(src[i])) {
+        s += src[i];
+        i++;
+      }
+      toks.push({ t: T.PARAMETER, v: s }); continue;
+    }
     if (/[a-zA-Z_]/.test(c)) {
       let s = '';
       while (i < src.length && /[\w\s]/.test(src[i]) && src[i] !== '\n') {
@@ -194,6 +211,7 @@ class Parser {
     if (this.match(T.LBRAK))   return OptionNode.parse(this);
     if (this.match(T.LPAREN))  return GroupNode.parse(this);
     if (this.match(T.STR))     return TerminalNode.parse(this);
+    if (this.match(T.PARAMETER)) return ParameterNode.parse(this);
     if (this.match(T.IDENT))   return IdentifierNode.parse(this);
     throw new Error(`Unexpected token: ${this.peek().t} '${this.peek().v}'`);
   }
