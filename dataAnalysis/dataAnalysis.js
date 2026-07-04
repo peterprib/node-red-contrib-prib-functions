@@ -47,7 +47,7 @@ function Predictions(dp) {
 	return this;
 }
 Predictions.prototype.validate=function(value) {
-	this.accuracy=this.predictions.map(c=>Math.abs(c-value)/c);
+	this.accuracy=this.prediction.map(c=>Math.abs(c-value)/c);
 	return this;
 };
 function realtimePredict(d,term,node) {
@@ -65,7 +65,7 @@ function EMA(coefficient=0.5) {
 }
 EMA.prototype.sample=function(value) {
 	this.weightedSum=value+this.factor*this.weightedSum;
-	this.weightedCount=1+this.factor*this.weightedSum;
+	this.weightedCount=1+this.factor*this.weightedCount;
 	this.movingAverage=this.weightedSum/this.weightedCount;
 	return this;
 }
@@ -92,8 +92,11 @@ function setDataPoint(value,term,node,dataPoint) {
 	const count=++dataPoint.count,values=dataPoint.values;
 	values.push(value);
 	const movingTerm=Math.min(values.length,dataPoint.term)
-	dataPoint.isMaxSize=(values.length>dataPoint.maxSize);
-	dataPoint.removedMovingValue=(dataPoint.isMaxSize?values[values.length-dataPoint.term]:0);
+	// maxSize lives on the node (max(term,lag)), not the dataPoint; the value
+	// leaving the term-window after the push sits at length-1-term
+	const maxSize=node.maxSize??dataPoint.term;
+	dataPoint.isMaxSize=(values.length>maxSize);
+	dataPoint.removedMovingValue=(values.length>dataPoint.term?values[values.length-1-dataPoint.term]:0);
 	dataPoint.removedValue=(dataPoint.isMaxSize?values.shift():0);
 	const removedMovingValue=dataPoint.removedMovingValue;
 	dataPoint.max=Math.max(dataPoint.max||value,value);
@@ -116,11 +119,17 @@ function setDataPoint(value,term,node,dataPoint) {
 	dataPoint.median=functions.median(values);
 	dataPoint.standardized=( (value-avg)/dataPoint.stdDev )||0;
 	dataPoint.movingStandardized=( (value-dataPoint.movingAvg)/dataPoint.movingStdDev )||0;
-	dataPoint.skewness=(dataPoint.sumCubed-3*avg*dataPoint.variance-Math.pow(avg,3))/dataPoint.variance*dataPoint.stdDev;
-	dataPoint.movingSkewness=(dataPoint.movingSumCubed-3*dataPoint.movingAvg*dataPoint.movingVariance-Math.pow(dataPoint.movingAvg,3))/dataPoint.movingVariance*dataPoint.stdDev;
+	// population skewness m3/sigma^3 where m3 = E[X^3] - 3*mean*variance - mean^3
+	dataPoint.skewness=dataPoint.variance
+		? (dataPoint.sumCubed/count-3*avg*dataPoint.variance-Math.pow(avg,3))/(dataPoint.variance*dataPoint.stdDev)
+		: 0;
+	dataPoint.movingSkewness=dataPoint.movingVariance
+		? (dataPoint.movingSumCubed/movingTerm-3*dataPoint.movingAvg*dataPoint.movingVariance-Math.pow(dataPoint.movingAvg,3))/(dataPoint.movingVariance*dataPoint.movingStdDev)
+		: 0;
 	dataPoint.outlier=node.outliersFunction(node,dataPoint,value);
 	dataPoint.weightedMovingSum+=count*value;
-	dataPoint.weightedMovingAvg=(dataPoint.weightedMovingAvg*2/count)/(count+1);
+	// weights 1..count, so divide by sum of weights count*(count+1)/2
+	dataPoint.weightedMovingAvg=(dataPoint.weightedMovingSum*2/count)/(count+1);
 	dataPoint.exponentialWeightedMoving.forEach(c=>c.sample(value));
 }
 function getColumns(node) {
@@ -263,13 +272,14 @@ functions={
 		return d.map( (c)=>(c-avg)/stdDev);
 	},
 	stdDev:(d)=>Math.sqrt(functions.variance(d)),
-	skew:(d)=>{
+	skew:(d)=>{	// population skewness m3/sigma^3
 		const avg=functions.avg(d),
-			variance=functions.sumWithFunction(d,(v)=>Math.pow(v,2)) - Math.pow(avg,2);
-		return (functions.sumWithFunction(d,(v)=>Math.pow(v,3))
+			variance=functions.variance(d);
+		if(!variance) return 0;
+		return (functions.sumWithFunction(d,(v)=>Math.pow(v,3))/d.length
 			- 3*avg*variance
 			- Math.pow(avg,3))
-			/ variance*Math.sqrt(variance);
+			/ (variance*Math.sqrt(variance));
 	},
 	realtimePredict: realtimePredict,
 	realtime:(d,term,node)=>{
@@ -302,11 +312,6 @@ functions={
 			}
 		}
 		return dp;
-	},
-	sampleVariance:(d)=>{
-		const mean=functions.avg(d);
-		const sum=functions.sumWithFunction(d,(v)=>v-mean)
-		return sum/(d.length-1)
 	},
 	sum:(d)=>d.reduce((p,c)=>p+c),
 	sumWithFunction:(d,f)=>d.reduce((p,c)=>p+f.apply(this,[c]),0),
