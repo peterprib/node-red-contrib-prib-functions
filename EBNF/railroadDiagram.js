@@ -82,8 +82,8 @@ class Component {
     rect.setAttribute("y", y - this.up); 
     rect.setAttribute("width", this.width);
     rect.setAttribute("height", this.height);
-    rect.setAttribute("fill", defaults.terminalColor);
-    rect.setAttribute("stroke", defaults.terminalStroke);
+    rect.setAttribute("fill", this.fillColor || defaults.terminalColor);
+    rect.setAttribute("stroke", this.strokeColor || defaults.terminalStroke);
     return rect;
   } 
   drawText(x, y) {
@@ -235,6 +235,30 @@ class Choice extends Component {
   }
 }
 
+// --- Difference (A - B) ---
+class Difference extends Component {
+  constructor(base, except) {
+    super();
+    this.base = base;
+    this.except = except;
+    this.width = Math.max(base.width, except.width) + defaults.spacingBothSizes;
+    this.up = base.up;
+    this.down = base.down + defaults.spacing + except.height;
+    this.height = this.up + this.down;
+  }
+  draw(x, y) {
+    const g = this.create("g");
+    const path = this.create("path");
+    const exceptY = y + defaults.spacing + this.base.down + this.except.up;
+
+    path.setAttribute("d", `M ${x} ${y} h 10 M ${x + 10} ${y} h ${this.base.width} M ${x + 10 + this.base.width} ${y} h 10 M ${x + 10} ${exceptY} h ${this.except.width}`);
+    path.setAttribute("stroke", defaults.pathStroke);
+    path.setAttribute("fill", defaults.pathFill);
+    g.append(path, this.base.draw(x + 10, y), this.except.draw(x + 10, exceptY));
+    this.svgElement = g;
+    return g;
+  }
+}
 // --- Optional [ A ] ---
 class Optional extends Component {
   constructor(item) {
@@ -281,10 +305,16 @@ class NonTerminal extends Component {
   constructor(name) {
     super();
     this.name = name;
+    this.text = name;
+    this.textWidth = textWidth(name, defaults.fontSize) + defaults.spacingBothSizes;
     this.width = name.length * 8 + defaults.spacingBothSizes;
     this.height = defaults.height;
     this.up = defaults.halfHeight;  // Distance from midline to top
     this.down = defaults.halfHeight; // Distance from midline to bottom
+    this.textHeight = defaults.fontHeight;
+    this.textUp = this.up - (this.height - this.textHeight) / 2; // Center text vertically
+    this.fillColor = defaults.nonTerminalColor;
+    this.strokeColor = defaults.nonTerminalStroke;
   }
   draw(x, y) {
     return this.drawTextBox(x, y);
@@ -325,5 +355,5 @@ class Diagram extends Component {
 
 }
 
-export { Diagram, Sequence, Choice, Optional, ZeroOrMore, Terminal, NonTerminal, defaults, svgElement };
+export { Diagram, Sequence, Choice, Optional, ZeroOrMore, Terminal, NonTerminal, Difference, defaults, svgElement };
 export default Diagram;

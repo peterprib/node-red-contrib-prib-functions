@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>EBNF Engine Test</title>
+		<style>
+			body { font-family: sans-serif; line-height: 1.5; padding: 20px; background: #fff; }
+			.test-summary { border: 1px solid #ccc; padding: 15px; margin-bottom: 30px; background: #f9f9f9; border-radius: 4px; }
+			.assertion { margin: 5px 0; padding: 5px; border-bottom: 1px solid #eee; }
+			.pass { color: #28a745; font-weight: bold; }
+			.fail { color: #dc3545; font-weight: bold; }
+			.diagram-container { border: 1px solid #eee; margin-top: 10px; background: #fff; min-height: 120px; }
+			h2 { margin-top: 25px; font-size: 1.2em; color: #333; }
+		</style>
+	</head>
+	<body>
+		<h1>EBNF Engine → Railroad Diagrams via RenderingEngine</h1>
+
+		<div class="test-summary">
+			<h3>Test Assertions</h3>
+			<div id="test-results"></div>
+		</div>
+
+		<div id="diagrams"></div>
+
+		<script type="module">
+			import { EBNF } from '../../EBNF/EBNFEngine.js';
+			import { RenderingEngine } from '../../index.js';
+
+			function assert(condition, message) {
+				const container = document.getElementById('test-results');
+				const div = document.createElement('div');
+				div.className = 'assertion';
+				div.innerHTML = (condition ? '<span class="pass">✔ PASS</span>' : '<span class="fail">✘ FAIL</span>') + ': ' + message;
+				container.appendChild(div);
+			}
+
+			const grammar = `
+				select = "SELECT" , [ "DISTINCT" ] , columns , "FROM" , table , [ where ] ;
+				columns = column , { "," , column } ;
+				column = "name" | "age" | "city" ;
+				table = "people" | "orders" ;
+				where = "WHERE" , column , comparator , :value ;
+				comparator = ">" | "<" | "=" ;
+			`;
+
+			const ebnf = new EBNF(grammar);
+
+			// --- Engine assertions ---
+			assert(ebnf.ruleNames().length === 6, '(1) Grammar compiled with 6 rules');
+
+			const result = ebnf.execute('select', 'SELECT name , age FROM people WHERE age > :value', { value: 21 });
+			assert(Array.isArray(result), '(2) execute() matches a SELECT statement');
+			assert(JSON.stringify(result).includes('21'), '(3) parameter :value substituted from context');
+
+			let failed = false;
+			try { ebnf.execute('select', 'SELECT nothing FROM people'); } catch (e) { failed = true; }
+			assert(failed, '(4) execute() rejects input not in the grammar');
+
+			ebnf.assignAction('column', v => v.toUpperCase());
+			const acted = ebnf.execute('columns', 'name , city');
+			assert(JSON.stringify(acted).includes('NAME'), '(5) rule actions applied to matched values');
+
+			// --- Diagram rendering through RenderingEngine ---
+			const diagramsDiv = document.getElementById('diagrams');
+			function renderRule(name, rendererType) {
+				diagramsDiv.insertAdjacentHTML('beforeend', `<h2>${name} (${rendererType})</h2>`);
+				const container = document.createElement('div');
+				container.className = 'diagram-container';
+				const diagram = ebnf.diagram(name);
+				container.style.height = Math.max(diagram.up + diagram.down + 20, 120) + 'px';
+				diagramsDiv.appendChild(container);
+				const engine = new RenderingEngine(container, { rendererType });
+				engine.railroadDiagram(diagram);
+				return { engine, container };
+			}
+
+			const svgRendered = ebnf.ruleNames().map(name => renderRule(name, 'svg'));
+			assert(svgRendered.every(({ container }) => container.querySelector('svg svg')), '(6) all rules rendered as SVG inside the engine surface');
+
+			const { container: canvasContainer } = renderRule('select', 'canvas');
+			assert(canvasContainer.querySelector('canvas') !== null, '(7) canvas renderer created a canvas for the diagram');
+
+			// clear() must remove a rendered diagram
+			const { engine, container } = renderRule('comparator', 'svg');
+			engine.renderer.clear();
+			assert(container.querySelector('svg svg') === null, '(8) clear() removes rendered diagrams');
+			engine.railroadDiagram(ebnf.diagram('comparator'));
+			assert(container.querySelectorAll('svg svg').length === 1, '(9) re-render after clear() shows exactly one diagram');
+		</script>
+	</body>
+</html>

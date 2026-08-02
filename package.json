@@ -35,6 +35,8 @@
 
 		"testSQL": "node --test ./lib/sql/test.js",
 
+		"testEBNF": "node --test ./test/EBNFEngine.test.mjs",
+
 		"startNodeRed": "node-red --userDir ./test/data --setting ./test/data/settings.js ./test/data/flow.json --title '***test nodered***'",
 	
 		"sharesNodeRed": "node-red --userDir ./test/data/shares --setting ./test/data/shares/settings.js ./test/data/shares/flow.json --title '***shares nodered***'"
@@ -185,6 +187,7 @@
 		}
 	},
 	"author": "Peter Prib",
+	"copyright": "Copyright 2026 Jaroslav Peter Prib, Purveyor of Excellence",
 	"license": "GPL-3.0",
 	"bugs": {
 		"url": "https://github.com/peterprib/node-red-contrib-prib-functions/issues"

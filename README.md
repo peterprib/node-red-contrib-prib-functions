@@ -1,5 +1,7 @@
 # [node-red-contrib-prib-functions][2]
 
+Copyright 2026 Jaroslav Peter Prib, Purveyor of Excellence
+
 [Node-Red][1] nodes for various functions:
 
 * Data Analysis  - statistical metrics that has real time option
