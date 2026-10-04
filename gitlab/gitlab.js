@@ -246,7 +246,7 @@ module.exports = function (RED) {
             return;
         }
 
-        if (!node.projectId) {
+        if (!node.projectId && config.action !== 'createRepo') {
             node.error("GitLab project ID is required");
             node.status({ fill: "red", shape: "ring", text: "Project ID required" });
             return;
