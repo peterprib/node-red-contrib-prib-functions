@@ -1,0 +1,14 @@
+# .npmignore replaces .gitignore for npm packing, so repeat what matters from it
+*.log
+*.tgz
+.env
+coverage/
+.nyc_output/
+
+# development and test only
+.github/
+test/
+test-runner.js
+test_select.js
+test.parq
+graphDB/*.pdf
