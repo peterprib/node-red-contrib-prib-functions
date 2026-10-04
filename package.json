@@ -13,12 +13,17 @@
 		"node-red-contrib-noderedbase": ">=0.0.16",
 		"node-red-contrib-prib-functions": "file:",
 		"node-red-node-data-generator":">=1.0.1",
-		"npm": "^11.3.0",
 		"xlsx": "*"
+	},
+	"overrides": {
+		"axios": "$axios",
+		"moment": "^2.31.0",
+		"multer": "^2.4.0",
+		"qs": "^6.16.0"
 	},
 	"devDependencies": {
 		"@node-red/runtime": ">=4.0.9",
-		"axios": ">=1.9.0",
+		"axios": ">=1.20.0",
 		"bl": "^6.1.0",
 		"should": ">=8.x",
 		"node-red": ">=4.0.9",
