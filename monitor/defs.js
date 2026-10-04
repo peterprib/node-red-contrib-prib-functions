@@ -1,12 +1,12 @@
 const heatGradient=[
   {action:"stop",offset:"5%","stop-color":"lightgreen"},
   {action:"stop",offset:"80%","stop-color":"yellow"},
-  {action:"stop",offset:"95%","stop-color":"red`"}
+  {action:"stop",offset:"95%","stop-color":"red"}
 ]
 const heatGradientReverse=[
   {action:"stop",offset:"95%","stop-color":"lightgreen"},
   {action:"stop",offset:"20%","stop-color":"yellow"},
-  {action:"stop",offset:"5%","stop-color":"red`"}
+  {action:"stop",offset:"5%","stop-color":"red"}
 ]
 
 const defs=

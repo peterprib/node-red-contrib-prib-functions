@@ -1,0 +1,26 @@
+src/
+├── core/
+│   ├── ASTNode.js          — base class only, no imports
+│   ├── Token.js            — token type constants, no imports
+│   └── Parser.js           — token stream manager, imports Token
+│
+├── schema/
+│   ├── ColumnDef.js        — fluent column builder, no imports
+│   ├── Schema.js           — imports ColumnDef
+│   └── Database.js         — imports Schema, Table
+│
+├── storage/
+│   ├── Column.js           — typed array wrapper, no imports
+│   ├── Bitmap.js           — filter bitmap, no imports
+│   └── Table.js            — imports Column, Bitmap, Schema
+│
+├── sql/
+│   ├── nodes/
+│   │   ├── expressions.js  — ExprNode and all expression nodes, imports ASTNode
+│   │   ├── clauses.js      — SELECT/FROM/WHERE etc, imports ASTNode, expressions
+│   │   └── query.js        — SelectQueryNode, imports ASTNode, clauses
+│   ├── tokenizer.js        — imports Token
+│   ├── parser.js           — imports Parser (core), query nodes
+│   └── executor.js         — imports Table, Bitmap, query nodes
+│
+└── index.js                — public API, imports Database, parser, executor

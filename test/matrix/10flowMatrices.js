@@ -1,3 +1,4 @@
+const { describe, it } = require('node:test');
 const assert=require('assert');
 const should=require("should");
 const Matrix=require("../../matrix/matrixNode.js");
@@ -21,16 +22,16 @@ function getNode(node) {
 	throw Error("node id: "+node.id+"  not found, node: "+JSON.stringify(node))
 };
 describe('matrix', function() {
-	beforeEach(function(done) {
+	beforeEach(()=>{
 		helper.startServer(done);
 	});
-	afterEach(function(done) {
+	afterEach(()=>{
 		helper.unload();
 		helper.stopServer(done);
 	});
 
 /*
-	it("test loading", function(done) {
+	it("test loading", ()=>{
 		helper.load(Matrix,[matrixNode], function() {
             try{
                 const nodeMatrix=getNode(matrixNode);
@@ -41,7 +42,7 @@ describe('matrix', function() {
         });
     });
     const matrixFlow=[matrixNode,helperNodeResults]
-	it("add", function(done) {
+	it("add", ()=>{
 		let count=0;
 		helper.load(Matrix,matrixFlow, function() {
 			try{

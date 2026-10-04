@@ -7,7 +7,7 @@
             action: {value:"getRepo", required:true},
             gitlabUrl: {value:"https://gitlab.com", required:true},
             accessToken: {value:"", required:true},
-            projectId: {value:"", required:true},
+            projectId: {value:"", validate: function(v) { return this.action === 'createRepo' || !!v; }},
             filePath: {value:"", required:false}
         },
         inputs: 1,
@@ -31,6 +31,11 @@
                 } else {
                     $("#file-path-row").hide();
                 }
+                if (action === 'createRepo') {
+                    $("#project-id-row").hide();
+                } else {
+                    $("#project-id-row").show();
+                }
             });
             $("#node-input-action").change(); // trigger on load
         }
@@ -46,6 +51,7 @@
         <label for="node-input-action"><i class="fa fa-cogs"></i> Action</label>
         <select type="text" id="node-input-action">
             <option value="getRepo">Get Repository Info</option>
+            <option value="createRepo">Create Repository</option>
             <option value="listIssues">List Issues</option>
             <option value="createIssue">Create Issue</option>
             <option value="getMergeRequests">Get Merge Requests</option>
@@ -65,7 +71,7 @@
         <label for="node-input-accessToken">Access Token</label>
         <input type="password" id="node-input-accessToken" placeholder="GitLab personal access token">
     </div>
-    <div class="form-row">
+    <div class="form-row" id="project-id-row">
         <label for="node-input-projectId">Project ID</label>
         <input type="text" id="node-input-projectId" placeholder="project-id or namespace/project-name">
     </div>
@@ -89,6 +95,7 @@
     <h3>Actions</h3>
     <ul>
         <li><b>Get Repository Info:</b> Retrieves basic information about the repository</li>
+        <li><b>Create Repository:</b> Creates a new project. Required in msg.payload: name. Optional: description, visibility (default: private). Project ID is not used</li>
         <li><b>List Issues:</b> Lists issues in the repository. Optional filters in msg.payload: state, labels, assignee_id</li>
         <li><b>Create Issue:</b> Creates a new issue. Required in msg.payload: title. Optional: description, labels, assignee_ids</li>
         <li><b>Get Merge Requests:</b> Lists merge requests. Optional filters in msg.payload: state, source_branch, target_branch</li>

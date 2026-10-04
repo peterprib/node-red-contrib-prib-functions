@@ -52,6 +52,7 @@
                 clone:{label:"Clone",show:["source","target"],args:[]},
 				createForEachCellPairSet:{label:"Create Pair Set Cells",show:["source","target"],args:["matrix","call"],default:{call:"(baseCellValue,matrixCellValue)=>{}"}},
 				define:{label:"Define",show:["target"],args:["rows","columns","dataType"]},
+				frobeniusInnerProduct:{label:"Frobenius Inner Product",show:["source","target"],args:["matrix"]},
 				defineEmpty:{label:"Define Empty",show:["target"],args:["rows","columns","dataType"]},
 				divideCell:{label:"Divide Cell",show:["source"],args:["rows","columns","value"]},
                 divideRow:{label:"Divide Row",show:["source"],args:["row","factor","start","end"]},
@@ -67,6 +68,7 @@
 				forwardElimination:{label:"Forward Elimination",show:["source"],args:[]},
 				gaussianElimination:{label:"Gaussian Elimination",show:["source"],args:[]},
 				get:{label:"Get Cell",show:["source","target"],args:[]},
+				getDiagonal:{label:"Get Diagonal",show:["source","target"],args:[]},
                 getAdjoint:{label:"Adjoint",show:["source","target"],args:[]},
                 getCofactor:{label:"Cofactor",show:["source","target"],args:[]},
                 getComplementMinor:{label:"Complement Minor",show:["source","target"],args:[]},
@@ -79,21 +81,30 @@
 				getInverseGaussJordan:{label:"Inverse (Gauss Jordan Method)",show:["source","target"],args:[]},
 				getIndex:{label:"Get Vector Offset",show:["source","target"],args:["row","column"]},
 				getMatrix:{label:"Get Sub Matrix",show:["source","target"],args:["row","column","rows","columns"]},
+				luDecomposition:{label:"LU Decomposition",show:["source","target"],args:[]},
+				getRank:{label:"Rank",show:["source","target"],args:[]},
 				getRow:{label:"Get Row",show:["source","target"],args:["row"]},
+				getTrace:{label:"Get Trace",show:["source","target"],args:[]},
 				getVandermonde:{label:"Vandermonde",show:["target"],args:["vector","columns"]},
 				getZeroed:{label:"Get Zeroed",show:["source","target"],args:["row","column"]},
+				hadamardProduct:{label:"Hadamard Product",show:["source","target"],args:[]},
+				isSquare:{label:"Is Square",show:["source"],args:[]},
+				isSymmetric:{label:"Is Symmetric",show:["source","target"],args:["precision"]},
 				maxAbsColumn:{label:"Column Maximum Absolute",show:["source","target"],args:["column","start"]},
 				maxColumn:{label:"Column Max",show:["source","target"],args:["column","start"]},
                 multiple:{label:"Multiple",show:["source","target"],args:[]},
                 multipleCell:{label:"Multiple Cell",show:["source","target"],args:["rows","columns","value"]},
 				multiplyRow:{label:"Multiply Row",show:["source"],args:["row","factor"]},
+				multiplyScalar:{label:"Multiply Scalar",show:["source"],args:["factor"]},
 				norm:{label:"Norm",show:["source","target"],args:[]},
+				reshape:{label:"Reshape",show:["source"],args:["rows","columns"]},
 				reduceRow:{label:"Reduce Row",show:["source","target"],args:["row","call","value"],default:{call:"(agregatevalue,cellValue,row,column)=>agregatevalue+cellValue"}},
 				reduce:{label:"Reduce Cells",show:["source","target"],args:["call","value"],default:{call:"()=>{}"}},
 				reducedRowEchelonForm:{label:"Reduced Row EchelonForm",show:["source"],args:[]},
 				rowEchelonForm:{label:"Row Echelon Form",show:["source"],args:[]},
 				runningSum:{label:"Running Sum",show:["source","target"],args:[]},
 				set:{label:"Set Cell",show:["source"],args:["row","column","value"]},
+				setMatrix:{label:"Set Sub Matrix",show:["source"],args:["matrix","row","column"]},
 				setRow:{label:"Set Row",show:["source"],args:["vector","row"]},
                 subtractCell:{label:"Subtract Cell",show:["source","target"],args:["row","column","value"]},
 				sumRow:{label:"Sum Row",show:["source","target"],args:[]},
@@ -156,9 +167,7 @@
 				{ value: "Uint32Array", label: "long unsgined 0 to 4294967295" },
 				{ value: "BigInt64Array", label: "bigint 2**-263 to 2**263" },
 				{ value: "BigUint64Array", label: "bigint unsigned 0 to 2**264" },
-			]);
-
-
+			])
 
 			defineProperty({name:"source"	,label:"Source"		,icon:"crosshairs"},"msg","json","flow","global");
 			defineProperty({name:"arg"		,label:"Argument"	,icon:"tag"},"num","json","msg","flow","global","env");

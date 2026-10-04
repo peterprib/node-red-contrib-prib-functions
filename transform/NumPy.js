@@ -42,7 +42,7 @@ const dataTypes = {
         name: "int8",
         bytes4DataType: 8,
         cellConstructor: Int8Array,
-        setDataView: "setInt16"
+        setDataView: "setInt8"
     },
     "<i2": {
         name: "int16",
@@ -53,8 +53,8 @@ const dataTypes = {
     "<u4": {
         name: "uint32",
         bytes4DataType: 32,
-        cellConstructor: Int32Array,
-        setDataView: "setInt32"
+        cellConstructor: Uint32Array,
+        setDataView: "setUint32"
     },
     "<i4": {
         name: "int32",
@@ -154,6 +154,7 @@ V void
 const dataTypeToNumpyDescr = new Map([
     ["float32", "<f4"],
     ["float64", "<f8"],
+    ["number", "<f8"],
     ["int8",  "<i1"],
     ["int16", "<i2"],
     ["int32", "<i4"],
@@ -227,25 +228,23 @@ NumPy.prototype.setDescr = function(descr) {
     return this
 }
 NumPy.prototype.toNpy = function () {
-    const versionStr = "\x01\x00"; // version 1.0
-    const shapeStr = this.shape.join(",") + ","
-    let header = "{'descr':"+this.descr+", 'fortran_order': false, 'shape': ("+shapeStr+"), }"
-    const unpaddedLength = MAGIC_STRING.length + versionStr.length + 2 + header.length;
-    // 16-bit align with spaces
-    header += " ".repeat((16 - (unpaddedLength % 16)) % 16);
-    // SIze of Npy
-    const totalSize = header.length + this.bytes4DataType * getTotalCells(this.shape)
-//    const totalSize = unpaddedLength + padding.length + this.bytes4DataType * getTotalCells(this.shape)
-    const arrayBuffer = new ArrayBuffer(totalSize)
+    // Same layout numpy.save writes for format version 1.0
+    const shape = this.shape.length === 1 ? "(" + this.shape[0] + ",)" : "(" + this.shape.join(", ") + ")"
+    let header = "{'descr': '" + this.descr + "', 'fortran_order': " + (this.fortran_order ? "True" : "False") + ", 'shape': " + shape + ", }"
+    const preambleLength = MAGIC_STRING.length + defaultVersionStr.length + 2
+    // pad with spaces and end with a newline so the data starts on a 64-byte boundary
+    header += " ".repeat((64 - ((preambleLength + header.length + 1) % 64)) % 64) + "\n"
+    const cells = getTotalCells(this.shape)
+    const arrayBuffer = new ArrayBuffer(preambleLength + header.length + this.bytes4DataType * cells)
     const view = new DataView(arrayBuffer)
     let pos = writeStrToDataView(view, MAGIC_STRING + defaultVersionStr, 0)
     view.setUint16(pos, header.length, true);
-    pos += 2 + writeStrToDataView(view, header, pos);
-    const data=this.dataVector
-//    const setDataView = view[this.setDataView];
-    for (let i = 0; i < data.length; i++) {
-//        setDataView(pos,data[i],true)
-        view[pos]=data[i]
+    pos = writeStrToDataView(view, header, pos + 2);
+    const data = this.dataVector
+    const setter = view[this.setDataView].bind(view)
+    const isBig = this.setDataView.startsWith("setBig")
+    for (let i = 0; i < cells; i++) {
+        setter(pos, isBig ? BigInt(data[i]) : Number(data[i]), true)
         pos += this.bytes4DataType;
     }
     return arrayBuffer;
@@ -270,7 +269,7 @@ NumPy.prototype.parse = function(contentIn={dataType:"int8",
 NumPy.prototype.parseNpy = function(npyContentIn) {
 //    this.npyContent=npyContentIn instanceof ArrayBuffer ? npyContentIn : bufferToArrayBuffer(npyContentIn) 
     this.npyContent=npyContentIn instanceof ArrayBuffer ? npyContentIn : npyContentIn.toBufferArray() 
-    const headerLength = new DataView(this.npyContent.slice(8, 10)).getUint8(0)
+    const headerLength = new DataView(this.npyContent.slice(8, 10)).getUint16(0, true)
     const offsetBytes = 10 + headerLength;
     const headerContents = new TextDecoder("utf-8").decode(
         new Uint8Array(this.npyContent.slice(10, 10 + headerLength))

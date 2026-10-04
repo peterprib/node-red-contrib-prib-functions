@@ -1,7 +1,7 @@
 {
     "node-red": {
         "name": "node-red",
-        "version": "4.1.7-git",
+        "version": "4.1.8-git",
         "local": false,
         "user": false,
         "nodes": {
@@ -448,9 +448,9 @@
     },
     "node-red-contrib-prib-functions": {
         "name": "node-red-contrib-prib-functions",
-        "version": "0.24.0",
-        "local": false,
-        "user": false,
+        "version": "0.27.1",
+        "local": true,
+        "user": true,
         "nodes": {
             "append": {
                 "name": "append",
@@ -458,153 +458,21 @@
                     "append"
                 ],
                 "enabled": true,
-                "local": false,
+                "local": true,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\append\\append.js"
             },
-            "dataAnalysis": {
-                "name": "dataAnalysis",
+            "arvoStore": {
+                "name": "arvoStore",
                 "types": [
-                    "Data Analysis"
+                    "arvoStore"
                 ],
                 "enabled": true,
-                "local": false,
+                "local": true,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\dataAnalysis\\dataAnalysis.js"
-            },
-            "hostAvailable": {
-                "name": "hostAvailable",
-                "types": [
-                    "Host Available"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\testing\\hostAvailable.js"
-            },
-            "levenshteinDistance": {
-                "name": "levenshteinDistance",
-                "types": [
-                    "Levenshtein Distance"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\levenshteinDistance\\levenshteinDistanceNode.js"
-            },
-            "logisticRegression": {
-                "name": "logisticRegression",
-                "types": [
-                    "logisticRegression"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\logisticRegression\\logisticRegression.js"
-            },
-            "load-injector": {
-                "name": "load-injector",
-                "types": [
-                    "Load Injector"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\testing\\load-injector.js"
-            },
-            "matrix": {
-                "name": "matrix",
-                "types": [
-                    "matrix"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\matrix\\matrixNode.js"
-            },
-            "monitorflow": {
-                "name": "monitorflow",
-                "types": [
-                    "Monitor Flow"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorflow.js"
-            },
-            "monitorSystem": {
-                "name": "monitorSystem",
-                "types": [
-                    "Monitor System"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorSystem.js"
-            },
-            "os": {
-                "name": "os",
-                "types": [
-                    "os"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\nodejs\\os.js"
-            },
-            "spawnProcess": {
-                "name": "spawnProcess",
-                "types": [
-                    "Spawn Process"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\spawnProcess\\spawnProcess.js"
-            },
-            "test": {
-                "name": "test",
-                "types": [
-                    "test"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\testing\\test.js"
-            },
-            "transform": {
-                "name": "transform",
-                "types": [
-                    "transform"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
-            },
-            "gitlab": {
-                "name": "gitlab",
-                "types": [
-                    "gitlab"
-                ],
-                "enabled": true,
-                "local": false,
-                "user": false,
-                "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\gitlab\\gitlab.js"
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\arvoStore\\arvoStore.js"
             },
             "columnar": {
                 "name": "columnar",
@@ -612,18 +480,194 @@
                     "columnar"
                 ],
                 "enabled": true,
-                "local": false,
+                "local": true,
                 "user": false,
                 "module": "node-red-contrib-prib-functions",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-contrib-prib-functions\\columnar\\columnar.js"
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\columnar\\columnar.js"
+            },
+            "dataAnalysis": {
+                "name": "dataAnalysis",
+                "types": [
+                    "Data Analysis"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\dataAnalysis\\dataAnalysis.js"
+            },
+            "dcdllm": {
+                "name": "dcdllm",
+                "types": [
+                    "dcdllm"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\dcdllm\\dcdllm.js"
+            },
+            "graphDB": {
+                "name": "graphDB",
+                "types": [
+                    "graphDB"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\graphDB\\graphDB.js"
+            },
+            "filesystem": {
+                "name": "filesystem",
+                "types": [
+                    "filesystem"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\filesystem\\filesystem.js"
+            },
+            "hostAvailable": {
+                "name": "hostAvailable",
+                "types": [
+                    "Host Available"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\testing\\hostAvailable.js"
+            },
+            "levenshteinDistance": {
+                "name": "levenshteinDistance",
+                "types": [
+                    "Levenshtein Distance"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\levenshteinDistance\\levenshteinDistanceNode.js"
+            },
+            "logisticRegression": {
+                "name": "logisticRegression",
+                "types": [
+                    "logisticRegression"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\logisticRegression\\logisticRegression.js"
+            },
+            "load-injector": {
+                "name": "load-injector",
+                "types": [
+                    "Load Injector"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\testing\\load-injector.js"
+            },
+            "matrix": {
+                "name": "matrix",
+                "types": [
+                    "matrix"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\matrix\\matrixNode.js"
+            },
+            "monitorflow": {
+                "name": "monitorflow",
+                "types": [
+                    "Monitor Flow"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorflow.js"
+            },
+            "monitorSystem": {
+                "name": "monitorSystem",
+                "types": [
+                    "Monitor System"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\monitor\\monitorSystem.js"
+            },
+            "os": {
+                "name": "os",
+                "types": [
+                    "os"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\nodejs\\os.js"
+            },
+            "spawnProcess": {
+                "name": "spawnProcess",
+                "types": [
+                    "Spawn Process"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\spawnProcess\\spawnProcess.js"
+            },
+            "test": {
+                "name": "test",
+                "types": [
+                    "test"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\testing\\test.js"
+            },
+            "transform": {
+                "name": "transform",
+                "types": [
+                    "transform"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\transform\\transform.js"
+            },
+            "gitlab": {
+                "name": "gitlab",
+                "types": [
+                    "gitlab"
+                ],
+                "enabled": true,
+                "local": true,
+                "user": false,
+                "module": "node-red-contrib-prib-functions",
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-contrib-prib-functions\\gitlab\\gitlab.js"
             }
         }
     },
     "node-red-node-data-generator": {
         "name": "node-red-node-data-generator",
-        "version": "1.0.2",
-        "local": false,
-        "user": false,
+        "version": "1.0.3",
+        "local": true,
+        "user": true,
         "nodes": {
             "data-generator": {
                 "name": "data-generator",
@@ -631,10 +675,10 @@
                     "data-generator"
                 ],
                 "enabled": true,
-                "local": false,
+                "local": true,
                 "user": false,
                 "module": "node-red-node-data-generator",
-                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\node_modules\\node-red-node-data-generator\\datagenerator.js"
+                "file": "C:\\Users\\peter\\repros\\node-red-contrib-prib-functions\\test\\data\\node_modules\\node-red-node-data-generator\\datagenerator.js"
             }
         }
     }

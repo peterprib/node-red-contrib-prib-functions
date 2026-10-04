@@ -14,10 +14,10 @@
                 "view-node-info-icon": true
             },
             "tours": {
-                "welcome": "4.0.5-git"
+                "welcome": "4.1.1-git"
             }
         },
-        "menu-menu-item-sidebar": true,
+        "menu-menu-item-sidebar": false,
         "menu-menu-item-palette": true
     }
 }

@@ -1,0 +1,112 @@
+<script type="text/javascript">
+	RED.nodes.registerType('dcdllm', {
+		category: 'function',
+		color: '#a6bbcf',
+		defaults: {
+			name: {value: "DC DLLM", required: false},
+			maxLength: {value: 100, validate: RED.validators.number(), required: true},
+			keywords: {value: "", validate: RED.validators.regex(/^.*$/), required: false},
+			sentenceThreshold: {value: 3, validate: RED.validators.number(), required: true},
+			complexityThreshold: {value: 0.5, validate: RED.validators.number(), required: true},
+			wordThreshold: {value: 5, validate: RED.validators.number(), required: true},
+			decisionTree: {value: '{}', validate: RED.validators.regex(/^.*$/), required: false},
+			priors: {value: '{"answer": 0.5, "clarify": 0.2, "retrieve": 0.2, "escalate": 0.1}', validate: RED.validators.regex(/^.*$/), required: true},
+			sequentialMode: {value: false, required: true},
+			useRL: {value: false, required: true},
+			reasoningMode: {value: 'none', required: true}
+		},
+		inputs: 1,
+		outputs: 4,
+		icon: "white/message.png",
+		align: 'left',
+		paletteLabel: "DC DLLM",
+		inputLabels: "Query",
+		outputLabels: ["Answer", "Clarify", "Retrieve", "Escalate"],
+		label: function () {
+			return this.name || "DC DLLM";
+		},
+		oneditprepare: function() {
+			// Add UI for maxLength and keywords
+			$("#node-input-maxLength").spinner({min:1});
+			$("#node-input-sentenceThreshold").spinner({min:1});
+			$("#node-input-complexityThreshold").spinner({min:0, max:1, step:0.1});
+			$("#node-input-wordThreshold").spinner({min:1});
+			// For keywords, set initial value and handle changes
+			if (this.keywords && Array.isArray(this.keywords)) {
+				$("#node-input-keywords").val(this.keywords.join(', '));
+			}
+			$("#node-input-keywords").on('change', function() {
+				var val = $(this).val().split(',').map(s => s.trim()).filter(s => s);
+				$(this).val(val.join(', '));
+			});
+		}
+	});
+</script>
+
+<script type="text/html" data-template-name="dcdllm">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name" placeholder="DC DLLM">
+	</div>
+	<div class="form-row">
+		<label for="node-input-maxLength"><i class="fa fa-arrows-h"></i> Max Length</label>
+		<input type="number" id="node-input-maxLength" min="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-keywords"><i class="fa fa-list"></i> Keywords (comma-separated)</label>
+		<input type="text" id="node-input-keywords" placeholder="help, search, find">
+	</div>
+	<div class="form-row">
+		<label for="node-input-sentenceThreshold"><i class="fa fa-hashtag"></i> Sentence Threshold</label>
+		<input type="number" id="node-input-sentenceThreshold" min="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-complexityThreshold"><i class="fa fa-bar-chart"></i> Complexity Threshold</label>
+		<input type="number" id="node-input-complexityThreshold" min="0" max="1" step="0.1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-wordThreshold"><i class="fa fa-font"></i> Word Threshold</label>
+		<input type="number" id="node-input-wordThreshold" min="1">
+	</div>
+	<div class="form-row">
+		<label for="node-input-sequentialMode"><i class="fa fa-sitemap"></i> Sequential Mode</label>
+		<input type="checkbox" id="node-input-sequentialMode">
+	</div>
+	<div class="form-row">
+		<label for="node-input-useRL"><i class="fa fa-brain"></i> Use RL Policy Learning</label>
+		<input type="checkbox" id="node-input-useRL">
+	</div>
+	<div class="form-row">
+		<label for="node-input-reasoningMode"><i class="fa fa-lightbulb-o"></i> Reasoning Mode</label>
+		<select id="node-input-reasoningMode">
+			<option value="none">None</option>
+			<option value="cot">Chain-of-Thought</option>
+			<option value="tot">Tree-of-Thoughts</option>
+		</select>
+	</div>
+	<div class="form-row">
+		<label for="node-input-priors"><i class="fa fa-percent"></i> Bayesian Priors (JSON)</label>
+		<input type="text" id="node-input-priors" placeholder='{"answer": 0.5, "clarify": 0.2, "retrieve": 0.2, "escalate": 0.1}'>
+	</div>
+	<div class="form-row">
+		<label for="node-input-decisionTree"><i class="fa fa-sitemap"></i> Decision Tree (JSON)</label>
+		<input type="text" id="node-input-decisionTree" placeholder="{}">
+	</div>
+</script>
+
+<script type="text/html" data-help-name="dcdllm">
+	<p>Decision-Centric Design for LLM Systems node with Bayesian, sequential, RL-based, and advanced reasoning decision-making.</p>
+	<p>Features:</p>
+	<ul>
+		<li><b>Decision Tree:</b> Hierarchical signal evaluation with explicit rules</li>
+		<li><b>Bayesian Posteriors:</b> Probabilistic action inference with configurable priors</li>
+		<li><b>Sequential Mode:</b> Maintains context history to update decisions based on previous actions</li>
+		<li><b>RL Policy Learning:</b> Q-learning based policy that learns from feedback (msg.feedback)</li>
+		<li><b>Chain-of-Thought:</b> Encourages step-by-step reasoning in responses</li>
+		<li><b>Tree-of-Thoughts:</b> Explores multiple reasoning paths for complex queries</li>
+		<li><b>Failure Attribution:</b> msg.decisionReason and msg.confidence for diagnosability</li>
+	</ul>
+	<p>Outputs to 4 ports: Answer, Clarify, Retrieve, Escalate.</p>
+	<p>When using RL, provide feedback via msg.feedback (e.g., 1 for good, -1 for bad) to update the policy.</p>
+	<p>Reasoning modes add instructions to the message for enhanced LLM response generation.</p>
+</script>

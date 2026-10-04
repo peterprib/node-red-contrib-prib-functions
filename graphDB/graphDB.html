@@ -1,0 +1,82 @@
+<script type="text/javascript">
+	RED.nodes.registerType('graphDB', {
+		category: 'function',
+		color: '#76BB45',
+		defaults: {
+			name: {value: 'PDF Graph DB', required: false},
+			folderPath: {value: './', validate: RED.validators.regex(/^.*$/)},
+			nodeType: {value: 'document', validate: RED.validators.regex(/^.*$/)},
+			createEdges: {value: true, required: true},
+			outputFormat: {value: 'json', required: true}
+		},
+		inputs: 1,
+		outputs: 2,
+		icon: 'graphDB.svg',
+		align: 'left',
+		paletteLabel: 'Graph DB',
+		inputLabels: 'Trigger',
+		outputLabels: ['Graph Data', 'Error'],
+		label: function () {
+			return this.name || 'Graph DB';
+		},
+		oneditprepare: function() {
+			$('#node-input-createEdges').on('change', function() {
+				$('#edge-controls').toggle(this.checked);
+			});
+		}
+	});
+</script>
+
+<script type="text/html" data-template-name="graphDB">
+	<div class="form-row">
+		<label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+		<input type="text" id="node-input-name" placeholder="Graph DB">
+	</div>
+	<div class="form-row">
+		<label for="node-input-folderPath"><i class="fa fa-folder"></i> Folder Path</label>
+		<input type="text" id="node-input-folderPath" placeholder="./pdfs">
+	</div>
+	<div class="form-row">
+		<label for="node-input-nodeType"><i class="fa fa-cube"></i> Node Type</label>
+		<input type="text" id="node-input-nodeType" placeholder="document">
+	</div>
+	<div class="form-row">
+		<label for="node-input-createEdges"><i class="fa fa-link"></i> Create Edges</label>
+		<input type="checkbox" id="node-input-createEdges">
+	</div>
+	<div class="form-row" id="edge-controls">
+		<label for="node-input-outputFormat"><i class="fa fa-sliders"></i> Output Format</label>
+		<select id="node-input-outputFormat">
+			<option value="json">JSON</option>
+			<option value="cypher">Cypher</option>
+			<option value="graphml">GraphML</option>
+		</select>
+	</div>
+</script>
+
+<script type="text/html" data-help-name="graphDB">
+	<p>Builds a graph database from document files in a folder.</p>
+	<p><b>Features:</b></p>
+	<ul>
+		<li><b>Document Extraction:</b> Reads PDF and TXT files from a specified folder</li>
+		<li><b>Entity Recognition:</b> Extracts terms and concepts from text</li>
+		<li><b>Graph Construction:</b> Creates nodes for documents, terms, and concepts</li>
+		<li><b>Relationship Creation:</b> Optional edge creation between entities</li>
+		<li><b>Statistics:</b> Generates graph statistics (node/edge counts by type)</li>
+	</ul>
+	<p><b>Configuration:</b></p>
+	<ul>
+		<li><b>Folder Path:</b> Path to folder containing PDF files</li>
+		<li><b>Node Type:</b> Type of primary nodes to create</li>
+		<li><b>Create Edges:</b> Enable relationship creation between entities</li>
+		<li><b>Output Format:</b> JSON, Cypher, or GraphML format</li>
+	</ul>
+	<p><b>Output Ports:</b></p>
+	<ul>
+		<li>Port 1: Graph data with nodes, edges, and statistics</li>
+		<li>Port 2: Error messages if processing fails</li>
+	</ul>
+	<p><b>msg.graphData:</b> Contains nodes and edges arrays</p>
+	<p><b>msg.stats:</b> Graph statistics including node/edge type counts</p>
+	<p><b>msg.processedFiles:</b> Number of successfully processed files</p>
+</script>

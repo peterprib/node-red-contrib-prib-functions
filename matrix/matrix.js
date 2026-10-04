@@ -77,7 +77,12 @@ function Matrix(rows,columns,fill,dataType="Float32Array") {
 	return this;
 }
 Matrix.prototype.add=function(matrix){
-	this.forEachCellPairSet(matrix,(cellA,cellB)=>cellA+cellB)
+	if (matrix instanceof Matrix && this.rows === matrix.rows && this.columns === matrix.columns) {
+		const vecA = this.vector, vecB = matrix.vector;
+		for (let i = 0, len = this.size; i < len; i++) vecA[i] += vecB[i];
+	} else {
+		this.forEachCellPairSet(matrix,(cellA,cellB)=>cellA+cellB)
+	}
 	return this;
 }
 Matrix.prototype.addCell=function(row,column,value){
@@ -101,8 +106,13 @@ Matrix.prototype.addRow=function(row,vectorIn){
 	return this;
 }
 Matrix.prototype.addRow2Row=function(rowA,rowB,factor=1,startColumn=0,endColumn=this.columns-1){
-	const diff=(rowA-rowB)*this.columns;
-	this.forRowCells(rowB,(value,column,offset,vector)=>vector[offset]+=vector[offset+diff]*factor,startColumn,endColumn);
+	const cols = this.columns;
+	const offA = rowA * cols;
+	const offB = rowB * cols;
+	const vec = this.vector;
+	for (let c = startColumn; c <= endColumn; c++) {
+		vec[offB + c] += vec[offA + c] * factor;
+	}
 	return this;
 }
 Matrix.prototype.backwardSubstitution=function(){
@@ -117,7 +127,7 @@ Matrix.prototype.backwardSubstitution=function(){
 	return vector;
 }
 Matrix.prototype.clone=function(){
-	const matrix= new Matrix({rows:this.rows,columns:this.columns,size:this.size,sizeMax:this.sizeMax})
+	const matrix= new Matrix({rows:this.rows,columns:this.columns,size:this.size,sizeMax:this.sizeMax,rowsMax:this.rowsMax,dataType:this.dataType})
 	matrix.vector.set(this.vector,0);
 	return matrix
 }
@@ -130,11 +140,12 @@ Matrix.prototype.createLike=function(matrix){
 }
 Matrix.prototype.createForEachCellPairSet=function(matrix,call){
 	const result=this.createLike();
-	if(matrix instanceof Matrix){
-		if(this.rows!=matrix.rows) throw Error("number of rows different");
-		if(this.columns!=matrix.columns) throw Error("number of columns different");
-		for(let offset=0;offset<this.size;offset++) 
-			result.vector[offset]=call.apply(this,[this.vector[offset],matrix.vector[offset]]);
+	if (matrix instanceof Matrix) {
+		if (this.rows != matrix.rows) throw Error("number of rows different");
+		if (this.columns != matrix.columns) throw Error("number of columns different");
+		const vecA = this.vector, vecB = matrix.vector, resVec = result.vector;
+		for (let offset = 0, len = this.size; offset < len; offset++)
+			resVec[offset] = call(vecA[offset], vecB[offset]);
 		return result;
 	}
 	if(this.rows!=matrix.length) throw Error("number of rows different");
@@ -173,8 +184,12 @@ Matrix.prototype.divideCell=function(row,column,value){
 	return this;
 }
 Matrix.prototype.divideRow=function(row,factor,startColumn=0,endColumn=this.columns-1){
-	this.determinant/=factor;
-	this.forRowCells(row,(value,column,offset,vector)=>vector[offset]/=factor,startColumn,endColumn);
+	this.determinant /= factor;
+	const offset = row * this.columns;
+	const vec = this.vector;
+	for (let c = startColumn; c <= endColumn; c++) {
+		vec[offset + c] /= factor;
+	}
 	return this;
 }
 Matrix.prototype.equalsNearly=function(matrix,precision=6){
@@ -258,9 +273,10 @@ Matrix.prototype.forColumnCells=function(column,call,startRow=0,endRow=this.rows
 	return this;
 }
 Matrix.prototype.forEachCell=function(call){
-	for(let offset=0,row=0;row<this.rows;row++) {
-		for(let column=0;column<this.columns;column++) {
-			call.apply(this,[this.vector[offset],row,column,this.vector,offset,this]);
+	const rows = this.rows, cols = this.columns, vec = this.vector;
+	for(let offset=0,row=0;row<rows;row++) {
+		for(let column=0;column<cols;column++) {
+			call(vec[offset],row,column,vec,offset,this);
 			offset++
 		}
 	}
@@ -278,11 +294,12 @@ Matrix.prototype.forEachCellLowerTriangle=function(call){
 	return this;
 }
 Matrix.prototype.forEachCellPairSet=function(matrix,call){
-	if(matrix instanceof Matrix){
-		if(this.rows!=matrix.rows) throw Error("number of rows different");
-		if(this.columns!=matrix.columns) throw Error("number of columns different");
-		for(let offset=0;offset<this.size;offset++) 
-			this.vector[offset]=call.apply(this,[this.vector[offset],matrix.vector[offset]]);
+	if (matrix instanceof Matrix) {
+		if (this.rows != matrix.rows) throw Error("number of rows different");
+		if (this.columns != matrix.columns) throw Error("number of columns different");
+		const vecA = this.vector, vecB = matrix.vector;
+		for (let offset = 0, len = this.size; offset < len; offset++)
+			vecA[offset] = call(vecA[offset], vecB[offset]);
 		return this;
 	}
 	if(this.rows!=matrix.length) throw Error("number of rows different");
@@ -369,21 +386,16 @@ Matrix.prototype.getAdjoint=function(){
 }
 Matrix.prototype.getCofactor=function(cellRow,cellColumn){
 	const matrixSize=this.rows-1;
-	const matrix=new Matrix(matrixSize,matrixSize)
-	const startLength=cellColumn;
-	const endLength=matrixSize-cellColumn;
-	const columnOffsetPart2=cellColumn+1;
-	let thisRowOffset=0;matrixRowOffset=0;
-	for(let row=0;row<this.rows;row++) {
-		if(row!==cellRow){
-			const vectorStart=this.vector.slice(thisRowOffset,thisRowOffset+startLength);
-			const thisRowOffsetPart2=thisRowOffset+columnOffsetPart2;
-			const vectorEnd=this.vector.slice(thisRowOffsetPart2,thisRowOffsetPart2+endLength);
-			matrix.vector.set(vectorStart,matrixRowOffset);
-			matrix.vector.set(vectorEnd,matrixRowOffset+cellColumn)
-			matrixRowOffset+=matrixSize; //next rows
+	const matrix = new Matrix(matrixSize, matrixSize, null, this.dataType);
+	const vec = this.vector, mVec = matrix.vector, cols = this.columns;
+	let mOff = 0;
+	for (let r = 0; r < this.rows; r++) {
+		if (r === cellRow) continue;
+		const rOff = r * cols;
+		for (let c = 0; c < cols; c++) {
+			if (c === cellColumn) continue;
+			mVec[mOff++] = vec[rOff + c];
 		}
-		thisRowOffset+=this.rows
 	}
 	return matrix;
 }
@@ -421,6 +433,22 @@ Matrix.prototype.getDeterminantUsingCofactor=function(){
 	}
 	return this.determinant;
 }
+Matrix.prototype.getRank = function() {
+	const temp = this.clone();
+	temp.rowEchelonForm();
+	let rank = 0;
+	for (let r = 0; r < temp.rows; r++) {
+		let isNonZeroRow = false;
+		for (let c = 0; c < temp.columns; c++) {
+			if (Math.abs(temp.get(r, c)) > zeroFloat32Value) {
+				isNonZeroRow = true;
+				break;
+			}
+		}
+		if (isNonZeroRow) rank++;
+	}
+	return rank;
+}
 Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
 	if(this.rows==1) return this.vector[0];
 	const matrix=this.clone();
@@ -428,6 +456,14 @@ Matrix.prototype.getDeterminantUsingRowEchelonForm=function(){
 	matrix.rowEchelonForm();
 	this.determinant=1/matrix.determinant;
 	return this.determinant;
+}
+Matrix.prototype.getDiagonal = function() {
+	const size = Math.min(this.rows, this.columns);
+	const result = new typedArrays[this.dataType](size);
+	for (let i = 0; i < size; i++) {
+		result[i] = this.get(i, i);
+	}
+	return result;
 }
 Matrix.prototype.getIdentity=function(){
 	const identity=this.createLike();
@@ -522,13 +558,80 @@ Matrix.prototype.multiply=function(rightMatrix){
 	})
 	return result;
 }
+Matrix.prototype.multiplyScalar = function(factor) {
+	for (let i = 0; i < this.size; i++) this.vector[i] *= factor;
+	return this;
+}
+Matrix.prototype.reshape = function(rows, columns) {
+	if (rows * columns !== this.size) throw Error("New dimensions must maintain same size");
+	this.rows = rows;
+	this.columns = columns;
+	return this;
+}
+Matrix.prototype.setMatrix = function(matrix, row, column) {
+	const mRows = matrix.rows, mCols = matrix.columns, cols = this.columns;
+	const vec = this.vector, mVec = matrix.vector;
+	for (let r = 0; r < mRows; r++) {
+		if (row + r >= this.rows) break;
+		const length = Math.min(mCols, cols - column);
+		if (length > 0) vec.set(mVec.subarray(r * mCols, r * mCols + length), (row + r) * cols + column);
+	}
+	return this;
+}
 Matrix.prototype.multiplyRow=function(row,factor){
 	this.determinant*=factor;
 	this.forRowCells(row,(cell,column,offset,vector)=>vector[offset]*=factor)
 	return this;
 }
 Matrix.prototype.norm=function(){
-	return Math.sqrt(this.reduce((aggregate,cell)=>aggregate+cell*cell))
+	const vec = this.vector;
+	let sumSq = 0;
+	for (let i = 0, len = this.size; i < len; i++) {
+		const val = vec[i];
+		sumSq += val * val;
+	}
+	return Math.sqrt(sumSq);
+}
+Matrix.prototype.hadamardProduct = function(matrix) {
+	this.forEachCellPairSet(matrix, (cellA, cellB) => cellA * cellB);
+	return this;
+}
+Matrix.prototype.frobeniusInnerProduct = function(matrix) {
+	if (this.rows !== matrix.rows || this.columns !== matrix.columns) {
+		throw Error("Dimensions must match for Frobenius inner product");
+	}
+	let sum = 0;
+	const vecA = this.vector, vecB = matrix.vector;
+	for (let i = 0, len = this.size; i < len; i++) sum += vecA[i] * vecB[i];
+	return sum;
+}
+Matrix.prototype.luDecomposition = function() {
+	this.testIsSquare();
+	const n = this.rows;
+	const L = new Matrix(n, n, null, this.dataType).setIdentity();
+	const U = this.clone();
+	const uVec = U.vector, lVec = L.vector;
+
+	for (let i = 0; i < n; i++) {
+		const iOff = i * n;
+		const pivot = uVec[iOff + i];
+		if (Math.abs(pivot) < zeroFloat32Value) throw Error("Zero pivot in LU decomposition");
+		for (let j = i + 1; j < n; j++) {
+			const jOff = j * n;
+			const factor = uVec[jOff + i] / pivot;
+			lVec[jOff + i] = factor;
+			for (let k = i; k < n; k++) uVec[jOff + k] -= factor * uVec[iOff + k];
+		}
+	}
+	return { L, U };
+}
+Matrix.prototype.getTrace = function() {
+	this.testIsSquare();
+	let trace = 0;
+	for (let i = 0; i < this.rows; i++) {
+		trace += this.get(i, i);
+	}
+	return trace;
 }
 Matrix.prototype.reduce=function(call,aggregate=0){
 	this.forEachCell((cell,row,column,vector,offset,object)=>
@@ -631,15 +734,15 @@ Matrix.prototype.setDeterminant=function(){
 	return this.determinant;
 }
 Matrix.prototype.setIdentity=function(){
-	if(this.columns!=this.rowsMax) throw Error("number of columns not equal rows")
+	if(this.columns != (this.rowsMax || this.rows)) throw Error("not square matrix");
 	this.setZero()
 	for(let offset=0;offset<this.size;offset+=this.columns+1) this.vector[offset]=1;
 	return this;
 }
 Matrix.prototype.setWithFunction=function(f){
 	this.vector[f](this.sizeMax)
-	this.rows=this.rowsMax
-	this.size=this.sizeMax;
+	if (this.rowsMax != null) this.rows = this.rowsMax;
+	if (this.sizeMax != null) this.size = this.sizeMax;
 	return this;
 }
 Matrix.prototype.setOne=function(){
@@ -659,7 +762,12 @@ Matrix.prototype.setZero=function(){
 	return this.setWithFunction("setZero")
 }
 Matrix.prototype.substract=function(matrix){
-	this.forEachCellPairSet(matrix,(cellA,cellB)=>cellA-cellB)
+	if (matrix instanceof Matrix && this.rows === matrix.rows && this.columns === matrix.columns) {
+		const vecA = this.vector, vecB = matrix.vector;
+		for (let i = 0, len = this.size; i < len; i++) vecA[i] -= vecB[i];
+	} else {
+		this.forEachCellPairSet(matrix, (cellA, cellB) => cellA - cellB);
+	}
 	return this;
 }
 Matrix.prototype.subtractCell=function(row,column,value){
@@ -682,6 +790,18 @@ Matrix.prototype.testIsSquare=function(){
 	if(this.rows!=this.columns) throw Error("not square matrix");
 	return this;
 }
+Matrix.prototype.isSquare=function(){
+	return this.rows==this.columns;
+}
+Matrix.prototype.isSymmetric = function(precision = 6) {
+	if (this.rows !== this.columns) return false;
+	for (let r = 0; r < this.rows; r++) {
+		for (let c = r + 1; c < this.columns; c++) {
+			if (this.get(r, c).toFixed(precision) !== this.get(c, r).toFixed(precision)) return false;
+		}
+	}
+	return true;
+}
 Matrix.prototype.toArray=function(precision=6){
 	const result=[];
 	this.forEachRow((row,index)=>{
@@ -692,8 +812,15 @@ Matrix.prototype.toArray=function(precision=6){
 	return result;
 }
 Matrix.prototype.transpose=function(){
-	const matrix=new Matrix({rows:this.columns,columns:this.rows})
-	this.forEachCell((cell,row,column)=>matrix.set(column,row,cell))
+	const rows = this.rows, cols = this.columns;
+	const matrix = new Matrix(cols, rows, null, this.dataType);
+	const resVec = matrix.vector, thisVec = this.vector;
+	for (let r = 0; r < rows; r++) {
+		const rOff = r * cols;
+		for (let c = 0; c < cols; c++) {
+			resVec[c * rows + r] = thisVec[rOff + c];
+		}
+	}
 	return matrix;
 }
 module.exports=Matrix;

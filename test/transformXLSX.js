@@ -8,7 +8,7 @@ helper.init(require.resolve('node-red'));
 function getAndTestNodeProperties(o) {
 	const n = helper.getNode(o.id);
 	for (let p in o) {
-		assert.strictEqual(n[p], o[p], `property ${p} mismatch`);
+		assert.deepStrictEqual(n[p], o[p], `property ${p} mismatch`);
 	}
 	return n;
 }
@@ -16,8 +16,8 @@ function getAndTestNodeProperties(o) {
 const Array2XLSX={
 	id : "Array2XLSX",
 	type : "transform",
-	name : "json to XLSX",
-	actionSource: "JSON",
+	name : "Array to XLSX",
+	actionSource: "Array",
 	actionTarget: "XLSX",
 	sourceProperty:"msg.payload",
 	targetProperty:"msg.xlsx"
@@ -47,7 +47,7 @@ function testFlow(done,data,result) {
 		outHelper.on("input", function(msg) {
 			console.log("outHelper "+JSON.stringify(msg.json));
 			try {
-				assert.deepStrictEqual(msg.payload, msg.json);
+				assert.deepStrictEqual(msg.json, result);
 				done();
 			} catch (e) {
 				done(e);
@@ -72,7 +72,8 @@ describe('transform XLSX', function() {
 		helper.unload();
 		helper.stopServer(done);
 	});
-	it('JSON to XLSX to JSON', function(done) {
-		testFlow(done,dataJSON,dataJSON);
+	it('Array to XLSX to Array', function(done) {
+		// one array of rows per worksheet, in sheet order
+		testFlow(done,dataJSON,Object.values(dataJSON));
 	});
 });

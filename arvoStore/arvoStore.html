@@ -1,0 +1,261 @@
+<script type="text/javascript">
+    /*globals RED */
+    RED.nodes.registerType('arvoStore', {
+        category: 'storage',
+        color: '#DEB887',
+        defaults: {
+            name: { value: "" },
+            tableName: { value: "" },
+            tableNameType: { value: "str" },
+            schema: { 
+                value: "{\"type\":\"record\",\"name\":\"Record\",\"fields\":[{\"name\":\"id\",\"type\":\"string\"}]}"
+            },
+            autoSchema: { value: false },
+            action: { value: "add" },
+            sqlQuery: { value: "" },
+            outputProperty: { value: "payload" },
+            outputPropertyType: { value: "str" },
+            persistPath: { value: "" },
+            persistPathType: { value: "str" },
+            persistOnUpdate: { value: false },
+            persistInterval: { value: 0 }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "font-awesome/fa-database",
+        label: function() {
+            return this.name || this.tableName || "Avro Store";
+        },
+        actionArgs: {
+            add: ["tableName", "schema", "persistOnUpdate", "persistPath", "persistInterval", "outputProperty"],
+            create:["tableName", "schema", "outputProperty"],
+            query: ["tableName", "schema", "outputProperty"],
+            sql: ["tableName", "sqlQuery", "outputProperty"],
+            prepare: ["tableName", "sqlQuery", "outputProperty"],
+            exec: ["tableName", "outputProperty"],
+            save: ["persistPath", "outputProperty"],
+            records: ["tableName", "outputProperty"],
+            size: ["tableName", "outputProperty"],
+            serialize: ["tableName", "outputProperty"],
+            "via Message": ["outputProperty"]
+        },
+        argTypes: {
+            tableName: { _types: ["str", "msg", "flow", "global"], label: "Table Name", icon: "table" },
+            outputProperty: { _types: ["str"], label: "Result to", icon: "edit", default: "payload" },
+            persistPath: { _types: ["str", "msg"], label: "File Path", icon: "file" },
+            persistOnUpdate: { _types: ["bool"], label: "Auto Save", icon: "refresh" },
+            persistInterval: { _types: ["num"], label: "Delay (ms)", icon: "clock-o" },
+            schema: {
+                label: "Avro Schema",
+                icon: "database",
+                typedInput: {
+                    type: "json",
+                    types: [{
+                        value: "json",
+                        label: "Avro Schema",
+                        icon: "database",
+                        validate: function(v) {
+                            try {
+                                if(["add", "create", "query"].includes($("#node-input-action").val())) {
+                                    if($("#node-input-autoSchema").is(":checked")) {
+                                        return true; // Skip validation if autoSchema is enabled
+                                    }   
+                                    const parsed = JSON.parse(v);
+                                    return parsed && typeof parsed === "object" && parsed.type === "record" && Array.isArray(parsed.fields);
+                                }
+                            } catch (e) {
+                                return false;
+                            }
+                        },
+                        expand: function() {
+                            const node = this;
+                            RED.editor.editText({
+                                mode: "ace/mode/json",
+                                width: "Infinity",
+                                focus: true,
+                                value: node.value(),
+                                complete: function(v) {
+                                    node.value(v);
+                                }
+                            });
+                        }
+                    }]
+                }
+            },
+
+            sqlQuery:{
+                label: "SQL Query",
+                icon: "map",
+                typedInput: {
+                    type: "sql",
+                    types: [{
+                        value: "sql",
+                        label: "SQL Query",
+                        icon: "map",
+                        validate: function(v) {
+                            return typeof v === 'string';
+                        },
+                        expand: function() {
+                            const node = this;
+                            RED.editor.editText({
+                                mode: "ace/mode/sql",
+                                width: "Infinity",
+                                focus: true,
+                                value: node.value(),
+                                complete: function(v) {
+                                    node.value(v);
+                                }
+                            });
+                        }
+                    }]
+                }
+            },
+        },
+        addInput: function(baseElement, property, argType) {
+            const propertyQualified = property;
+            const div = $('<div>', { id: 'form-row-arvo-' + propertyQualified, class: "form-row arvo-row" });
+            const label = $('<label>', { for: "node-input-" + propertyQualified }).append(
+                $('<i>', { class: "fa fa-" + (argType.icon || "bookmark") }),
+                $('<span>').text(" " + (argType.label || property))
+            );
+            div.append(label);
+
+            const input = $('<input>', { type: 'text', id: 'node-input-' + propertyQualified, style: "width:70%" });
+            const inputType = $('<input>', { type: 'hidden', id: 'node-input-' + propertyQualified + 'Type' });
+            div.append(input, inputType);
+            baseElement.append(div);
+        },
+        setProperty: function(property, type, value) {
+            console.log("Setting property:", property, type, value);
+            const _this = this;
+            const argType = _this._def.argTypes[property];
+            $("#form-row-arvo-" + property).show();
+            if (argType.typedInput) {
+                $("#node-input-" + property).typedInput(argType.typedInput);
+                $("#node-input-" + property).typedInput('type', _this[property + "Type"] || argType.typedInput.types[0].value);
+                $("#node-input-" + property).typedInput('value', _this[property] || (value !== undefined ? value : ""));
+            } else {
+                const types = argType._types;
+                $("#node-input-" + property).typedInput({
+                    default: types[0],
+                    typeField: "#node-input-" + property + "Type",
+                    types: types
+                });
+                $("#node-input-" + property).typedInput('type', _this[property + "Type"] || type || types[0]);
+                $("#node-input-" + property).typedInput('value', _this[property] || (value !== undefined ? value : ""));
+            }
+        },
+        oneditprepare: function() {
+            const _this = this;
+            const nodeBase = this._def;
+            const inputBase = $("#node-inputDynamicBase");
+            inputBase.empty();
+            _this.editors = {};
+
+            for (const property in nodeBase.argTypes) {
+                nodeBase.addInput(inputBase, property, nodeBase.argTypes[property]);
+            }
+
+            const actions = Object.keys(nodeBase.actionArgs).map(prop => ({ value: prop, label: prop }));
+            $("#node-input-action").typedInput({
+                type: "action",
+                types: [{ value: "action", options: actions }]
+            });
+
+            $("#node-input-action").on("change", function() {
+                const action = $(this).val();
+                $(".arvo-row").hide();
+                Object.keys(_this.editors || {}).forEach(key => {
+                    _this[key] = _this.editors[key].getValue();
+                    _this.editors[key].destroy();
+                    delete _this.editors[key];
+                });
+
+                if (nodeBase.actionArgs[action]) {
+                    nodeBase.actionArgs[action].forEach(property => {
+                        const argType = nodeBase.argTypes[property];
+                        _this._def.setProperty.call(_this, property, _this[property + "Type"], _this[property]);
+                    });
+                }
+                if(action === "add" || action === "create") {
+                    $("#form-row-arvo-autoSchema").show();
+                } else {
+                    $("#form-row-arvo-autoSchema").hide();
+                } 
+                // Nested logic for persistence interval
+                if (action === "add") {
+                    $("#node-input-persistOnUpdate").on("change", function() {
+                        if ($(this).typedInput('value') === "true" || $(this).typedInput('value') === true) {
+                            $("#form-row-arvo-persistInterval").show();
+                        } else {
+                            $("#form-row-arvo-persistInterval").hide();
+                        }
+                    }).trigger("change");
+                }
+            }).trigger("change");
+        },
+        oneditsave: function() {
+            const _this = this;
+            const nodeBase = this._def;
+            const action = $("#node-input-action").val();
+
+            Object.keys(_this.editors || {}).forEach(property => {
+                _this[property] = _this.editors[property].getValue();
+                _this.editors[property].destroy();
+                delete _this.editors[property];
+            });
+
+            if (nodeBase.actionArgs[action]) {
+                nodeBase.actionArgs[action].forEach(property => {
+                    const argType = nodeBase.argTypes[property];
+                    if (!(argType.typedInput && argType.typedInput.type === "edit")) {
+                        _this[property] = $("#node-input-" + property).typedInput('value');
+                        _this[property + "Type"] = $("#node-input-" + property).typedInput('type');
+                    }
+                });
+            }
+        },
+        oneditcancel: function() {
+            const _this = this;
+            Object.keys(_this.editors || {}).forEach(key => {
+                _this.editors[key].destroy();
+                delete _this.editors[key];
+            });
+        }
+    });
+</script>
+
+<script type="text/x-red" data-template-name="arvoStore">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-autoSchema"><i class="fa fa-magic"></i> Auto Schema</label>
+        <input type="checkbox" id="node-input-autoSchema" style="display: inline-block; width: auto; vertical-align: top;">
+        <span style="margin-left: 10px;">Infer schema from first payload (leave schema empty)</span>
+    </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-cog"></i> Action</label>
+        <input type="text" id="node-input-action">
+    </div>
+    <div id="node-inputDynamicBase"></div>
+</script>
+
+<script type="text/x-red" data-help-name="arvoStore">
+    <p>A Node-RED node that wraps the AvroStore class for efficient in-memory data storage and SQL querying.</p>
+    <h3>Configuration</h3>
+    <dl class="message-properties">
+        <dt>Table Name</dt>
+        <dd>The name used in SQL <code>FROM</code> and <code>JOIN</code> clauses. Case-insensitive.</dd>
+        <dt>Avro Schema</dt>
+        <dd>A valid Avro JSON schema. Fields must match the records being added.</dd>
+    </dl>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload <span class="property-type">object | array | string</span></dt>
+        <dd>The record to add, an array of records, or the SQL string to execute.</dd>
+        <dt>operation <span class="property-type">string</span></dt>
+        <dd>Overrides the default operation. Options: <code>add</code>, <code>query</code>, <code>sql</code>, <code>records</code>.</dd>
+    </dl>
+</script>

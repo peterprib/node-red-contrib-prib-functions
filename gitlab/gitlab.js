@@ -15,6 +15,27 @@ const actions = {
         return response.data;
     },
 
+    createRepo: async (RED, node, msg) => {
+        if (!msg.payload || !msg.payload.name) {
+            throw new Error("msg.payload must contain a 'name' for repository creation");
+        }
+
+        const url = `${node.gitlabUrl}/api/v4/projects`;
+        const data = {
+            name: msg.payload.name,
+            description: msg.payload.description || null,
+            visibility: msg.payload.visibility || 'private'
+        };
+
+        const response = await axios.post(url, data, {
+            headers: {
+                'Private-Token': node.accessToken,
+                'User-Agent': 'Node-RED-GitLab-Node'
+            }
+        });
+        return response.data;
+    },
+
     listIssues: async (RED, node, msg) => {
         const url = `${node.gitlabUrl}/api/v4/projects/${encodeURIComponent(node.projectId)}/issues`;
         const params = {};
@@ -201,7 +222,7 @@ const actions = {
         });
         return response.data;
     }
-
+}
 module.exports = function (RED) {
     function GitLabNode(config) {
         RED.nodes.createNode(this, config);
@@ -225,7 +246,7 @@ module.exports = function (RED) {
             return;
         }
 
-        if (!node.projectId) {
+        if (!node.projectId && config.action !== 'createRepo') {
             node.error("GitLab project ID is required");
             node.status({ fill: "red", shape: "ring", text: "Project ID required" });
             return;
