@@ -17,9 +17,9 @@ const XMLoptions = {
 //	    attrNodeName: "attr", //default is 'false'
 //	    textNodeName : "#text",
 	    ignoreAttributes : false,
-	    ignoreNameSpace : false,
+	    removeNSPrefix : false,
 	    allowBooleanAttributes : true,
-	    parseNodeValue : true,
+	    parseTagValue : true,
 	    parseAttributeValue : false,
 //	    cdataTagName: "__cdata", //default is 'false'
 //	    cdataPositionChar: "\\c",
@@ -54,7 +54,7 @@ const ConfluenceToJSON=(RED,node,msg,data,callback)=>{
 	if(data.length<5) throw Error("missing schema, data length "+data.length)
 	const schema=data.readInt32BE(1)
 	const avroTransformer=getAvroTransformer(node,schema)
-	callback(RED,node,msg,data,{schema:schema,data:avroTransformer.fromBuffer(data.subarray(5))})
+	callback(RED,node,msg,{schema:schema,data:avroTransformer.fromBuffer(data.subarray(5))})
 }
 const JSONToConfluence=(RED,node,msg,data,callback)=>{
 		if(!data.schema) throw Error("property schema not defined");
@@ -64,7 +64,7 @@ const JSONToConfluence=(RED,node,msg,data,callback)=>{
 		header.writeInt32BE(data.schema, 1);
 		const transformer=getAvroTransformer(node,data.schema);
 		const avro=transformer.toBuffer(data.data);
-		callback(RED,node,msg,data,Buffer.concat([header,avro]))
+		callback(RED,node,msg,Buffer.concat([header,avro]))
 }
 function SendArray(RED,node,msg,array){
 	if(logger.active) logger.send({label:"SendArray",size:array.length});
@@ -95,7 +95,7 @@ SendArray.prototype.next=function() {
 		}
 		const newMsg=this.RED.util.cloneMessage(this.msg),index=this.index;
 		newMsg._msgid=newMsg._msgid+":"+index;
-		this.node.setData(this.RED,this.node,newMsg,this.array[index],index)
+		this.node.setData(this.RED,this.node,newMsg,this.array[index])
 		this.index++;
 		newMsgs.push(newMsg);
 	}
@@ -201,7 +201,7 @@ const functions={
 			const newMsg=RED.util.cloneMessage(msg);
 			newMsg._msgid=newMsg._msgid+":"+i;
 			if(logger.active) logger.send({label:"ArrayToMessages",row:row,index:i});
-			node.setData(RED,node,newMsg,row,i)
+			node.setData(RED,node,newMsg,row)
 			newMsgs.push(newMsg);
 		});
 		node.send([newMsgs])
@@ -221,7 +221,7 @@ const functions={
 	CompressedToJSON:(RED,node,msg,data,callback)=>compressor.decompress(data,
 		uncompressed=>{
 			try{
-				node.setData(RED,node,msg,JSON.parse(uncompresse,callback));
+				node.setData(RED,node,msg,JSON.parse(uncompressed),callback);
 			} catch(ex){
 				msg.error=ex.message
 				node.setData(RED,node,msg,uncompressed,callback);
@@ -294,7 +294,7 @@ const functions={
 	JSONToArray: (RED,node,msg,data,callback)=>callback(RED,node,msg,JSON2Array(data)),
 	JSONToAVRO: (RED,node,msg,data,callback)=>callback(RED,node,msg,node.avroTransformer.toBuffer(data)), // Encoded buffer.
 	JSONToCompressed: (RED,node,msg,data,callback)=>compressor.compress(JSON.stringify(data),
-		compressed=>node.setData(RED,node,msg,compressed.callback),
+		compressed=>node.setData(RED,node,msg,compressed,callback),
 		err=>error(node,Error(err))
 	),
 	JSONToConfluence:JSONToConfluence,
@@ -322,7 +322,7 @@ const functions={
 	JSONToString: (RED,node,msg,data,callback)=>callback(RED,node,msg,JSON.stringify(data)),
 	JSONToXLSX:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.JSON2XLSX(data)),
 	JSONToXLSXObject:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.JSON2XLSXObject(data)),
-	JSONToXML: (RED,node,msg,data,callback)=>callback(RED,node,msg,json2xmlParser.parse(data)),
+	JSONToXML: (RED,node,msg,data,callback)=>callback(RED,node,msg,json2xmlParser.build(data)),
 	npyToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,new NumPy(data).toSerializable()),
 	npyToNumPyObject: (RED,node,msg,data,callback)=>callback(RED,node,msg,new NumPy(data)),
 	NumPyObjectToJSON: (RED,node,msg,data,callback)=> callback(RED,node,msg,data.toSerializable()),
@@ -415,7 +415,7 @@ const functions={
 	XLSXToJSON:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSX2JSON(data)),
 	XLSXObjectToJSON:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSXObject2JSON(data)),
 	XLSXToXLSXObject:(RED,node,msg,data,callback)=>callback(RED,node,msg,xlsx2.XLSX2XLSXObject(data)),
-	XMLToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,xmlParser.parse(data,XMLoptions,true)),
+	XMLToJSON: (RED,node,msg,data,callback)=>callback(RED,node,msg,xmlParser.parse(data)),
 	invalidArray:(v=>!Array.isArray(v))
 };
 
@@ -446,15 +446,21 @@ module.exports = function (RED) {
 					throw Error("schema "+ex.message);
 				}
 				if(!node.schemaValid) throw Error("invalid schema")
+				if(is(node,"Confluence")) {
+					node.schemas={};
+					for(const schema in node.schemaValid )
+						node.schemas[schema]=avsc.Type.forSchema(node.schemaValid[schema]);
+					logger.info({label:"confluence",schemas:Object.keys(node.schemas)});
+				}
 			} else if(is(node,"snappy")) {
 				if(snappy==null) snappy=require('snappy');
 			} else if(is(node,"XML")) {
-				if(xmlParser==null) xmlParser=require('fast-xml-parser');
-				if(json2xmlParser==null) {
-					const j2xParser=xmlParser.j2xParser;
-					json2xmlParser=new j2xParser(XMLoptions);
+				if(xmlParser==null) {
+					// fast-xml-parser 4+: XMLParser / XMLBuilder replace parse() / j2xParser
+					const {XMLParser,XMLBuilder}=require('fast-xml-parser');
+					xmlParser=new XMLParser(XMLoptions);
+					json2xmlParser=new XMLBuilder(XMLoptions);
 				}
-				if(logger.active) logger.send({label:"load xml",xmlParserKeys:Object.keys(xmlParser),json2xmlParser:Object.keys(json2xmlParser)});
 			}
 			if(['Append','Concat','EndsWith','Prepend','Split','StartsWith'].includes(node.actionTarget)) {
 				typedInput.setGetFunction(RED,node,"string")
@@ -474,7 +480,7 @@ module.exports = function (RED) {
 			const setData1=evalFunction("target",targetMap);
 			node.setData=(RED,node,msg,data,callback)=>{
 				setData1(RED,node,msg,data)
-				callback(RED,node,msg,data)
+				if(callback) callback(RED,node,msg,data)
 			}
 			node.topicFunction=evalFunction("topic",topicMap);
 			if(is(node,"AVRO")) {
@@ -485,11 +491,6 @@ module.exports = function (RED) {
 					compressor=new CompressionTool();
 					compressor[node.compressionType]();
 				}
-			} else if(is(node,"Confluence")) {
-				node.schemas={};
-				for(const schema in node.schemaValid )
-					node.schemas[schema]=avsc.Type.forSchema(node.schemaValid[schema]);
-				logger.info({label:"confluence",schemas:Object.keys(node.schemas)});
 			} else if(node.actionSource=="Date") {
 				if(node.maxDate) node.maxDateTyped=toDateTypeZulu(node.maxDate)
 				if(node.minDate) node.minDateTyped=toDateTypeZulu(node.minDate)
@@ -536,7 +537,7 @@ module.exports = function (RED) {
 			    node.setData=(RED,node,msg,data,callback)=>{
 					node.JSONataTargetExpression.evaluate(data,{msg:msg,RED:RED,node:node},
 						(err,data)=>{
-							if(err) error(node,ex,"JSONata target evaluate error")
+							if(err) error(node,err,"JSONata target evaluate error")
 							node.setData1(RED,node,msg,data,callback)
 						}
 					) 	
@@ -567,6 +568,7 @@ module.exports = function (RED) {
 						msg.error=node.actionSource+" to "+node.actionTarget + " expected source data type "+node.actionSource;
 						error(node,Error(msg.error),"Error(s)");
 						node.send([null,msg]);
+						return;
 					}
 					node.transform(RED,node,msg,data,(RED,node,msg,dataTransformed)=>node.setData(RED,node,msg,dataTransformed,()=>node.send([msg]) ))
 				})

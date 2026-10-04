@@ -45,7 +45,17 @@ function test(description, fn) {
 // ---------------------------------------------------------------------------
 // transform test emulation
 // ---------------------------------------------------------------------------
+// A test that never calls done() or settles fails after TEST_TIMEOUT_MS
+// instead of hanging the whole run.
 function callMaybeAsync(fn) {
+    const TEST_TIMEOUT_MS = 10000;
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`timed out after ${TEST_TIMEOUT_MS}ms`)), TEST_TIMEOUT_MS);
+    });
+    return Promise.race([callMaybeAsyncNoTimeout(fn), timeout]).finally(() => clearTimeout(timer));
+}
+function callMaybeAsyncNoTimeout(fn) {
     return new Promise((resolve, reject) => {
         try {
             if (fn.length >= 1) {

@@ -8,7 +8,7 @@ helper.init(require.resolve('node-red'));
 function getAndTestNodeProperties(o) {
 	const n = helper.getNode(o.id);
 	for (let p in o) {
-		assert.strictEqual(n[p], o[p], `property ${p} mismatch`);
+		assert.deepStrictEqual(n[p], o[p], `property ${p} mismatch`);
 	}
 	return n;
 }
@@ -61,7 +61,9 @@ function testFlow(done,node,data,result) {
 		outHelper.on("input", function(msg) {
 			console.log("outHelper "+JSON.stringify(msg.payload));
 			try {
-				assert.deepStrictEqual(msg.payload, result);
+				// avsc decodes to Record instances, so compare as plain JSON (as the AVRO test does)
+				const plain=v=>JSON.parse(JSON.stringify(v));
+				assert.deepStrictEqual(plain(msg.payload), plain(result));
 				done();
 			} catch (e) {
 				done(e);
