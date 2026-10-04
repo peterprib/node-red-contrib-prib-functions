@@ -47,7 +47,7 @@ const JSON2npyNode={
 function getAndTestNodeProperties(o) {
 	const n = helper.getNode(o.id);
 	for (let p in o) {
-		assert.strictEqual(n[p], o[p], `property ${p} mismatch`);
+		assert.deepStrictEqual(n[p], o[p], `property ${p} mismatch`);
 	}
 	return n;
 }

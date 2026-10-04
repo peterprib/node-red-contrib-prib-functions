@@ -31,9 +31,9 @@ const addWorksheet2JSON=(object,worksheet,workbook,options={header:1,raw:true})=
 
 const XLSXObject2JSON=(workbook,options)=>workbook.SheetNames.reduce((a,worksheet)=>addWorksheet2JSON(a,worksheet,workbook,options),{})
 const XLSX2Array=data=>XLSXObject2Array(XLSX2XLSXObject(data))
-const XLSX2JSON=data=>XLSX2XLSXObject(XLSXObject2JSON(data))
+const XLSX2JSON=data=>XLSXObject2JSON(XLSX2XLSXObject(data))
 const XLSX2XLSXObject=data=>XLSX().read(data, {raw:true,type: 'buffer' })
-const XLSXObject2Array=(workbookoptions={header:1,raw:true})=>workbook.SheetNames.reduce((a,worksheet)=>{
+const XLSXObject2Array=(workbook,options={header:1,raw:true})=>workbook.SheetNames.reduce((a,worksheet)=>{
 	a.push(XLSX().utils.sheet_to_json(workbook.Sheets[worksheet],options))
 	return a
 },[])

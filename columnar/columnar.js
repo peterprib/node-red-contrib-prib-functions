@@ -245,6 +245,11 @@ class SimpleColumnarStore {
         };
     }
 
+    // Parse once; pass the result to sqlQuery() as parsedTokens to skip re-parsing
+    static _parseSql(sql) {
+        return require('../lib/sqlEngine.js').parseSQL(sql);
+    }
+
     static async sqlQuery(filePath, sql, parsedTokens = null, parameters = {}) {
         const loadEngine = await import('../lib/sqlEngine.js');
         const parsed = parsedTokens || loadEngine.parseSQL(sql);

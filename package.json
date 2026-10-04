@@ -176,7 +176,7 @@
 			"dataAnalysis": "dataAnalysis/dataAnalysis.js",
 			"dcdllm": "dcdllm/dcdllm.js",
 			"graphDB": "graphDB/graphDB.js",
-			"filesystem": "filesystem/filesystem.js",
+			"filesystem": "fileSystem/filesystem.js",
 			"hostAvailable": "testing/hostAvailable.js",
 			"levenshteinDistance": "levenshteinDistance/levenshteinDistanceNode.js",
 			"logisticRegression": "logisticRegression/logisticRegression.js",
