@@ -4,16 +4,19 @@
 	"description": "Node-RED added node functions.",
 	"dependencies": {
 		"avsc": ">=5.7.7",
+		"axios": ">=1.20.0",
 		"compressiontool": "*",
 		"csv-parse":"*",
 		"fast-xml-parser": "^5.2.1",
+		"jsonata": "^2.2.2",
 		"logisticegression": "git+https://gitlab.com/peter.prib/logisticregression.git",
-		"node": ">=22.15.0",
 		"node-red-contrib-logger": "latest",
 		"node-red-contrib-noderedbase": ">=0.0.16",
-		"node-red-contrib-prib-functions": "file:",
 		"node-red-node-data-generator":">=1.0.1",
 		"xlsx": "*"
+	},
+	"engines": {
+		"node": ">=22.15.0"
 	},
 	"overrides": {
 		"axios": "$axios",
@@ -23,7 +26,6 @@
 	},
 	"devDependencies": {
 		"@node-red/runtime": ">=4.0.9",
-		"axios": ">=1.20.0",
 		"bl": "^6.1.0",
 		"should": ">=8.x",
 		"node-red": ">=4.0.9",
