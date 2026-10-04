@@ -87,13 +87,14 @@ class GroupNode extends ASTNode {
 
 // ─── 5. Composite nodes — reference each other, but only at call time ────────
 
+// term = factor , [ "-" , exception ] ;  (ISO 14977: binds tighter than ",")
 class DifferenceNode extends ASTNode {
   constructor(base, except) { super('Difference', [base, except]); }
   static parse(parser) {
-    const base = parser.parseConcatenation();
+    const base = parser.parseFactor();
     if (parser.match(T.MINUS)) {
       parser.consume();
-      const except = parser.parseConcatenation();
+      const except = parser.parseFactor();
       return new DifferenceNode(base, except);
     }
     return base;
@@ -103,10 +104,10 @@ class DifferenceNode extends ASTNode {
 class ConcatenationNode extends ASTNode {
   constructor(terms) { super('Concatenation', terms); }
   static parse(parser) {
-    const terms = [parser.parseFactor()];
+    const terms = [parser.parseDifference()];
     while (parser.match(T.COMMA)) {
       parser.consume();
-      terms.push(parser.parseFactor());
+      terms.push(parser.parseDifference());
     }
     return terms.length === 1 ? terms[0] : new ConcatenationNode(terms);
   }
@@ -115,10 +116,10 @@ class ConcatenationNode extends ASTNode {
 class AlternationNode extends ASTNode {
   constructor(alts) { super('Alternation', alts); }
   static parse(parser) {
-    const alts = [DifferenceNode.parse(parser)];
+    const alts = [ConcatenationNode.parse(parser)];
     while (parser.match(T.BAR)) {
       parser.consume();
-      alts.push(DifferenceNode.parse(parser));
+      alts.push(ConcatenationNode.parse(parser));
     }
     return alts.length === 1 ? alts[0] : new AlternationNode(alts);
   }
@@ -175,9 +176,12 @@ function tokenize(src) {
       toks.push({ t: T.PARAMETER, v: s }); continue;
     }
     if (/[a-zA-Z_]/.test(c)) {
+      // A hyphen directly between word characters is part of the name
+      // (primary-expression); a spaced hyphen (a - b) is the exception operator.
       let s = '';
-      while (i < src.length && /[\w\s]/.test(src[i]) && src[i] !== '\n') {
-        if (/\w/.test(src[i])) s += src[i]; else if (s) s += ' ';
+      while (i < src.length && src[i] !== '\n'
+        && (/[\w\s]/.test(src[i]) || (src[i] === '-' && /\w/.test(src[i-1]) && /\w/.test(src[i+1] ?? '')))) {
+        if (/[\w-]/.test(src[i])) s += src[i]; else if (s) s += ' ';
         i++;
       }
       toks.push({ t: T.IDENT, v: s.trim() }); continue;
@@ -237,6 +241,19 @@ class Parser {
 
 const parseEBNF = (src) => new Parser(src).parse();
 
+// A rule action waiting to run. Actions are only applied once the whole input
+// has matched, so alternatives and exception checks that are tried and then
+// discarded never run actions (or mutate context).
+class PendingAction {
+  constructor(fn, value) { this.fn = fn; this.value = value; }
+}
+
+function resolveActions(value, context) {
+  if (value instanceof PendingAction) return value.fn(resolveActions(value.value, context), context);
+  if (Array.isArray(value)) return value.map(v => resolveActions(v, context));
+  return value;
+}
+
 
 // ─── 9. AST → railroad diagram mapping ───────────────────────────────────────
 
@@ -249,7 +266,7 @@ function astToRailroad(node) {
     case 'Option':        return new Optional(astToRailroad(node.children[0]));
     case 'Repetition':    return new ZeroOrMore(astToRailroad(node.children[0]));
     case 'Concatenation': return new Sequence(...node.children.map(astToRailroad));
-    case 'Alternation':   return new Choice(...node.children.map(astToRailroad));
+    case 'Alternation':   return new Choice(null, ...node.children.map(astToRailroad));
     case 'Difference':    return new Difference(astToRailroad(node.children[0]), astToRailroad(node.children[1]));
     case 'Rule':          return astToRailroad(node.children[0]);
     default: throw new Error(`Cannot map AST node type '${node.type}' to a railroad component`);
@@ -279,7 +296,7 @@ class EBNF {
 
   execute(ruleName, input, context = {}) {
     const result = this.matchRule(ruleName, input, context);
-    if (result.matched && result.remaining.trim() === '') return result.value;
+    if (result.matched && result.remaining.trim() === '') return resolveActions(result.value, context);
     const at = result.matched ? ` at '${result.remaining.trim().slice(0, 40)}'` : '';
     throw new Error(`Syntax error: input failed to match rule '${ruleName}'${at}`);
   }
@@ -289,7 +306,7 @@ class EBNF {
     if (!rhs) throw new Error(`Undefined rule: ${ruleName}`);
     const result = this.match(rhs, text, context);
     if (result.matched && this.actions[ruleName]) {
-      result.value = this.actions[ruleName](result.value, context);
+      result.value = new PendingAction(this.actions[ruleName], result.value);
     }
     return result;
   }
@@ -322,7 +339,7 @@ class EBNF {
         const values = [];
         for (;;) {
           const r = this.match(node.children[0], remaining, context);
-          if (!r.matched || r.remaining === remaining) break;
+          if (!r.matched || r.remaining.trimStart() === remaining.trimStart()) break;
           values.push(r.value);
           remaining = r.remaining;
         }

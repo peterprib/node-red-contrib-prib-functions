@@ -128,7 +128,7 @@ class Terminal extends Component {
     super();
     this.text = text;
     this.textWidth=textWidth(text, defaults.fontSize)+defaults.spacingBothSizes;
-    this.width = text.length * 8 + defaults.spacingBothSizes;
+    this.width = this.textWidth;
     this.height = defaults.height;
     this.up = defaults.halfHeight ;   // Distance from midline to top
     this.down = defaults.halfHeight;  // Distance from midline to bottom
@@ -179,19 +179,25 @@ class Choice extends Component {
     
     this.yOffsets = new Array(all.length);
 
+    let currentY;
     if (this.defaultOption) {
       this.yOffsets[0] = -(this.defaultOption.down + defaults.spacing);
+      currentY = defaults.spacing;
+    } else if (all.length > 0) {
+      this.yOffsets[0] = 0;  // first option on the main line
+      currentY = all[0].down + defaults.spacing;
+    } else {
+      currentY = defaults.spacing;
     }
-
-    let currentY = defaults.spacing;
-    const startIdx = this.defaultOption ? 1 : 0;
+    const startIdx = 1;
     for (let i = startIdx; i < all.length; i++) {
       this.yOffsets[i] = currentY + all[i].up;
       currentY += all[i].height + defaults.spacing;
     }
 
     this.width = Math.max(...all.map(o => o.width), 0) + 40;
-    this.up = this.defaultOption ? (this.defaultOption.height + defaults.spacing) : 0;
+    this.up = this.defaultOption ? (this.defaultOption.height + defaults.spacing)
+      : (all.length > 0 ? all[0].up : 0);
     this.down = Math.max(currentY - defaults.spacing, 0);
     this.height = this.up + this.down;
   }
@@ -200,13 +206,17 @@ class Choice extends Component {
     const all = [this.defaultOption, ...this.options].filter(x => x);
     
     const track = this.create("path");
-    const topY = this.defaultOption ? y + this.yOffsets[0] : y;
-    const botY = this.options.length > 0 ? y + this.yOffsets[all.length - 1] : y;
-    
-    // Draw the main track line straight through and the vertical spines
-    let path = `M ${x} ${y} h ${this.width}`;
+    const offsets = this.yOffsets.slice(0, all.length);
+    const topY = y + Math.min(0, ...offsets);
+    const botY = y + Math.max(0, ...offsets);
+
+    // Entry and exit stubs plus the vertical spines; there is no straight
+    // through line, as that would read as a bypass (i.e. the choice optional).
+    let path = `M ${x} ${y} h 10 M ${x + this.width - 10} ${y} h 10`;
     if (all.length > 0) {
       path += ` M ${x + 10} ${topY} v ${botY - topY} M ${x + this.width - 10} ${topY} v ${botY - topY}`;
+    } else {
+      path = `M ${x} ${y} h ${this.width}`;
     }
     track.setAttribute("d", path);
     track.setAttribute("stroke", defaults.pathStroke); track.setAttribute("fill", "none");
@@ -250,11 +260,25 @@ class Difference extends Component {
     const g = this.create("g");
     const path = this.create("path");
     const exceptY = y + defaults.spacing + this.base.down + this.except.up;
+    const baseEnd = x + 10 + this.base.width;
 
-    path.setAttribute("d", `M ${x} ${y} h 10 M ${x + 10} ${y} h ${this.base.width} M ${x + 10 + this.base.width} ${y} h 10 M ${x + 10} ${exceptY} h ${this.except.width}`);
+    // Main line runs the full width so following components connect
+    path.setAttribute("d", `M ${x} ${y} h 10 M ${baseEnd} ${y} h ${x + this.width - baseEnd}`);
     path.setAttribute("stroke", defaults.pathStroke);
     path.setAttribute("fill", defaults.pathFill);
-    g.append(path, this.base.draw(x + 10, y), this.except.draw(x + 10, exceptY));
+    // Dashed bracket from the main line ties the excluded item to its base
+    const exceptLink = this.create("path");
+    const right = x + this.width - 10;
+    exceptLink.setAttribute("d", `M ${x + 5} ${y} V ${exceptY} H ${x + 10} M ${x + 10 + this.except.width} ${exceptY} H ${right} V ${y}`);
+    exceptLink.setAttribute("stroke", defaults.pathStroke);
+    exceptLink.setAttribute("stroke-dasharray", "4 3");
+    exceptLink.setAttribute("fill", defaults.pathFill);
+    const label = this.create("text");
+    label.setAttribute("x", x + 12);
+    label.setAttribute("y", exceptY - this.except.up - 2);
+    label.setAttribute("font-size", 10);
+    label.append("except");
+    g.append(path, exceptLink, label, this.base.draw(x + 10, y), this.except.draw(x + 10, exceptY));
     this.svgElement = g;
     return g;
   }
@@ -307,7 +331,7 @@ class NonTerminal extends Component {
     this.name = name;
     this.text = name;
     this.textWidth = textWidth(name, defaults.fontSize) + defaults.spacingBothSizes;
-    this.width = name.length * 8 + defaults.spacingBothSizes;
+    this.width = this.textWidth;
     this.height = defaults.height;
     this.up = defaults.halfHeight;  // Distance from midline to top
     this.down = defaults.halfHeight; // Distance from midline to bottom

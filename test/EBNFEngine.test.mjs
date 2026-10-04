@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { EBNF, Parser, parseEBNF, astToRailroad } from '../EBNF/EBNFEngine.js';
-import { Diagram } from '../EBNF/railroadDiagram.js';
+import { Diagram, Choice, Difference, Terminal } from '../EBNF/railroadDiagram.js';
 
 const arithmeticGrammar = `
   digit = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" ;
@@ -129,4 +129,66 @@ test('undefined rule references are reported', () => {
   const ebnf = new EBNF(`start = missing ;`);
   assert.throws(() => ebnf.execute('start', 'x'), /Undefined rule: missing/);
   assert.throws(() => ebnf.diagram('nope'), /Undefined rule: nope/);
+});
+
+test('difference binds tighter than concatenation', () => {
+  const rhs = parseEBNF(`r = "a" - "b" , "c" ;`).children[0].children[0];
+  assert.equal(rhs.type, 'Concatenation');
+  assert.equal(rhs.children[0].type, 'Difference');
+  assert.equal(rhs.children[1].value, 'c');
+});
+
+test('hyphens inside names are identifiers, spaced hyphens are differences', () => {
+  const ebnf = new EBNF(`
+    primary-expression = "a" | "b" ;
+    use = primary-expression ;
+    not-a = primary-expression - "a" ;
+  `);
+  assert.deepEqual(ebnf.ruleNames(), ['primary-expression', 'use', 'not-a']);
+  assert.equal(ebnf.rules.use.type, 'Identifier');
+  assert.equal(ebnf.rules['not-a'].type, 'Difference');
+  assert.equal(ebnf.execute('not-a', 'b'), 'b');
+  assert.throws(() => ebnf.execute('not-a', 'a'), /Syntax error/);
+});
+
+test('repetition of an optional does not add a value for skipped whitespace', () => {
+  const ebnf = new EBNF(`r = { [ "a" ] } , "b" ;`);
+  assert.deepEqual(ebnf.execute('r', ' b'), [[], 'b']);
+  assert.deepEqual(ebnf.execute('r', 'a a b'), [['a', 'a'], 'b']);
+});
+
+test('actions only run for the successful parse', () => {
+  const ebnf = new EBNF(`
+    start = x , "!" | x , "?" ;
+    x = "a" ;
+    letter = "a" | "b" ;
+    notA = letter - x ;
+  `);
+  const calls = [];
+  ebnf.assignAction('x', (v, ctx) => { calls.push(v); ctx.count = (ctx.count || 0) + 1; return v.toUpperCase(); });
+  const ctx = {};
+  assert.deepEqual(ebnf.execute('start', 'a?', ctx), ['A', '?']);
+  assert.equal(ctx.count, 1);
+  calls.length = 0;
+  assert.equal(ebnf.execute('notA', 'b'), 'b');
+  assert.deepEqual(calls, []);
+});
+
+test('alternation diagram puts the first option on the main line with no bypass', () => {
+  const a = new Terminal('a'), b = new Terminal('b');
+  const choice = new EBNF(`r = "a" | "b" ;`).diagram('r').root;
+  assert.ok(choice instanceof Choice);
+  assert.equal(choice.defaultOption, null);
+  assert.equal(choice.yOffsets[0], 0);
+  assert.ok(choice.yOffsets[1] > 0);
+  const svg = new Diagram(new Choice(null, a, b)).toSVG();
+  assert.doesNotMatch(svg, new RegExp(`M 20 [\\d.]+ h ${new Choice(null, a, b).width}`));
+});
+
+test('difference main line spans its full width when the exception is wider', () => {
+  const diff = new Difference(new Terminal('a'), new Terminal('a much longer exception'));
+  assert.ok(diff.width > diff.base.width + 20);
+  const d = diff.draw(0, 0).toString();
+  const end = 10 + diff.base.width;
+  assert.match(d, new RegExp(`M ${end} 0 h ${diff.width - end}`));
 });
