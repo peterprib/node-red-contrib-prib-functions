@@ -21,6 +21,9 @@ jobs:
   publish-npm:
     needs: build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write   # REQUIRED for trusted publishing
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -28,9 +31,9 @@ jobs:
           node-version: 'latest'
           registry-url: https://registry.npmjs.org/
       - run: npm ci
-      - run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+      - run: npm publish --provenance --access public
+ #       env:
+ #         NODE_AUTH_TOKEN: ${{secrets.npm_token}}
 
 #  publish-gpr:
 #    needs: build
