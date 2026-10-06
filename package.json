@@ -16,7 +16,7 @@
 		"xlsx": "*"
 	},
 	"engines": {
-		"node": ">=22.15.0"
+		"node": ">=22.0.0"
 	},
 	"overrides": {
 		"axios": "$axios",
